@@ -8,7 +8,7 @@
         "verified": "12"
     },
     "esmodules": [
-        "scripts/crawl-helper.mjs"
+        "crawl-helper.mjs"
     ],
     "relationships": {
         "systems": [
