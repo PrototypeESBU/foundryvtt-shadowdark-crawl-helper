@@ -1,0 +1,34 @@
+{
+    "id": "shadowdark-crawl-helper",
+    "title": "Shadowdark Crawl Helper",
+	"description": "",
+    "version": "0.1",
+    "compatibility": {
+        "minimum": "12",
+        "verified": "12"
+    },
+    "esmodules": [
+        "scripts/crawl-helper.mjs"
+    ],
+    "relationships": {
+        "systems": [
+            {
+                "id": "shadowdark",
+                "type": "system",
+                "compatibility": {
+                    "minimum": "3.2.1",
+                    "verified": "3.2.2"
+                }
+            }
+        ]
+    },
+    "authors": [
+		{
+			"name": "Prototype",
+			"discord": "prototypesbu"
+		}
+    ],
+    "url": "https://github.com/PrototypeESBU/foundryvtt-shadowdark-community-content",
+	"manifest": "https://raw.githubusercontent.com/PrototypeESBU/foundryvtt-shadowdark-community-content/main/module/module.json",
+	"download": "https://github.com/PrototypeESBU/foundryvtt-shadowdark-community-content/releases/latest/download/shadowdark-community-content.zip"
+}

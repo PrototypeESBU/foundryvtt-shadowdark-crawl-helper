@@ -1,0 +1,9 @@
+{
+	"type": "module",
+	"scripts": {
+        "link": "gulp link"
+	},
+	"devDependencies": {
+		"gulp": "^5.0.0"
+	}
+}
