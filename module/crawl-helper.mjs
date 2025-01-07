@@ -1,17 +1,15 @@
 import registerSettings from "./scripts/settings.mjs";
 
 // -----------------------------------------------
-// Hooks Once: Triggers only one time per event
+// Hooks on Init: triggered when the module is first initialized
 // -----------------------------------------------
-// Init: triggered when the module is first initialized
-Hooks.once("init", () => {
+Hooks.on("init", () => {
     registerSettings();
 });
 
 // -----------------------------------------------
-// Hooks On: Triggers once per event
+// Hooks on Ready: triggers once the module is fully loaded
 // -----------------------------------------------
-// Ready: triggers once the module is fully loaded
 Hooks.on("ready", async () => {
     console.log("Crawl Helper Ready");
 });
