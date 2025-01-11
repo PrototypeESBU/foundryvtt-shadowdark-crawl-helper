@@ -1,15 +1,15 @@
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
 
-export default class crawlTracker extends ApplicationV2 {
+export default class crawlTracker extends HandlebarsApplicationMixin(ApplicationV2) {
     static DEFAULT_OPTIONS = {
-        tag: "form",
+        id: "crawlTracker",
         form: {
           handler: crawlTracker.formHandler,
           submitOnChange: false,
           closeOnSubmit: false
         },
         position: {
-            width: 640,
+            width: 300,
             height: "auto",
         },
         window: {
@@ -22,31 +22,21 @@ export default class crawlTracker extends ApplicationV2 {
     };
 
     static PARTS = {
-        form: {
+        main: {
           template: "./modules/shadowdark-crawl-helper/templates/crawl-tracker.hbs"
         }
     }
 
     _prepareContext(options) {
-        const data = "hello";
-        return data
+        const context = {
+            maintext:"hello"
+        };
+        return context
     }
 
     _onRender(context, options) {
         this.element.querySelector("input[name=something]").addEventListener("click", /* ... */);
         // We will deal with reset later
-    }
-
-    // ***************
-    // Required Fuctions
-    // ***************
-
-    _renderHTML(context, options) {
-        return
-    }
-
-    _replaceHTML(context, options) {
-        return
     }
 
     /**
