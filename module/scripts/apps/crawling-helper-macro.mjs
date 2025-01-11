@@ -1,4 +1,4 @@
-export class crawlingHelper {
+export default class crawlingHelperMacro {
     constructor() {
         this.dangerLevels = ["Unsafe", "Risky", "Deadly"];
         this.currentDangerLevel = "Unsafe";
@@ -8,7 +8,7 @@ export class crawlingHelper {
     async openDialog() {
         const rollTables = await this.getRollTables();
 
-        const content = await renderTemplate("modules/crawling-helper/templates/dialog.hbs", {
+        const content = await renderTemplate("modules/shadowdark-crawl-helper/templates/dialog.hbs", {
             dangerLevels: this.dangerLevels,
             currentDangerLevel: this.currentDangerLevel,
             rollTables: rollTables,

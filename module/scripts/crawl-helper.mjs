@@ -1,6 +1,6 @@
 import registerSettings from "./settings.mjs";
 import crawlTracker from "./apps/crawl-tracker.mjs";
-import crawlingHelper from "./apps/crawling-helper.mjs";
+import crawlingHelperMacro from "./apps/crawling-helper-macro.mjs";
 
 // -----------------------------------------------
 // Hooks on Init: triggered when the module is first initialized
@@ -11,7 +11,7 @@ Hooks.on("init", () => {
     // initialize persistant apps and vairables
     game.crawlHelper = {
 		crawlTracker: new crawlTracker(),
-        crawlingHelper: new crawlingHelper()
+        crawlingHelperMacro: new crawlingHelperMacro()
 		//actorCarousel: new actorCarousel(),
 	};
 });
@@ -29,12 +29,14 @@ Hooks.on("ready", async () => {
 
 
 Hooks.on("getSceneControlButtons", (controls) => {
+    /*
     controls.push({
         name: "crawling-helper",
         title: "Crawling Helper",
         icon: "fas fa-dungeon",
         visible: game.user.isGM,
-        onClick: () => game.crawlingHelper.openDialog(),
+        onClick: () => game.crawlHelper.crawlingHelperMacro.openDialog(),
         button: true
     });
+    */
 });
