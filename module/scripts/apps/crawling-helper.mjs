@@ -1,8 +1,4 @@
-Hooks.on("ready", async () => {
-    game.crawlingHelper = new CrawlingHelper();
-});
-
-class CrawlingHelper {
+export class crawlingHelper {
     constructor() {
         this.dangerLevels = ["Unsafe", "Risky", "Deadly"];
         this.currentDangerLevel = "Unsafe";
@@ -75,15 +71,3 @@ class CrawlingHelper {
         ui.notifications.info("Combat mode started.");
     }
 }
-
-// Add a button in the Foundry UI for easier access
-Hooks.on("getSceneControlButtons", (controls) => {
-    controls.push({
-        name: "crawling-helper",
-        title: "Crawling Helper",
-        icon: "fas fa-dungeon",
-        visible: game.user.isGM,
-        onClick: () => game.crawlingHelper.openDialog(),
-        button: true
-    });
-});
