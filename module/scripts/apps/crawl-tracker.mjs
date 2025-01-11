@@ -1,10 +1,10 @@
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
 
-export default class roundTracker extends Applicationv2 {
+export default class crawlTracker extends ApplicationV2 {
     static DEFAULT_OPTIONS = {
         tag: "form",
         form: {
-          handler: roundTracker.formHandler,
+          handler: crawlTracker.formHandler,
           submitOnChange: false,
           closeOnSubmit: false
         },
@@ -13,11 +13,11 @@ export default class roundTracker extends Applicationv2 {
             height: "auto",
         },
         window: {
-            icon: "fas fa-gear", // You can now add an icon to the header
+            icon: "far fa-clipboard", // You can now add an icon to the header
             title: "Crawl Tracker"
         },
         actions: {
-            myAction: roundTracker.myAction
+            myAction: crawlTracker.myAction
         }
     };
 
@@ -37,6 +37,18 @@ export default class roundTracker extends Applicationv2 {
         // We will deal with reset later
     }
 
+    // ***************
+    // Required Fuctions
+    // ***************
+
+    _renderHTML(context, options) {
+        return
+    }
+
+    _replaceHTML(context, options) {
+        return
+    }
+
     /**
     * @param {PointerEvent} event - The originating click event
     * @param {HTMLElement} target - the capturing HTML element which defined a [data-action]
@@ -49,7 +61,7 @@ export default class roundTracker extends Applicationv2 {
     // Action Handlers
     // ***************
 
-    static myAction(event, target) {
-        console.log(this) // logs the specific application class instance
+    static async myAction(event, target) {
+        console.warn(this) // logs the specific application class instance
     }
 }
