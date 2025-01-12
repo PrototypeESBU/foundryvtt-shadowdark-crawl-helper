@@ -8,14 +8,10 @@
         "verified": "12"
     },
    "esmodules": [
-        "scripts/crawl-helper.mjs",
-        "apps/crawling-helper-macro.mjs"
+        "scripts/crawl-helper.mjs"
     ],
     "styles": [
         "styles/crawl-helper.css"
-    ],
-    "templates": [
-        "templates/dialog.hbs"
     ],
     "relationships": {
         "systems": [

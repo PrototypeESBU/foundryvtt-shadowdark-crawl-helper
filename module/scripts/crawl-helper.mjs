@@ -3,7 +3,7 @@ import crawlTracker from "./apps/crawl-tracker.mjs";
 import crawlingHelperMacro from "./apps/crawling-helper-macro.mjs";
 
 // -----------------------------------------------
-// Hooks on Init: triggered when the module is first initialized
+// Triggered when the module is first initialized
 // -----------------------------------------------
 Hooks.on("init", () => {
     registerSettings();
@@ -12,17 +12,33 @@ Hooks.on("init", () => {
     game.crawlHelper = {
         crawlTracker: new crawlTracker(),
         crawlingHelperMacro: new crawlingHelperMacro()
+        //actorCarousel: new actorCarousel()
     };
 });
 
 // -----------------------------------------------
-// Hooks on Ready: triggers once the module is fully loaded
+// Triggers once the module is fully loaded
 // -----------------------------------------------
 Hooks.on("ready", async () => {
-    // Show crawlTracker
-    game.crawlHelper.crawlTracker.render(true);
+    //show crawlTracker
+    if (game.user.isGM){
+        game.crawlHelper.crawlTracker.render(true);
+    }
+});
 
-    console.warn("Crawl Helper Ready");
+// -----------------------------------------------
+// Combat Triggers
+// -----------------------------------------------
+Hooks.on('combatStart', async () => {
+    console.log("Combat Start Hook");
+});
+
+Hooks.on('combatTurn', async () => {
+    console.log("Combat Turn Hook");
+});
+
+Hooks.on('combatRound', async () => {
+    game.crawlHelper.crawlTracker.updateRound();
 });
 
 // -----------------------------------------------
