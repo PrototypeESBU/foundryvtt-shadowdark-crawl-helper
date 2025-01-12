@@ -30,8 +30,7 @@ export default class crawlingHelperMacro extends HandlebarsApplicationMixin(Appl
             beginCombat: crawlingHelperMacro.beginCombatTracker
         }
     };
-
-    // ✅ Corrected PARTS definition
+       
     static PARTS = {
         main: {
             template: "modules/shadowdark-crawl-helper/templates/dialog.hbs"
@@ -52,44 +51,15 @@ export default class crawlingHelperMacro extends HandlebarsApplicationMixin(Appl
     // Data Preparation for Template Rendering
     // -----------------------------------------------
     async _prepareContext(options) {
-        const rollTables = await this.getRollTables();
-
+        const rollTables = await this.getAllRollTables();
+    
         return {
             dangerLevels: this.dangerLevels,
             currentDangerLevel: this.currentDangerLevel,
             rollTables: rollTables,
             selectedRollTable: this.encounterTableId
         };
-    }
-
-    // -----------------------------------------------
-    // Ensure Buttons Work After Render
-    // -----------------------------------------------
-    async _onRender(context, options) {
-        console.log("🛠️ Crawling Helper Dialog Rendered");
-
-        this.element.querySelector("#danger-level")?.addEventListener("change", (e) =>
-            this.updateDangerLevel(e.target.value)
-        );
-        this.element.querySelector("#roll-table")?.addEventListener("change", (e) =>
-            this.updateRollTable(e.target.value)
-        );
-        this.element.querySelector("#add-party")?.addEventListener("click", () =>
-            this.addPartyToTracker()
-        );
-        this.element.querySelector("#add-selected")?.addEventListener("click", () =>
-            this.addSelectedToTracker()
-        );
-        this.element.querySelector("#reset-initiative")?.addEventListener("click", () =>
-            this.resetInitiative()
-        );
-        this.element.querySelector("#begin-crawling")?.addEventListener("click", () =>
-            this.beginCrawlingTracker()
-        );
-        this.element.querySelector("#begin-combat")?.addEventListener("click", () =>
-            this.beginCombatTracker()
-        );
-    }
+    }  
 
     // -----------------------------------------------
     // Action Handlers for UI Buttons
@@ -154,12 +124,55 @@ static async beginCombatTracker() {
 }
 
     // -----------------------------------------------
-    // Fetch Available Roll Tables
+    // Fetch All Roll Tables (World + Compendiums)
     // -----------------------------------------------
-    async getRollTables() {
-        const tables = game.tables.contents.filter(t => /Random\s+Encounters:/i.test(t.name));
-        return tables.map(t => ({ name: t.name, id: t.uuid }));
+async getAllRollTables(searchTerm = "Random Encounters") {
+    const foundTables = [];
+
+    // 🔎 Search World Roll Tables
+    game.tables.forEach(table => {
+        if (table.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+            foundTables.push({ name: table.name, id: table.uuid });
+        }
+    });
+
+    // 🔎 Search Compendium Roll Tables
+    for (const pack of game.packs) {
+        if (pack.metadata.type === "RollTable") {
+            try {
+                const tables = await pack.getDocuments();
+                tables.forEach(table => {
+                    if (table.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+                        foundTables.push({
+                            name: `[${pack.metadata.label}] ${table.name}`,
+                            id: table.uuid
+                        });
+                    }
+                });
+            } catch (err) {
+                console.warn(`❗ Failed to load compendium: ${pack.metadata.label}`, err);
+            }
+        }
     }
+
+    // 🚨 Warn if no tables are found
+    if (foundTables.length === 0) {
+        ui.notifications.warn(`⚠️ No roll tables found with "${searchTerm}".`);
+    }
+
+    return foundTables;
+}
+
+    // -----------------------------------------------
+    // Populate Roll Table Dropdown
+    // -----------------------------------------------
+async populateRollTableDropdown() {
+    const tables = await this.getAllRollTables();
+
+    return tables.map(
+        (table) => `<option value="${table.id}">${table.name}</option>`
+    ).join("\n");
+}
 
     // -----------------------------------------------
     // Optional Form Handler (If Needed)
