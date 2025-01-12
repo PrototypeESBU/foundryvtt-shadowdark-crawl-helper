@@ -30,8 +30,7 @@ export default class crawlingHelperMacro extends HandlebarsApplicationMixin(Appl
             beginCombat: crawlingHelperMacro.beginCombatTracker
         }
     };
-
-    // ✅ Corrected PARTS definition
+       
     static PARTS = {
         main: {
             template: "modules/shadowdark-crawl-helper/templates/dialog.hbs"
@@ -52,44 +51,15 @@ export default class crawlingHelperMacro extends HandlebarsApplicationMixin(Appl
     // Data Preparation for Template Rendering
     // -----------------------------------------------
     async _prepareContext(options) {
-        const rollTables = await this.getRollTables();
-
+        const rollTables = await this.getAllRollTables();
+    
         return {
             dangerLevels: this.dangerLevels,
             currentDangerLevel: this.currentDangerLevel,
             rollTables: rollTables,
             selectedRollTable: this.encounterTableId
         };
-    }
-
-    // -----------------------------------------------
-    // Ensure Buttons Work After Render
-    // -----------------------------------------------
-    async _onRender(context, options) {
-        console.log("🛠️ Crawling Helper Dialog Rendered");
-
-        this.element.querySelector("#danger-level")?.addEventListener("change", (e) =>
-            this.updateDangerLevel(e.target.value)
-        );
-        this.element.querySelector("#roll-table")?.addEventListener("change", (e) =>
-            this.updateRollTable(e.target.value)
-        );
-        this.element.querySelector("#add-party")?.addEventListener("click", () =>
-            this.addPartyToTracker()
-        );
-        this.element.querySelector("#add-selected")?.addEventListener("click", () =>
-            this.addSelectedToTracker()
-        );
-        this.element.querySelector("#reset-initiative")?.addEventListener("click", () =>
-            this.resetInitiative()
-        );
-        this.element.querySelector("#begin-crawling")?.addEventListener("click", () =>
-            this.beginCrawlingTracker()
-        );
-        this.element.querySelector("#begin-combat")?.addEventListener("click", () =>
-            this.beginCombatTracker()
-        );
-    }
+    }  
 
     // -----------------------------------------------
     // Action Handlers for UI Buttons
@@ -108,6 +78,13 @@ static async updateRollTable(event, target) {
 }
 
 static async addPartyToTracker() {
+    const scene = game.scenes.active;
+
+    if (!scene) {
+        ui.notifications.error("⚠️ No active scene found.");
+        return;
+    }
+
     const partyActors = game.users
         .filter(user => user.active && user.character)
         .map(user => user.character);
@@ -117,21 +94,52 @@ static async addPartyToTracker() {
         return;
     }
 
+    let addedCount = 0;
+
     for (const actor of partyActors) {
-        ui.notifications.info(`🛡️ ${actor.name} added to tracker.`);
+        // Get active tokens on the scene
+        let tokens = actor.getActiveTokens();
+
+        // If no token exists, spawn one
+        if (tokens.length === 0) {
+            const tokenData = await actor.getTokenDocument();
+            tokenData.updateSource({ 
+                x: Math.floor(scene.width / 2), 
+                y: Math.floor(scene.height / 2) 
+            });
+
+            const [createdToken] = await scene.createEmbeddedDocuments("Token", [tokenData]);
+            tokens = [createdToken];
+            ui.notifications.info(`📌 Spawned token for ${actor.name}.`);
+        }
+
+        // ✅ Use token.document to access toggleCombatant()
+        for (const token of tokens) {
+            await token.document.toggleCombatant();
+            addedCount++;
+        }
+    }
+
+    if (addedCount > 0) {
+        ui.notifications.info(`🛡️ Toggled ${addedCount} party token(s) to the Combat Tracker.`);
+    } else {
+        ui.notifications.warn("⚠️ No party tokens were added to the Combat Tracker.");
     }
 }
 
 static async addSelectedToTracker() {
     const selectedTokens = canvas.tokens.controlled;
+
     if (selectedTokens.length === 0) {
-        ui.notifications.warn("⚠️ No tokens selected.");
+        ui.notifications.warn("⚠️ No tokens selected on the canvas.");
         return;
     }
 
     for (const token of selectedTokens) {
-        ui.notifications.info(`🛡️ ${token.name} added to tracker.`);
+        await token.document.toggleCombatant();  // 💡 Add or remove from combat tracker
     }
+
+    ui.notifications.info(`🛡️ ${selectedTokens.length} token(s) toggled in the Combat Tracker.`);
 }
 
 static async resetInitiative() {
@@ -154,12 +162,55 @@ static async beginCombatTracker() {
 }
 
     // -----------------------------------------------
-    // Fetch Available Roll Tables
+    // Fetch All Roll Tables (World + Compendiums)
     // -----------------------------------------------
-    async getRollTables() {
-        const tables = game.tables.contents.filter(t => /Random\s+Encounters:/i.test(t.name));
-        return tables.map(t => ({ name: t.name, id: t.uuid }));
+async getAllRollTables(searchTerm = "Random Encounters") {
+    const foundTables = [];
+
+    // 🔎 Search World Roll Tables
+    game.tables.forEach(table => {
+        if (table.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+            foundTables.push({ name: table.name, id: table.uuid });
+        }
+    });
+
+    // 🔎 Search Compendium Roll Tables
+    for (const pack of game.packs) {
+        if (pack.metadata.type === "RollTable") {
+            try {
+                const tables = await pack.getDocuments();
+                tables.forEach(table => {
+                    if (table.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+                        foundTables.push({
+                            name: `[${pack.metadata.label}] ${table.name}`,
+                            id: table.uuid
+                        });
+                    }
+                });
+            } catch (err) {
+                console.warn(`❗ Failed to load compendium: ${pack.metadata.label}`, err);
+            }
+        }
     }
+
+    // 🚨 Warn if no tables are found
+    if (foundTables.length === 0) {
+        ui.notifications.warn(`⚠️ No roll tables found with "${searchTerm}".`);
+    }
+
+    return foundTables;
+}
+
+    // -----------------------------------------------
+    // Populate Roll Table Dropdown
+    // -----------------------------------------------
+async populateRollTableDropdown() {
+    const tables = await this.getAllRollTables();
+
+    return tables.map(
+        (table) => `<option value="${table.id}">${table.name}</option>`
+    ).join("\n");
+}
 
     // -----------------------------------------------
     // Optional Form Handler (If Needed)
