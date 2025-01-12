@@ -94,14 +94,17 @@ static async addPartyToTracker() {
 
 static async addSelectedToTracker() {
     const selectedTokens = canvas.tokens.controlled;
+
     if (selectedTokens.length === 0) {
-        ui.notifications.warn("⚠️ No tokens selected.");
+        ui.notifications.warn("⚠️ No tokens selected on the canvas.");
         return;
     }
 
     for (const token of selectedTokens) {
-        ui.notifications.info(`🛡️ ${token.name} added to tracker.`);
+        await token.document.toggleCombatant();  // 💡 Add or remove from combat tracker
     }
+
+    ui.notifications.info(`🛡️ ${selectedTokens.length} token(s) toggled in the Combat Tracker.`);
 }
 
 static async resetInitiative() {
