@@ -15,7 +15,7 @@ Hooks.on("init", () => {
 		//actorCarousel: new actorCarousel(),
 	};
 });
-
+ 
 
 // -----------------------------------------------
 // Hooks on Ready: triggers once the module is fully loaded

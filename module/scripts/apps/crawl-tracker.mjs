@@ -1,4 +1,4 @@
-const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 export default class crawlTracker extends HandlebarsApplicationMixin(ApplicationV2) {
     static DEFAULT_OPTIONS = {

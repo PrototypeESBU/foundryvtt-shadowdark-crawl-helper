@@ -7,8 +7,15 @@
         "minimum": "12",
         "verified": "12"
     },
-    "esmodules": [
-        "scripts/crawl-helper.mjs"
+   "esmodules": [
+        "scripts/crawl-helper.mjs",
+        "apps/crawling-helper-macro.mjs"
+    ],
+    "styles": [
+        "styles/crawl-helper.css"
+    ],
+    "templates": [
+        "templates/dialog.hbs"
     ],
     "relationships": {
         "systems": [

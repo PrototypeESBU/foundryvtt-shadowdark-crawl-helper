@@ -1,24 +1,31 @@
-<div style="font-family: Arial, sans-serif; font-size: 14px; padding: 10px;">
-    <label for="danger-level" style="color: #990000; font-weight: bold;">Select Danger Level:</label>
-    <select id="danger-level" style="width: 100%; margin-bottom: 10px;">
-        {{#each dangerLevels}}
-            <option value="{{this}}" {{#if (eq this ../currentDangerLevel)}}selected{{/if}}>{{this}}</option>
-        {{/each}}
-    </select>
+<div id="crawl-helper">
+    <h2>Crawling Helper</h2>
 
-    <label for="roll-table" style="color: #990000; font-weight: bold;">Select Encounter Table:</label>
-    <select id="roll-table" style="width: 100%; margin-bottom: 10px;">
-        {{#each rollTables}}
-            <option value="{{id}}" {{#if (eq id ../selectedRollTable)}}selected{{/if}}>{{name}}</option>
-        {{/each}}
-    </select>
-
-    <div style="text-align:center; margin-top:10px;">
-        <button id="add-party" class="red-button">Add Party to Tracker</button>
-        <button id="add-selected" class="gold-button">Add Selected Tokens</button>
-        <button id="reset-initiative" class="blue-button">Reset Initiative</button>
-        <hr style="margin: 10px 0;">
-        <button id="begin-crawling" class="green-button">Begin Crawling</button>
-        <button id="begin-combat" class="green-button">Begin Combat</button>
+    <div>
+        <label for="danger-level">Select Danger Level:</label>
+        <select data-action="updateDangerLevel">
+            {{#each dangerLevels}}
+                <option value="{{this}}" {{#if (eq this ../currentDangerLevel)}}selected{{/if}}>
+                    {{this}}
+                </option>
+            {{/each}}
+        </select>
     </div>
+
+    <div>
+        <label for="roll-table">Select Encounter Table:</label>
+        <select data-action="updateRollTable">
+            {{#each rollTables}}
+                <option value="{{id}}" {{#if (eq id ../selectedRollTable)}}selected{{/if}}>
+                    {{name}}
+                </option>
+            {{/each}}
+        </select>
+    </div>
+
+    <button data-action="addParty">Add Party to Tracker</button>
+    <button data-action="addSelected">Add Selected Tokens</button>
+    <button data-action="resetInitiative">Reset Initiative</button>
+    <button data-action="beginCrawling">Begin Crawling</button>
+    <button data-action="beginCombat">Begin Combat</button>
 </div>

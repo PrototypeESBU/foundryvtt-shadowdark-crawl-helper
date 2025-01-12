@@ -1,3 +1,23 @@
+#crawl-helper {
+    font-family: 'Arial', sans-serif;
+    padding: 10px;
+}
+
+.crawl-btn {
+    padding: 8px 15px;
+    margin: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: #006400;
+    color: white;
+    border: none;
+    border-radius: 3px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
 .red-button {
     background-color: #990000;
     color: white;
