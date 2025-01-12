@@ -78,6 +78,13 @@ static async updateRollTable(event, target) {
 }
 
 static async addPartyToTracker() {
+    const scene = game.scenes.active;
+
+    if (!scene) {
+        ui.notifications.error("⚠️ No active scene found.");
+        return;
+    }
+
     const partyActors = game.users
         .filter(user => user.active && user.character)
         .map(user => user.character);
@@ -87,8 +94,36 @@ static async addPartyToTracker() {
         return;
     }
 
+    let addedCount = 0;
+
     for (const actor of partyActors) {
-        ui.notifications.info(`🛡️ ${actor.name} added to tracker.`);
+        // Get active tokens on the scene
+        let tokens = actor.getActiveTokens();
+
+        // If no token exists, spawn one
+        if (tokens.length === 0) {
+            const tokenData = await actor.getTokenDocument();
+            tokenData.updateSource({ 
+                x: Math.floor(scene.width / 2), 
+                y: Math.floor(scene.height / 2) 
+            });
+
+            const [createdToken] = await scene.createEmbeddedDocuments("Token", [tokenData]);
+            tokens = [createdToken];
+            ui.notifications.info(`📌 Spawned token for ${actor.name}.`);
+        }
+
+        // ✅ Use token.document to access toggleCombatant()
+        for (const token of tokens) {
+            await token.document.toggleCombatant();
+            addedCount++;
+        }
+    }
+
+    if (addedCount > 0) {
+        ui.notifications.info(`🛡️ Toggled ${addedCount} party token(s) to the Combat Tracker.`);
+    } else {
+        ui.notifications.warn("⚠️ No party tokens were added to the Combat Tracker.");
     }
 }
 
