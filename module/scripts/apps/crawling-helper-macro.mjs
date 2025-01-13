@@ -51,14 +51,15 @@ export default class crawlingHelperMacro extends HandlebarsApplicationMixin(Appl
     // Data Preparation for Template Rendering
     // -----------------------------------------------
     async _prepareContext(options) {
-        const rollTables = await crawlingHelperMacro.getAllRollTables();
-            return {
+        const rollTables = await this._getAllRollTables();
+    
+        return {
             dangerLevels: this.dangerLevels,
             currentDangerLevel: this.currentDangerLevel,
             rollTables: rollTables,
             selectedRollTable: this.encounterTableId
         };
-    }  
+    } 
 
     // -----------------------------------------------
     // Action Handlers for UI Buttons
@@ -172,14 +173,16 @@ static async beginCombatTracker() {
     // -----------------------------------------------
     // Fetch All Roll Tables (World + Compendiums)
     // -----------------------------------------------
-    static async getAllRollTables(searchTerm = "Random Encounters") {
+    async _getAllRollTables(searchTerm = "Random Encounters") {
         const foundTables = [];
-            game.tables.forEach(table => {
+    
+               game.tables.forEach(table => {
             if (table.name.toLowerCase().includes(searchTerm.toLowerCase())) {
                 foundTables.push({ name: table.name, id: table.uuid });
             }
         });
-            for (const pack of game.packs) {
+    
+                for (const pack of game.packs) {
             if (pack.metadata.type === "RollTable") {
                 try {
                     const tables = await pack.getDocuments();
@@ -195,6 +198,10 @@ static async beginCombatTracker() {
                     console.warn(`❗ Failed to load compendium: ${pack.metadata.label}`, err);
                 }
             }
+        }
+    
+        if (foundTables.length === 0) {
+            ui.notifications.warn(`⚠️ No roll tables found with "${searchTerm}".`);
         }
     
         return foundTables;
