@@ -97,10 +97,8 @@ static async addPartyToTracker() {
     let addedCount = 0;
 
     for (const actor of partyActors) {
-        // Get active tokens on the scene
         let tokens = actor.getActiveTokens();
 
-        // If no token exists, spawn one
         if (tokens.length === 0) {
             const tokenData = await actor.getTokenDocument();
             tokenData.updateSource({ 
@@ -113,7 +111,6 @@ static async addPartyToTracker() {
             ui.notifications.info(`📌 Spawned token for ${actor.name}.`);
         }
 
-        // ✅ Use token.document to access toggleCombatant()
         for (const token of tokens) {
             await token.document.toggleCombatant();
             addedCount++;
@@ -136,7 +133,7 @@ static async addSelectedToTracker() {
     }
 
     for (const token of selectedTokens) {
-        await token.document.toggleCombatant();  // 💡 Add or remove from combat tracker
+        await token.document.toggleCombatant();
     }
 
     ui.notifications.info(`🛡️ ${selectedTokens.length} token(s) toggled in the Combat Tracker.`);
@@ -152,14 +149,41 @@ static async resetInitiative() {
 }
 
 static async beginCrawlingTracker() {
-    ui.notifications.info("🗺️ Crawling mode started.");
-    // TODO: Add crawling tracker logic here.
+    let combat = game.combat || await Combat.implementation.create({ scene: game.scenes.active.id });
+
+    if (combat.combatants.size === 0) {
+        ui.notifications.warn("⚠️ No combatants in the tracker. Please add tokens first.");
+        return;
+    }
+
+    try {
+        await combat.startCombat();
+        ui.notifications.info("🗺️ Crawling mode started. Combat tracker is now running.");
+    } catch (err) {
+        console.error("❗ Error starting crawling mode:", err);
+        ui.notifications.error("⚠️ Failed to start crawling mode.");
+    }
 }
+// TODO: change logic when crawling tracker is implemented
+
 
 static async beginCombatTracker() {
-    ui.notifications.info("⚔️ Combat mode started.");
-    // TODO: Add combat tracker logic here.
+    let combat = game.combat || await Combat.implementation.create({ scene: game.scenes.active.id });
+
+    if (combat.combatants.size === 0) {
+        ui.notifications.warn("⚠️ No combatants in the tracker. Please add tokens first.");
+        return;
+    }
+
+    try {
+        await combat.startCombat();
+        ui.notifications.info("⚔️ Combat mode started. Combat tracker is now running.");
+    } catch (err) {
+        console.error("❗ Error starting combat mode:", err);
+        ui.notifications.error("⚠️ Failed to start combat mode.");
+    }
 }
+// TODO: change logic when combat tracker is implemented
 
     // -----------------------------------------------
     // Fetch All Roll Tables (World + Compendiums)
@@ -167,14 +191,12 @@ static async beginCombatTracker() {
 async getAllRollTables(searchTerm = "Random Encounters") {
     const foundTables = [];
 
-    // 🔎 Search World Roll Tables
     game.tables.forEach(table => {
         if (table.name.toLowerCase().includes(searchTerm.toLowerCase())) {
             foundTables.push({ name: table.name, id: table.uuid });
         }
     });
 
-    // 🔎 Search Compendium Roll Tables
     for (const pack of game.packs) {
         if (pack.metadata.type === "RollTable") {
             try {
@@ -193,7 +215,6 @@ async getAllRollTables(searchTerm = "Random Encounters") {
         }
     }
 
-    // 🚨 Warn if no tables are found
     if (foundTables.length === 0) {
         ui.notifications.warn(`⚠️ No roll tables found with "${searchTerm}".`);
     }
