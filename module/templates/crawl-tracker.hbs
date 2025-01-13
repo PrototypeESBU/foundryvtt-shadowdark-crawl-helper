@@ -1,23 +1,27 @@
 <div id="crawl-tracker" class="shadowdark">
-   
-    <div class="grid-1-columns">
-        {{partId}}
-        {{inCombat}}
-        {{round}}
-        <a data-action="myAction">app v2 action</a>
-        <a data-action="nextRound">Next Round</a>
-        <a data-action="previousRound">Previous Round</a>
-    </div>
-    <h3>todo</h3>
-    <ul>
-    <li>When crawling: crawling rounds here</li>
-    <li>When crawling: next encounter roll</li>
-    <li>When crawling: button: start combat with selected token(s)</li>
+    {{#if isStarted}}
+        <div class="grid-4-columns">
+            <h2 class="grid-colspan-4 centered">{{mode}}</h2>
+            <span class="grid-colspan-4 centered">Round {{round}}</span>
+            <button data-action="previousRound"><i class="fa-solid fa-angles-left"></i></button>
+            <button data-action="previousTurn"><i class="fa-solid fa-angle-left"></i></i></button>
+            <button data-action="nextTurn"><i class="fa-solid fa-angle-right"></i></i></button>
+            <button data-action="nextRound"><i class="fa-solid fa-angles-right"></i></button>
+        </div>
+        {{#if inCombat}}
+            <button data-action="endCombat">End Combat</button>
+        {{else}}
+            Next encounter roll: {{nextEncounter}}
+            <button data-action="startCombat">Start Combat</button>
+            <button data-action="endCrawling">End Crawling</button>
+        {{/if}}
+    {{else}}
+        <button data-action="startCrawling">Start Crawling</button>
+    {{/if}}
 
-    <li>When combat: combat rounds here</li>
+    <ul>
+    <li>When crawling: button: start combat with selected token(s)</li>
     <li>When combat: button: add token(s) to Combat</li>
     <li>When combat: end combat [removes all monters from carousel]</li>
-
-    <li>Settings menu: select encounter table</li>
     </ul>
 </div>

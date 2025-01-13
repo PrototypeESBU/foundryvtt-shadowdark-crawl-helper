@@ -21,6 +21,7 @@ Hooks.on("init", () => {
 // -----------------------------------------------
 Hooks.on("ready", async () => {
     //show crawlTracker
+    game.crawlHelper.crawlTracker.loadTracking();
     if (game.user.isGM){
         game.crawlHelper.crawlTracker.render(true);
     }
@@ -29,16 +30,16 @@ Hooks.on("ready", async () => {
 // -----------------------------------------------
 // Combat Triggers
 // -----------------------------------------------
-Hooks.on('combatStart', async () => {
-    console.log("Combat Start Hook");
+Hooks.on('combatStart', async (combat, updateData) => {  //unsure if this is needed
+    game.crawlHelper.crawlTracker.initCombat(combat, updateData);  
 });
 
-Hooks.on('combatTurn', async () => {
-    console.log("Combat Turn Hook");
+Hooks.on('combatTurn', async (combat, updateData, updateOptions) => {  //unsure if this is needed
+    game.crawlHelper.crawlTracker.updateTurn(updateData, updateOptions.direction); 
 });
 
-Hooks.on('combatRound', async () => {
-    game.crawlHelper.crawlTracker.updateRound();
+Hooks.on('combatRound', async (combat, updateData, updateOptions) => {
+    game.crawlHelper.crawlTracker.updateRound(updateData, updateOptions.direction);
 });
 
 // -----------------------------------------------

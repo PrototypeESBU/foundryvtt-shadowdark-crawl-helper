@@ -4,10 +4,15 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     constructor() {
 		super();
-        this.inCombat = true;
-        this.danagerLevel = 0;
-        this.encounterClock = 0;
-        this.encoutnerTable = "";
+        this.tracking = {
+            round:0,
+            turn:0,
+            isStarted: false,
+            inCombat: false,
+            encounterClock: 3,
+            danagerLevel: 3,
+            encoutnerTable: ""
+        }
     }
 
     static DEFAULT_OPTIONS = {
@@ -21,9 +26,12 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             title: "Crawl Tracker"
         },
         actions: {
-            myAction: this.myAction,
+            startCrawling: this.startCrawling,
+            endCrawling: this.endCrawling,
+            startCombat: this.startCombat,
+            endCombat: this.endCombat,
             nextRound: this.nextRound,
-            previousRound: this.previousRound
+            previousRound: this.previousRound,
         }
     };
 
@@ -36,9 +44,28 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     // ***************
     // Action Handlers
     // ***************
+    static async startCrawling(event, target) {
+        this.tracking.isStarted = true;
+        this.tracking.round = 1;
+        game.combat.startCombat();
+    }
+    static async endCrawling(event, target) {
+        this.tracking.isStarted = false;
+        game.combat.endCombat();
+        this.createTracking();
+        this.render();
+    }
 
-    static async myAction(event, target) {
-        ui.notifications.warn("myAction Tiggered");
+    static async startCombat(event, target) {
+        this.tracking.inCombat = true;
+        // TODO load selected monsters
+        this.render();
+    }
+    static async endCombat(event, target) {
+        this.tracking.inCombat = false;
+        this.tracking.encounterClock = this.tracking.danagerLevel;
+        // TODO remove all monsters
+        this.render();
     }
 
     static async nextRound(event, target) {
@@ -55,62 +82,72 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     /** @override */
     async _preparePartContext(partId, context, options) {
-        context = {
-            partId: `${partId}`,
-            inCombat: this.inCombat,
-            round: this.inCombat? this.combatRound : this.crawlingRound,
-        }
+        context = this.tracking;
+        context.mode = this.tracking.inCombat ? "Combat" : "Crawling"; //TODO needs i18n
+        context.nextEncounter = this.tracking.round + this.tracking.encounterClock;
         return context;
     }
+    
+    async loadTracking() { // loads tracking data from an exiting combat on initialization
 
-    async loadTracking() {
+        //check if there is an encounter loaded already
+        if(!game.combat) this.createTracking();        
 
-        if(!game.combat) return createTracking()           
+        //Confirm the encounter was created by this module
+        if (!game.combat.getFlag("shadowdark-crawl-helper", "tracking")) this.createTracking();
 
-        // check for flags
+        //if linked to a scene, unlink combat
+        if (game.combat._source.scene) game.combat.toggleSceneLink();
+
+        //load encounter values from stored flages
+        this.tracking = game.combat.getFlag("shadowdark-crawl-helper", "tracking")
 
     }
 
     async createTracking() {
         // create encounter
-        // toggleSceneLink();
-        // start
+        const encounter = Combat.implementation.create();
+        
+        // TODO add party to current combat
+
+        // TODO add GM to current combat
+
+        this.saveTrackingData();
     }
 
-    async updateTracking() {
-        let delta = game.combat.current.round - game.combat.previous.round;
-        if (this.inCombat) {
-            this.combatRound += delta;
-        }
-        else {
-            this.crawlingRound += delta;
-        }
-        ui.notifications.info(`round ${game.combat.current.round}`);
-    }
- /*
-    async updateScene() {
-        console.warn("scene Updated");
-        game.scenes.viewed.setFlag("shadowdark-crawl-helper", "tracking", 
-        {
-            crawlingRound: this.crawlingRound,
-            combatRound: this.combatRound,
-            inCombat: this.inCombat
-        });
-        console.log(await game.scenes.viewed.getFlag("shadowdark-crawl-helper", "tracking"));
+    async saveTrackingData() {  // Saves tracking data to the tracking combat to persist between loads
+        //set tracking to flags on combat for persistance of state
+        game.combat.setFlag("shadowdark-crawl-helper", "tracking", this.tracking);
     }
 
-        async loadCombat() {
-            console.warn("scene Loaded");
-            let sceneFlag = await game.combat.getFlag("shadowdark-crawl-helper", "tracking");
-            console.log(sceneFlag);
-            if (sceneFlag) {
-                console.warn("scene values Loaded");
-                this.crawlingRound = sceneFlag.crawlingRound;
-                this.combatRound = sceneFlag.combatRound;
-                this.inCombat = sceneFlag.inCombat;
-            } else {
-                this.updateScene()
-            }
-            
-        }*/
+    async initCombat(combat, updateData) {
+        this.tracking.isStarted = true;
+        this.tracking.round = 1;
+        this.tracking.encounterClock = this.tracking.danagerLevel-1;
+        this.tracking.inCombat = false;
+        this.render();
+    }
+
+    async updateRound(updateData, direction) {
+        //update round and turns
+        this.tracking.round = updateData.round;
+        this.tracking.turn = updateData.turn;
+        this.tracking.encounterClock -= direction;
+
+        //test for encounters
+        // TODO should be on GM's turn instead
+        if (this.tracking.encounterClock <= 0) {
+            this.tracking.encounterClock = this.tracking.danagerLevel;
+            ui.notifications.info("encounter");
+        }
+
+        this.saveTrackingData();
+        this.render();
+    }
+
+    async updateTurn(updateData, direction) {
+        //set anything related to a new turn
+        console.log(updateData, direction);
+    }
+
 }
