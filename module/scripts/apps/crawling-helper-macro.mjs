@@ -52,8 +52,7 @@ export default class crawlingHelperMacro extends HandlebarsApplicationMixin(Appl
     // -----------------------------------------------
     async _prepareContext(options) {
         const rollTables = await crawlingHelperMacro.getAllRollTables();
-    
-        return {
+            return {
             dangerLevels: this.dangerLevels,
             currentDangerLevel: this.currentDangerLevel,
             rollTables: rollTables,
@@ -79,16 +78,13 @@ static async updateRollTable(event, target) {
 
 static async addPartyToTracker() {
     const scene = game.scenes.active;
-
     if (!scene) {
         ui.notifications.error("⚠️ No active scene found.");
         return;
     }
-
     const partyActors = game.users
         .filter(user => user.active && user.character)
         .map(user => user.character);
-
     if (partyActors.length === 0) {
         ui.notifications.warn("⚠️ No active party members found.");
         return;
@@ -98,25 +94,21 @@ static async addPartyToTracker() {
 
     for (const actor of partyActors) {
         let tokens = actor.getActiveTokens();
-
         if (tokens.length === 0) {
             const tokenData = await actor.getTokenDocument();
             tokenData.updateSource({ 
                 x: Math.floor(scene.width / 2), 
                 y: Math.floor(scene.height / 2) 
             });
-
             const [createdToken] = await scene.createEmbeddedDocuments("Token", [tokenData]);
             tokens = [createdToken];
             ui.notifications.info(`📌 Spawned token for ${actor.name}.`);
         }
-
         for (const token of tokens) {
             await token.document.toggleCombatant();
             addedCount++;
         }
     }
-
     if (addedCount > 0) {
         ui.notifications.info(`🛡️ Toggled ${addedCount} party token(s) to the Combat Tracker.`);
     } else {
@@ -126,16 +118,13 @@ static async addPartyToTracker() {
 
 static async addSelectedToTracker() {
     const selectedTokens = canvas.tokens.controlled;
-
     if (selectedTokens.length === 0) {
         ui.notifications.warn("⚠️ No tokens selected on the canvas.");
         return;
     }
-
     for (const token of selectedTokens) {
         await token.document.toggleCombatant();
     }
-
     ui.notifications.info(`🛡️ ${selectedTokens.length} token(s) toggled in the Combat Tracker.`);
 }
 
@@ -150,12 +139,10 @@ static async resetInitiative() {
 
 static async beginCrawlingTracker() {
     let combat = game.combat || await Combat.implementation.create({ scene: game.scenes.active.id });
-
     if (combat.combatants.size === 0) {
         ui.notifications.warn("⚠️ No combatants in the tracker. Please add tokens first.");
         return;
     }
-
     try {
         await combat.startCombat();
         ui.notifications.info("🗺️ Crawling mode started. Combat tracker is now running.");
@@ -166,15 +153,12 @@ static async beginCrawlingTracker() {
 }
 // TODO: change logic when crawling tracker is implemented
 
-
 static async beginCombatTracker() {
     let combat = game.combat || await Combat.implementation.create({ scene: game.scenes.active.id });
-
     if (combat.combatants.size === 0) {
         ui.notifications.warn("⚠️ No combatants in the tracker. Please add tokens first.");
         return;
     }
-
     try {
         await combat.startCombat();
         ui.notifications.info("⚔️ Combat mode started. Combat tracker is now running.");
@@ -190,14 +174,12 @@ static async beginCombatTracker() {
     // -----------------------------------------------
     static async getAllRollTables(searchTerm = "Random Encounters") {
         const foundTables = [];
-    
-        game.tables.forEach(table => {
+            game.tables.forEach(table => {
             if (table.name.toLowerCase().includes(searchTerm.toLowerCase())) {
                 foundTables.push({ name: table.name, id: table.uuid });
             }
         });
-    
-        for (const pack of game.packs) {
+            for (const pack of game.packs) {
             if (pack.metadata.type === "RollTable") {
                 try {
                     const tables = await pack.getDocuments();
@@ -223,7 +205,6 @@ static async beginCombatTracker() {
     // -----------------------------------------------
 async populateRollTableDropdown() {
     const tables = await this.getAllRollTables();
-
     return tables.map(
         (table) => `<option value="${table.id}">${table.name}</option>`
     ).join("\n");
