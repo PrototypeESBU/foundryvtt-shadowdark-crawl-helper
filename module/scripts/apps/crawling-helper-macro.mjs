@@ -51,7 +51,7 @@ export default class crawlingHelperMacro extends HandlebarsApplicationMixin(Appl
     // Data Preparation for Template Rendering
     // -----------------------------------------------
     async _prepareContext(options) {
-        const rollTables = await this.getAllRollTables();
+        const rollTables = await crawlingHelperMacro.getAllRollTables();
     
         return {
             dangerLevels: this.dangerLevels,
@@ -188,40 +188,36 @@ static async beginCombatTracker() {
     // -----------------------------------------------
     // Fetch All Roll Tables (World + Compendiums)
     // -----------------------------------------------
-async getAllRollTables(searchTerm = "Random Encounters") {
-    const foundTables = [];
-
-    game.tables.forEach(table => {
-        if (table.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-            foundTables.push({ name: table.name, id: table.uuid });
-        }
-    });
-
-    for (const pack of game.packs) {
-        if (pack.metadata.type === "RollTable") {
-            try {
-                const tables = await pack.getDocuments();
-                tables.forEach(table => {
-                    if (table.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-                        foundTables.push({
-                            name: `[${pack.metadata.label}] ${table.name}`,
-                            id: table.uuid
-                        });
-                    }
-                });
-            } catch (err) {
-                console.warn(`❗ Failed to load compendium: ${pack.metadata.label}`, err);
+    static async getAllRollTables(searchTerm = "Random Encounters") {
+        const foundTables = [];
+    
+        game.tables.forEach(table => {
+            if (table.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+                foundTables.push({ name: table.name, id: table.uuid });
+            }
+        });
+    
+        for (const pack of game.packs) {
+            if (pack.metadata.type === "RollTable") {
+                try {
+                    const tables = await pack.getDocuments();
+                    tables.forEach(table => {
+                        if (table.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+                            foundTables.push({
+                                name: `[${pack.metadata.label}] ${table.name}`,
+                                id: table.uuid
+                            });
+                        }
+                    });
+                } catch (err) {
+                    console.warn(`❗ Failed to load compendium: ${pack.metadata.label}`, err);
+                }
             }
         }
+    
+        return foundTables;
     }
-
-    if (foundTables.length === 0) {
-        ui.notifications.warn(`⚠️ No roll tables found with "${searchTerm}".`);
-    }
-
-    return foundTables;
-}
-
+  
     // -----------------------------------------------
     // Populate Roll Table Dropdown
     // -----------------------------------------------
