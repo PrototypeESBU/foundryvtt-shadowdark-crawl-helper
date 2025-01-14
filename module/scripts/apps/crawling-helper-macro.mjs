@@ -51,7 +51,7 @@ export default class crawlingHelperMacro extends HandlebarsApplicationMixin(Appl
     // Data Preparation for Template Rendering
     // -----------------------------------------------
     async _prepareContext(options) {
-        const rollTables = await this.getAllRollTables();
+        const rollTables = await this._getAllRollTables();
     
         return {
             dangerLevels: this.dangerLevels,
@@ -59,7 +59,7 @@ export default class crawlingHelperMacro extends HandlebarsApplicationMixin(Appl
             rollTables: rollTables,
             selectedRollTable: this.encounterTableId
         };
-    }  
+    } 
 
     // -----------------------------------------------
     // Action Handlers for UI Buttons
@@ -79,16 +79,13 @@ static async updateRollTable(event, target) {
 
 static async addPartyToTracker() {
     const scene = game.scenes.active;
-
     if (!scene) {
         ui.notifications.error("⚠️ No active scene found.");
         return;
     }
-
     const partyActors = game.users
         .filter(user => user.active && user.character)
         .map(user => user.character);
-
     if (partyActors.length === 0) {
         ui.notifications.warn("⚠️ No active party members found.");
         return;
@@ -97,29 +94,22 @@ static async addPartyToTracker() {
     let addedCount = 0;
 
     for (const actor of partyActors) {
-        // Get active tokens on the scene
         let tokens = actor.getActiveTokens();
-
-        // If no token exists, spawn one
         if (tokens.length === 0) {
             const tokenData = await actor.getTokenDocument();
             tokenData.updateSource({ 
                 x: Math.floor(scene.width / 2), 
                 y: Math.floor(scene.height / 2) 
             });
-
             const [createdToken] = await scene.createEmbeddedDocuments("Token", [tokenData]);
             tokens = [createdToken];
             ui.notifications.info(`📌 Spawned token for ${actor.name}.`);
         }
-
-        // ✅ Use token.document to access toggleCombatant()
         for (const token of tokens) {
             await token.document.toggleCombatant();
             addedCount++;
         }
     }
-
     if (addedCount > 0) {
         ui.notifications.info(`🛡️ Toggled ${addedCount} party token(s) to the Combat Tracker.`);
     } else {
@@ -129,16 +119,13 @@ static async addPartyToTracker() {
 
 static async addSelectedToTracker() {
     const selectedTokens = canvas.tokens.controlled;
-
     if (selectedTokens.length === 0) {
         ui.notifications.warn("⚠️ No tokens selected on the canvas.");
         return;
     }
-
     for (const token of selectedTokens) {
-        await token.document.toggleCombatant();  // 💡 Add or remove from combat tracker
+        await token.document.toggleCombatant();
     }
-
     ui.notifications.info(`🛡️ ${selectedTokens.length} token(s) toggled in the Combat Tracker.`);
 }
 
@@ -152,61 +139,79 @@ static async resetInitiative() {
 }
 
 static async beginCrawlingTracker() {
-    ui.notifications.info("🗺️ Crawling mode started.");
-    // TODO: Add crawling tracker logic here.
+    let combat = game.combat || await Combat.implementation.create({ scene: game.scenes.active.id });
+    if (combat.combatants.size === 0) {
+        ui.notifications.warn("⚠️ No combatants in the tracker. Please add tokens first.");
+        return;
+    }
+    try {
+        await combat.startCombat();
+        ui.notifications.info("🗺️ Crawling mode started. Combat tracker is now running.");
+    } catch (err) {
+        console.error("❗ Error starting crawling mode:", err);
+        ui.notifications.error("⚠️ Failed to start crawling mode.");
+    }
 }
+// TODO: change logic when crawling tracker is implemented
 
 static async beginCombatTracker() {
-    ui.notifications.info("⚔️ Combat mode started.");
-    // TODO: Add combat tracker logic here.
+    let combat = game.combat || await Combat.implementation.create({ scene: game.scenes.active.id });
+    if (combat.combatants.size === 0) {
+        ui.notifications.warn("⚠️ No combatants in the tracker. Please add tokens first.");
+        return;
+    }
+    try {
+        await combat.startCombat();
+        ui.notifications.info("⚔️ Combat mode started. Combat tracker is now running.");
+    } catch (err) {
+        console.error("❗ Error starting combat mode:", err);
+        ui.notifications.error("⚠️ Failed to start combat mode.");
+    }
 }
+// TODO: change logic when combat tracker is implemented
 
     // -----------------------------------------------
     // Fetch All Roll Tables (World + Compendiums)
     // -----------------------------------------------
-async getAllRollTables(searchTerm = "Random Encounters") {
-    const foundTables = [];
-
-    // 🔎 Search World Roll Tables
-    game.tables.forEach(table => {
-        if (table.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-            foundTables.push({ name: table.name, id: table.uuid });
-        }
-    });
-
-    // 🔎 Search Compendium Roll Tables
-    for (const pack of game.packs) {
-        if (pack.metadata.type === "RollTable") {
-            try {
-                const tables = await pack.getDocuments();
-                tables.forEach(table => {
-                    if (table.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-                        foundTables.push({
-                            name: `[${pack.metadata.label}] ${table.name}`,
-                            id: table.uuid
-                        });
-                    }
-                });
-            } catch (err) {
-                console.warn(`❗ Failed to load compendium: ${pack.metadata.label}`, err);
+    async _getAllRollTables(searchTerm = "Random Encounters") {
+        const foundTables = [];
+    
+               game.tables.forEach(table => {
+            if (table.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+                foundTables.push({ name: table.name, id: table.uuid });
+            }
+        });
+    
+                for (const pack of game.packs) {
+            if (pack.metadata.type === "RollTable") {
+                try {
+                    const tables = await pack.getDocuments();
+                    tables.forEach(table => {
+                        if (table.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+                            foundTables.push({
+                                name: `[${pack.metadata.label}] ${table.name}`,
+                                id: table.uuid
+                            });
+                        }
+                    });
+                } catch (err) {
+                    console.warn(`❗ Failed to load compendium: ${pack.metadata.label}`, err);
+                }
             }
         }
+    
+        if (foundTables.length === 0) {
+            ui.notifications.warn(`⚠️ No roll tables found with "${searchTerm}".`);
+        }
+    
+        return foundTables;
     }
-
-    // 🚨 Warn if no tables are found
-    if (foundTables.length === 0) {
-        ui.notifications.warn(`⚠️ No roll tables found with "${searchTerm}".`);
-    }
-
-    return foundTables;
-}
-
+  
     // -----------------------------------------------
     // Populate Roll Table Dropdown
     // -----------------------------------------------
 async populateRollTableDropdown() {
     const tables = await this.getAllRollTables();
-
     return tables.map(
         (table) => `<option value="${table.id}">${table.name}</option>`
     ).join("\n");
