@@ -1,12 +1,13 @@
 <div id="crawl-tracker" class="shadowdark">
     {{#if isStarted}}
-        <div class="grid-4-columns">
-            <h2 class="grid-colspan-4 centered">{{mode}}</h2>
-            <span class="grid-colspan-4 centered">Round {{round}}</span>
+        <div class="grid-5-columns">
+            <h2 class="grid-colspan-5 centered">{{mode}}</h2>
+            <span class="grid-colspan-5 centered">Round {{round}}</span>
             <button data-action="previousRound"><i class="fa-solid fa-angles-left"></i></button>
             <button data-action="previousTurn"><i class="fa-solid fa-angle-left"></i></i></button>
             <button data-action="nextTurn"><i class="fa-solid fa-angle-right"></i></i></button>
             <button data-action="nextRound"><i class="fa-solid fa-angles-right"></i></button>
+            <button data-action="openCombatTracker"><i class="fas fa-swords"></i></button>
         </div>
         {{#if inCombat}}
             <button data-action="endCombat">End Combat</button>
@@ -18,4 +19,9 @@
     {{else}}
         <button data-action="startCrawling">Start Crawling</button>
     {{/if}}
+    <hr>
+    <div class="grid-2-columns">
+        <button data-action="addParty">Add Party</button>
+        <button data-action="addGameMaster">Add GM</button>
+    </div>
 </div>

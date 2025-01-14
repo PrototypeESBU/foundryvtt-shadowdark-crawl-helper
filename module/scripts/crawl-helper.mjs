@@ -6,6 +6,8 @@ import crawlingHelperMacro from "./apps/crawling-helper-macro.mjs";
 // Triggered when the module is first initialized
 // -----------------------------------------------
 Hooks.on("init", () => {
+    // TODO extend combatant data model
+
     registerSettings();
 
     // Initialize persistent apps and variables

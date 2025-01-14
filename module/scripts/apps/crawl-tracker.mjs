@@ -11,7 +11,8 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             inCombat: false,
             encounterClock: 3,
             danagerLevel: 3,
-            encoutnerTable: ""
+            encoutnerTable: "",
+            gmId: ""
         }
     }
 
@@ -32,6 +33,11 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             endCombat: this.endCombat,
             nextRound: this.nextRound,
             previousRound: this.previousRound,
+            nextTurn: this.nextTurn,
+            previousTurn: this.previousTurn,
+            addParty: this.addParty,
+            addGameMaster: this.addGameMaster,
+            openCombatTracker: this.openCombatTracker,
         }
     };
 
@@ -57,14 +63,16 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
 
     static async startCombat(event, target) {
+        // TODO save crawling initative and roll combate initiative
         this.tracking.inCombat = true;
-        // TODO load selected monsters
+        this.saveTrackingData();
         this.render();
     }
     static async endCombat(event, target) {
         this.tracking.inCombat = false;
         this.tracking.encounterClock = this.tracking.danagerLevel;
-        // TODO remove all monsters
+        // TODO remove all monsters restore crawling initiative
+        this.saveTrackingData();
         this.render();
     }
 
@@ -74,6 +82,55 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     static async previousRound(event, target) {
         game.combat.previousRound();
+    }
+
+    static async nextTurn(event, target) {
+        game.combat.nextTurn();
+    }
+
+    static async previousTurn(event, target) {
+        game.combat.previousTurn();
+    }
+
+    static async addGameMaster() {
+        if (!game.combat.combatants.map(c => c.id).includes(this.tracking.gmId)) {
+            const gm = await game.combat.createEmbeddedDocuments("Combatant", [{
+                name: "Game Master", 
+                img: "modules/shadowdark-crawl-helper/assets/dungeon-master.png", // TODO needs to be a default config and setting 
+                hidden: false
+            }]);
+            this.tracking.gmId = gm[0].id;
+            this.saveTrackingData();
+        }
+    }
+
+    static async addParty() {
+        //get all party members
+        const partyActors = game.users
+        .filter(user => user.active && user.character)
+        .map(user => user.character);
+
+        //get exiting combatants
+        const combatantActorsIDs = game.combat.combatants
+        .map(combatant => combatant.actorId);
+
+        //create placeholder combatants if not already added
+        for (const actor of partyActors) {
+            //add any missing actors to combants
+            if (!combatantActorsIDs.includes(actor.id)) {
+                await game.combat.createEmbeddedDocuments("Combatant", [{
+                    actorId: actor.id,
+                    name: actor.name, 
+                    img: actor.img, 
+                    hidden: false
+                }]);
+            }
+        }
+        this.connectSceneTokens();
+    }
+
+    static async openCombatTracker() {
+        game.combats.directory.createPopout().render(true);
     }
 
     // ***************
@@ -91,7 +148,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     async loadTracking() { // loads tracking data from an exiting combat on initialization
 
         //check if there is an encounter loaded already
-        if(!game.combat) await this.createTracking();        
+        if(!game.combat) await this.createTracking();  
 
         //Confirm the encounter was created by this module
         if (!game.combat.getFlag("shadowdark-crawl-helper", "tracking")) await this.createTracking();
@@ -114,8 +171,9 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         .map(user => user.character);
 
         //add GM to game
-        game.combat.createEmbeddedDocuments("Combatant", [{name: "GM", img: "", hidden: false}]);
+        await this.addGameMaster();
 
+        //save tracking data
         await this.saveTrackingData();
     }
 
@@ -136,7 +194,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         //update round and turns
         this.tracking.round = updateData.round;
         this.tracking.turn = updateData.turn;
-        this.tracking.encounterClock -= direction;
+        if(!this.tracking.inCombat) this.tracking.encounterClock -= direction;
 
         //test for encounters
         // TODO should be on GM's turn instead
@@ -151,7 +209,32 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     async updateTurn(updateData, direction) {
         //set anything related to a new turn
-        console.log(updateData, direction);
+        this.tracking.turn = updateData.turn;
+        this.saveTrackingData();
+        this.render();
     }
 
+
+    async connectSceneTokens() { //connects scene tokens to player placeholders
+        const partyActors = game.users
+        .filter(user => user.active && user.character)
+        .map(user => user.character);
+
+        for (const actor of partyActors) {
+            //gets first combatant and token and matches them 
+            const combatant = game.combat.combatants.find(c => c.actorId === actor.id); 
+            const token = game.scenes.active.tokens.find(t => t.actorId === actor.id);
+            if (combatant && token) {
+                game.combat.updateEmbeddedDocuments("Combatant", [{
+                    "_id": combatant.id,
+                    tokenId: token.id,
+                    sceneId: game.scenes.active.id,
+                    actorId: actor.id,
+                    name: actor.name, 
+                    img: actor.img, 
+                    hidden: false
+                }]);
+            }
+        }
+    }
 }
