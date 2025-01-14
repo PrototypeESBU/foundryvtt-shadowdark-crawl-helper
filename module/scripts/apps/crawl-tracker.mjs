@@ -91,33 +91,37 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     async loadTracking() { // loads tracking data from an exiting combat on initialization
 
         //check if there is an encounter loaded already
-        if(!game.combat) this.createTracking();        
+        if(!game.combat) await this.createTracking();        
 
         //Confirm the encounter was created by this module
-        if (!game.combat.getFlag("shadowdark-crawl-helper", "tracking")) this.createTracking();
+        if (!game.combat.getFlag("shadowdark-crawl-helper", "tracking")) await this.createTracking();
 
         //if linked to a scene, unlink combat
         if (game.combat._source.scene) game.combat.toggleSceneLink();
 
         //load encounter values from stored flages
         this.tracking = game.combat.getFlag("shadowdark-crawl-helper", "tracking")
+        console.log(game.combat.getFlag("shadowdark-crawl-helper", "tracking"))
 
     }
 
     async createTracking() {
         // create encounter
-        const encounter = Combat.implementation.create();
+        const encounter = await Combat.implementation.create();
         
-        // TODO add party to current combat
+        const partyActors = game.users
+        .filter(user => user.active && user.character)
+        .map(user => user.character);
 
-        // TODO add GM to current combat
+        //add GM to game
+        game.combat.createEmbeddedDocuments("Combatant", [{name: "GM", img: "", hidden: false}]);
 
-        this.saveTrackingData();
+        await this.saveTrackingData();
     }
 
     async saveTrackingData() {  // Saves tracking data to the tracking combat to persist between loads
         //set tracking to flags on combat for persistance of state
-        game.combat.setFlag("shadowdark-crawl-helper", "tracking", this.tracking);
+        await game.combat.setFlag("shadowdark-crawl-helper", "tracking", this.tracking);
     }
 
     async initCombat(combat, updateData) {

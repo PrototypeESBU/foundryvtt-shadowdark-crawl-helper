@@ -21,7 +21,7 @@ Hooks.on("init", () => {
 // -----------------------------------------------
 Hooks.on("ready", async () => {
     //show crawlTracker
-    game.crawlHelper.crawlTracker.loadTracking();
+    await game.crawlHelper.crawlTracker.loadTracking();
     if (game.user.isGM){
         game.crawlHelper.crawlTracker.render(true);
     }
