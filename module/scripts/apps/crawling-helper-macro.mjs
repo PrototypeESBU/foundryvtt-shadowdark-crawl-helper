@@ -27,7 +27,10 @@ export default class crawlingHelperMacro extends HandlebarsApplicationMixin(Appl
             addSelected: crawlingHelperMacro.addSelectedToTracker,
             resetInitiative: crawlingHelperMacro.resetInitiative,
             beginCrawling: crawlingHelperMacro.beginCrawlingTracker,
-            beginCombat: crawlingHelperMacro.beginCombatTracker
+            beginCombat: crawlingHelperMacro.beginCombatTracker,
+            timePasses: crawlingHelperMacro.toggleTimePassesInput,
+            confirmTimePasses: crawlingHelperMacro.confirmTimePasses,
+            cancelTimePasses: crawlingHelperMacro.cancelTimePasses
         }
     };
        
@@ -45,6 +48,7 @@ export default class crawlingHelperMacro extends HandlebarsApplicationMixin(Appl
         this.dangerLevels = ["Unsafe", "Risky", "Deadly"];
         this.currentDangerLevel = "Unsafe";
         this.encounterTableId = null;
+        this.showTimePasses = false;
     }
 
     // -----------------------------------------------
@@ -57,7 +61,8 @@ export default class crawlingHelperMacro extends HandlebarsApplicationMixin(Appl
             dangerLevels: this.dangerLevels,
             currentDangerLevel: this.currentDangerLevel,
             rollTables: rollTables,
-            selectedRollTable: this.encounterTableId
+            selectedRollTable: this.encounterTableId,
+            showTimePasses: this.showTimePasses
         };
     } 
 
@@ -138,6 +143,61 @@ static async resetInitiative() {
     }
 }
 
+static async toggleTimePassesInput(event, form) {
+    const app = this instanceof ApplicationV2 ? this : ui.windows[this.id];
+    
+    console.log("🕒 Toggling Time Passes Input...");
+
+    app.showTimePasses = !app.showTimePasses;
+    app.render(true, { focus: true });
+}
+
+static async confirmTimePasses(event, form) {
+    const app = this.object || this;
+    const minutesInput = document.getElementById("time-to-pass");
+    const minutes = parseInt(minutesInput.value);
+
+    if (isNaN(minutes) || minutes <= 0) {
+        ui.notifications.warn("⚠️ Please enter a valid number of minutes.");
+        return;
+    }
+
+    const seconds = minutes * 60;
+    game.time.advance(seconds);
+
+    const encounterChance = Math.random() < 0.5;
+    const encounterMessage = encounterChance
+        ? "<strong style='color:#ff0000;'>⚠️ Random Encounter Triggered!</strong>"
+        : "<strong>No encounters triggered.</strong>";
+
+    const content = `
+        <p style="text-align:center; font-size:24px; font-family:'JSL Blackletter', Georgia, serif; color:#990000;">
+            ⏳ Time Passes
+        </p>
+        <hr style="margin:10px 0; border: 1px solid #990000;">
+        <p style="text-align:center; font-size:16px; font-family:Montserrat-Medium;">
+            <strong>Minutes Passed:</strong> ${minutes} minute(s)<br>
+            ${encounterMessage}<br>
+            <strong style='color:#990000;'>Reminder:</strong> Effects with a duration of rounds expire.
+        </p>
+    `;
+
+    await ChatMessage.create({
+        content: content,
+        whisper: [game.user.id]
+    });
+
+    app.showTimePasses = false;
+    app.render();
+}
+
+
+static async cancelTimePasses(event, form) {
+    const app = this.object || this;
+    app.showTimePasses = false;
+    app.render();
+}
+
 static async beginCrawlingTracker() {
     let combat = game.combat || await Combat.implementation.create({ scene: game.scenes.active.id });
     if (combat.combatants.size === 0) {
@@ -169,6 +229,7 @@ static async beginCombatTracker() {
     }
 }
 // TODO: change logic when combat tracker is implemented
+
 
     // -----------------------------------------------
     // Fetch All Roll Tables (World + Compendiums)
