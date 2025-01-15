@@ -1,6 +1,7 @@
 <div id="crawl-helper">
     <h1>Crawling Helper</h1>
 
+    
     <div>
         <label for="danger-level">Select Danger Level:</label>
         <select data-action="updateDangerLevel">
@@ -12,6 +13,7 @@
         </select>
     </div>
 
+    
     <div>
         <label for="roll-table">Select Encounter Table:</label>
         <select data-action="updateRollTable">
@@ -22,11 +24,33 @@
             {{/each}}
         </select>
     </div>
-<hr></hr>
+
+    <hr>
+
+    
     <button data-action="addParty">Add/Remove Party to Tracker</button>
     <button data-action="addSelected">Add/Remove Selected Tokens</button>
     <button data-action="resetInitiative">Reset Initiative</button>
-    <hr></hr>
+
+    <hr>
+
+    
+    {{#if showTimePasses}}
+        <div>
+            <label for="time-to-pass">Time to Pass (minutes):</label>
+            <input type="number" id="time-to-pass" min="1" value="1">
+            <div class="grid-2-columns">
+                <button data-action="confirmTimePasses">Pass Time</button>
+                <button data-action="cancelTimePasses">Cancel</button>
+            </div>
+        </div>
+    {{else}}
+        <button data-action="timePasses">⏳ Time Passes</button>
+    {{/if}}
+
+    <hr>
+
+    
     <button data-action="beginCrawling">Begin Crawling</button>
     <button data-action="beginCombat">Begin Combat</button>
 </div>
