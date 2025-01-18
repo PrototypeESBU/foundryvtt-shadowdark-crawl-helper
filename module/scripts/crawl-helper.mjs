@@ -52,6 +52,21 @@ Hooks.on('combatRound', async (combat, updateData, updateOptions) => {
 });
 
 // -----------------------------------------------
+// Combatant Triggers
+// -----------------------------------------------
+Hooks.on("preCreateCombatant", async (combatant, data, options, userId) => 
+    {
+        if (combatant.type === "base") {
+            //switch type to crawlActor
+            const updateData = {type: "shadowdark-crawl-helper.crawlActor"};
+            if (combatant.actorId && (game.actors.get(combatant.actorId).type === "Player")) {
+                updateData.system = {"type": "Player"};
+            }
+            await combatant.updateSource(updateData);
+        }
+});
+
+// -----------------------------------------------
 // Hook: Add Button to Token Layer Controls
 // -----------------------------------------------
 Hooks.on("getSceneControlButtons", (controls) => {

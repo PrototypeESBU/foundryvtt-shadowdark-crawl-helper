@@ -42,27 +42,41 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     // Action Handlers
     // ***************
     static async startCrawling(event, target) {
-        await game.combat.startCombat();
+        await this.crawl.startCombat();
         this.render();
     }
     static async endCrawling(event, target) {
-        await game.combat.endCombat();
+        await this.crawl.endCombat();
         await this.createCrawl();
         this.render();
     }
 
     static async toggleCombat(event, target) {
-        // TODO save crawling initative and roll combate initiative
+        //turn off combat
         if (this.crawl.system.inCombat) {
+            for (const combatant of this.crawl.combatants) {
+                // restore saved crawling Initiative
+                await this.crawl.setInitiative(combatant.id, combatant.system.crawlInitiative);
+
+                // TODO should this be done only based on a setting of auto remove Monsters or something like that?
+                if(combatant.system.type === "NPC") combatant.delete(); 
+            }
+
+            // TODO should the encounterClock be reset after combat?
             await this.crawl.update({"system": {
                 "inCombat": false,
                 "encounterClock": this.crawl.system.danagerLevel
             }})
-            // TODO remove all monsters restore crawling initiative
         }
+        //turn on combat
         else {
+            // save crawling Initiative
+            for (const combatant of this.crawl.combatants) {
+                await combatant.update({"system.crawlInitiative": combatant.initiative});
+            }
+            //reset Initiative
+            this.crawl.resetAll();
             await this.crawl.update({"system.inCombat": true})
-            // TODO add monsters?
         }
         this.render();
     }
@@ -84,9 +98,12 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
 
     static async addGameMaster() {
+        console.log(this.crawl);
         if (!game.combat.combatants.map(c => c.id).includes(this.crawl.system.gmId)) {
             const gm = await game.combat.createEmbeddedDocuments("Combatant", [{
                 name: "Game Master", 
+                type: "shadowdark-crawl-helper.crawlActor",
+                system: {type:"GM"},
                 img: "modules/shadowdark-crawl-helper/assets/dungeon-master.png", // TODO needs to be a default config and setting 
                 hidden: false
             }]);

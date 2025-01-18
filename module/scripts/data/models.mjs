@@ -16,10 +16,12 @@ export class crawlCombatant extends foundry.abstract.TypeDataModel {
 static defineSchema() {
         return {
         type: new fields.StringField({
-            initial: "Monster",
-            choices: ["GM","Party","Player","Monster"],
+            required: true,
+            initial: "NPC",
+            choices: ["GM","Party","Player","NPC"],
             nullable: false,
         }),
+        crawlInitiative: new fields.NumberField({ required: true, integer: true, min: 0, nullable: true, initial: null}),
     };
 }
 }
