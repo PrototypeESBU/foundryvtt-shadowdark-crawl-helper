@@ -4,16 +4,8 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     constructor() {
 		super();
-        this.tracking = {
-            round:0,
-            turn:0,
-            isStarted: false,
-            inCombat: false,
-            encounterClock: 3,
-            danagerLevel: 3,
-            encoutnerTable: "",
-            gmId: ""
-        }
+        this.crawl = null;
+        this.round = 1;
     }
 
     static DEFAULT_OPTIONS = {
@@ -29,8 +21,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         actions: {
             startCrawling: this.startCrawling,
             endCrawling: this.endCrawling,
-            startCombat: this.startCombat,
-            endCombat: this.endCombat,
+            toggleCombat: this.toggleCombat,
             nextRound: this.nextRound,
             previousRound: this.previousRound,
             nextTurn: this.nextTurn,
@@ -51,28 +42,28 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     // Action Handlers
     // ***************
     static async startCrawling(event, target) {
-        this.tracking.isStarted = true;
-        this.tracking.round = 1;
-        game.combat.startCombat();
+        await game.combat.startCombat();
+        this.render();
     }
     static async endCrawling(event, target) {
-        this.tracking.isStarted = false;
-        game.combat.endCombat();
-        this.createTracking();
+        await game.combat.endCombat();
+        await this.createCrawl();
         this.render();
     }
 
-    static async startCombat(event, target) {
+    static async toggleCombat(event, target) {
         // TODO save crawling initative and roll combate initiative
-        this.tracking.inCombat = true;
-        this.saveTrackingData();
-        this.render();
-    }
-    static async endCombat(event, target) {
-        this.tracking.inCombat = false;
-        this.tracking.encounterClock = this.tracking.danagerLevel;
-        // TODO remove all monsters restore crawling initiative
-        this.saveTrackingData();
+        if (this.crawl.system.inCombat) {
+            await this.crawl.update({"system": {
+                "inCombat": false,
+                "encounterClock": this.crawl.system.danagerLevel
+            }})
+            // TODO remove all monsters restore crawling initiative
+        }
+        else {
+            await this.crawl.update({"system.inCombat": true})
+            // TODO add monsters?
+        }
         this.render();
     }
 
@@ -93,14 +84,13 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
 
     static async addGameMaster() {
-        if (!game.combat.combatants.map(c => c.id).includes(this.tracking.gmId)) {
+        if (!game.combat.combatants.map(c => c.id).includes(this.crawl.system.gmId)) {
             const gm = await game.combat.createEmbeddedDocuments("Combatant", [{
                 name: "Game Master", 
                 img: "modules/shadowdark-crawl-helper/assets/dungeon-master.png", // TODO needs to be a default config and setting 
                 hidden: false
             }]);
-            this.tracking.gmId = gm[0].id;
-            this.saveTrackingData();
+            await this.crawl.update({"system.gmId": gm[0].id})
         }
     }
 
@@ -139,78 +129,59 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     /** @override */
     async _preparePartContext(partId, context, options) {
-        context = this.tracking;
-        context.mode = this.tracking.inCombat ? "Combat" : "Crawling"; //TODO needs i18n
-        context.nextEncounter = this.tracking.round + this.tracking.encounterClock;
+        if(this.crawl && this.crawl.started){
+            context.isStarted = this.crawl.started;
+            context.round = this.round;
+            context.inCombat = this.crawl.system.inCombat;
+            context.mode = this.crawl.system.inCombat ? "Combat" : "Crawling"; //TODO needs i18n
+            context.nextEncounter = this.crawl.round + this.crawl.system.encounterClock;
+        }
         return context;
     }
     
-    async loadTracking() { // loads tracking data from an exiting combat on initialization
-
-        //check if there is an encounter loaded already
-        if(!game.combat) await this.createTracking();  
-
-        //Confirm the encounter was created by this module
-        if (!game.combat.getFlag("shadowdark-crawl-helper", "tracking")) await this.createTracking();
+    async initializeCrawl() { // loads tracking data from an exiting combat on initialization
+        //Confirm if there is a crawl loaded already
+        if (game?.combat?.type !== "shadowdark-crawl-helper.crawl") {
+            this.crawl = await this.createCrawl();
+        }
+        else
+        {
+            this.crawl = game.combat;
+        }
 
         //if linked to a scene, unlink combat
         if (game.combat._source.scene) game.combat.toggleSceneLink();
-
-        //load encounter values from stored flages
-        this.tracking = game.combat.getFlag("shadowdark-crawl-helper", "tracking")
-        console.log(game.combat.getFlag("shadowdark-crawl-helper", "tracking"))
-
     }
 
-    async createTracking() {
+    async createCrawl() {
         // create encounter
-        const encounter = await Combat.implementation.create();
-        
+        this.crawl = await Combat.create({type:"shadowdark-crawl-helper.crawl"}); 
         const partyActors = game.users
         .filter(user => user.active && user.character)
         .map(user => user.character);
 
         //add GM to game
-        await this.addGameMaster();
-
-        //save tracking data
-        await this.saveTrackingData();
-    }
-
-    async saveTrackingData() {  // Saves tracking data to the tracking combat to persist between loads
-        //set tracking to flags on combat for persistance of state
-        await game.combat.setFlag("shadowdark-crawl-helper", "tracking", this.tracking);
-    }
-
-    async initCombat(combat, updateData) {
-        this.tracking.isStarted = true;
-        this.tracking.round = 1;
-        this.tracking.encounterClock = this.tracking.danagerLevel-1;
-        this.tracking.inCombat = false;
-        this.render();
+        //await this.addGameMaster();
     }
 
     async updateRound(updateData, direction) {
-        //update round and turns
-        this.tracking.round = updateData.round;
-        this.tracking.turn = updateData.turn;
-        if(!this.tracking.inCombat) this.tracking.encounterClock -= direction;
-
+        this.round = updateData.round;
+        const encounterUpdate = this.crawl.system.encounterClock -= direction;
         //test for encounters
         // TODO should be on GM's turn instead
-        if (this.tracking.encounterClock <= 0) {
-            this.tracking.encounterClock = this.tracking.danagerLevel;
+        if (encounterUpdate <= 0) {
+            await this.crawl.update({"system.encounterClock": this.crawl.system.danagerLevel})
             ui.notifications.info("encounter");
         }
+        else {
+            await this.crawl.update({"system.encounterClock": encounterUpdate})
+        }
 
-        this.saveTrackingData();
         this.render();
     }
 
     async updateTurn(updateData, direction) {
         //set anything related to a new turn
-        this.tracking.turn = updateData.turn;
-        this.saveTrackingData();
         this.render();
     }
 

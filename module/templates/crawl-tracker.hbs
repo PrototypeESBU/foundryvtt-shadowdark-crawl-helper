@@ -10,10 +10,10 @@
             <button data-action="openCombatTracker"><i class="fas fa-swords"></i></button>
         </div>
         {{#if inCombat}}
-            <button data-action="endCombat">End Combat</button>
+            <button data-action="toggleCombat">End Combat</button>
         {{else}}
             Next encounter roll: {{nextEncounter}}
-            <button data-action="startCombat">Start Combat</button>
+            <button data-action="toggleCombat">Start Combat</button>
             <button data-action="endCrawling">End Crawling</button>
         {{/if}}
     {{else}}

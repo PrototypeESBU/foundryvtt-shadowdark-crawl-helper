@@ -2,12 +2,12 @@
     padding: 4px;
 }
 
-#crawl-helper {
+#crawl-helper-macro {
     font-family: 'Arial', sans-serif;
     padding: 10px;
 }
 
-.crawl-btn {
+#crawl-helper-macro .crawl-btn {
     padding: 8px 15px;
     margin: 5px;
     font-size: 14px;
@@ -18,26 +18,26 @@
     border-radius: 3px;
 }
 
-.form-group {
+#crawl-helper-macro .form-group {
     margin-bottom: 15px;
 }
 
-.crawl-helper .red-button {
+#crawl-helper-macro .red-button {
     background-color: #990000;
     color: white;
 }
 
-.crawl-helper .gold-button {
+#crawl-helper-macro .gold-button {
     background-color: #FFD700;
     color: black;
 }
 
-.crawl-helper .blue-button {
+#crawl-helper-macro .blue-button {
     background-color: #00008B;
     color: white;
 }
 
-.crawl-helper .green-button {
+#crawl-helper-macro .green-button {
     background-color: #006400;
     color: white;
 }

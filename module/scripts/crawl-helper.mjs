@@ -1,13 +1,20 @@
 import registerSettings from "./settings.mjs";
 import crawlTracker from "./apps/crawl-tracker.mjs";
 import crawlingHelperMacro from "./apps/crawling-helper-macro.mjs";
+import {crawlCombat, crawlCombatant} from "./data/models.mjs";
 
 // -----------------------------------------------
 // Triggered when the module is first initialized
 // -----------------------------------------------
 Hooks.on("init", () => {
-    // TODO extend combatant data model
-
+    // load combat and combatant data model sub-types
+    Object.assign(CONFIG.Combat.dataModels, {
+        "shadowdark-crawl-helper.crawl": crawlCombat
+    });
+    Object.assign(CONFIG.Combatant.dataModels, {
+        "shadowdark-crawl-helper.crawlActor": crawlCombatant
+    });
+  
     registerSettings();
 
     // Initialize persistent apps and variables
@@ -23,7 +30,7 @@ Hooks.on("init", () => {
 // -----------------------------------------------
 Hooks.on("ready", async () => {
     //show crawlTracker
-    await game.crawlHelper.crawlTracker.loadTracking();
+    await game.crawlHelper.crawlTracker.initializeCrawl();
     if (game.user.isGM){
         game.crawlHelper.crawlTracker.render(true);
     }
@@ -33,7 +40,7 @@ Hooks.on("ready", async () => {
 // Combat Triggers
 // -----------------------------------------------
 Hooks.on('combatStart', async (combat, updateData) => {  //unsure if this is needed
-    game.crawlHelper.crawlTracker.initCombat(combat, updateData);  
+    game.crawlHelper.crawlTracker.render();  
 });
 
 Hooks.on('combatTurn', async (combat, updateData, updateOptions) => {  //unsure if this is needed
