@@ -2,16 +2,16 @@
     "id": "shadowdark-crawl-helper",
     "title": "Shadowdark Crawl Helper",
 	"description": "",
-    "version": "0.3",
+    "version": "0.4",
     "compatibility": {
         "minimum": "12",
         "verified": "12"
     },
    "esmodules": [
-        "scripts/crawl-helper.mjs"
+        "crawl-helper-compiled.mjs"
     ],
     "styles": [
-        "styles/crawl-helper.css"
+        "css/crawl-helper.css"
     ],
     "documentTypes": {
         "Combat": {
@@ -27,8 +27,8 @@
                 "id": "shadowdark",
                 "type": "system",
                 "compatibility": {
-                    "minimum": "3.2.1",
-                    "verified": "3.2.2"
+                    "minimum": "3.3.0",
+                    "verified": "3.3.0"
                 }
             }
         ]

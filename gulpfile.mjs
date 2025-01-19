@@ -1,5 +1,8 @@
+import gulp from "gulp";
 import fs from "fs";
 import path from "node:path";
+import * as css from "./utils/css.mjs";
+import * as javascript from "./utils/javascript.mjs";
 
 /********************/
 /*      Config      */
@@ -10,7 +13,27 @@ const MODULE_SOURCE_PATH = "./module";
 /********************/
 /*      BUILD       */
 /********************/
-// nothing needed yet
+export const build = gulp.parallel(
+		css.compile,
+		//javascript.lint,
+		javascript.compile
+);
+
+/********************/
+/*      WATCH       */
+/********************/
+export const watch = gulp.series(
+	gulp.parallel(
+		css.compile,
+		//javascript.lint,
+		javascript.compile
+	),
+
+	gulp.parallel(
+		css.watchUpdates,
+		javascript.watchUpdates
+	)
+);
 
 /********************/
 /*      LINK        */

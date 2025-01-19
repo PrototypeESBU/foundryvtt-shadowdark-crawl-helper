@@ -1,8 +1,8 @@
-import registerSettings from "./settings.mjs";
-import crawlTracker from "./apps/crawl-tracker.mjs";
-import actorCarousel from "./apps/actor-carousel.mjs";
-import crawlingHelperMacro from "./apps/crawling-helper-macro.mjs";
-import {crawlCombat, crawlCombatant} from "./data/models.mjs";
+import registerSettings from "./scripts/settings.mjs";
+import crawlTracker from "./scripts/apps/crawl-tracker.mjs";
+import actorCarousel from "./scripts/apps/actor-carousel.mjs";
+import crawlingHelperMacro from "./scripts/apps/crawling-helper-macro.mjs";
+import {crawlCombat, crawlCombatant} from "./scripts/models.mjs";
 
 // -----------------------------------------------
 // Triggered when the module is first initialized
