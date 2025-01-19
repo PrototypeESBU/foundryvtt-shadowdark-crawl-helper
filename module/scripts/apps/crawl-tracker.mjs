@@ -16,7 +16,14 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             height: "auto",
         },
         window: {
-            title: "Crawl Tracker"
+            title: "Crawl Tracker",
+            controls: [
+                {
+                   icon: 'fa-solid fa-swords',
+                  label: "Combat Tracker",
+                  action: "openCombatTracker",
+                },
+              ]
         },
         actions: {
             startCrawling: this.startCrawling,

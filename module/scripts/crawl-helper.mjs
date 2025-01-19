@@ -1,5 +1,6 @@
 import registerSettings from "./settings.mjs";
 import crawlTracker from "./apps/crawl-tracker.mjs";
+import actorCarousel from "./apps/actor-carousel.mjs";
 import crawlingHelperMacro from "./apps/crawling-helper-macro.mjs";
 import {crawlCombat, crawlCombatant} from "./data/models.mjs";
 
@@ -20,8 +21,8 @@ Hooks.on("init", () => {
     // Initialize persistent apps and variables
     game.crawlHelper = {
         crawlTracker: new crawlTracker(),
-        crawlingHelperMacro: new crawlingHelperMacro()
-        //actorCarousel: new actorCarousel()
+        crawlingHelperMacro: new crawlingHelperMacro(),
+        actorCarousel: new actorCarousel()
     };
 });
 
