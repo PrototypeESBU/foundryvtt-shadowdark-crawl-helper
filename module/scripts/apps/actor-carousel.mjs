@@ -46,13 +46,23 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             const combatants = game.combat.turns.map(c => 
                 ({...c, actor: game.actors.get(c.actorId)})
             )
+
             // add in the round divider
-            combatants.push({isDivider: true});
+            if (combatants.length > 0) {
+                combatants.push({
+                    isDivider: true,
+                    round: game.combat.round + 1
+                });
+            }
 
             // shift order up to current turn
             for(let x=0; x < game.combat.turn; x++) {
                 combatants.push(combatants.shift());
             }
+
+            //set style for first combatant
+            combatants[0].styleClass = "bigger";
+
             context.combatants = combatants
         }
         return context;
