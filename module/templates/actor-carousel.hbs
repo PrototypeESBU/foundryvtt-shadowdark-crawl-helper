@@ -1,3 +1,19 @@
-<div id="actor-carousel">
-    Hello World
+<div class="combatant-container shadowdark">
+    {{#each combatants}}
+        {{#unless this.isDivider}}
+            <div class="combatant">
+                <div class="name">{{this.name}}</div>
+                {{#if this.actor}}
+                    <img src="{{this.actor.img}}">
+                {{else}}
+                    <img src="{{this.img}}">
+                {{/if}}
+                <span>{{this.initiative}}</span>
+            </div>
+        {{/unless}}
+        {{#if this.isDivider}}
+            <div style="width: 4px;margin: 0px 4px;border: 2px solid black;background-color: white;"></div>
+        {{/if}}
+    {{/each}}
+    
 </div>

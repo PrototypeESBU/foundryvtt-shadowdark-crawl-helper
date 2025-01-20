@@ -63,7 +63,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         if (this.crawl.system.inCombat) {
             for (const combatant of this.crawl.combatants) {
                 // restore saved crawling Initiative
-                await this.crawl.setInitiative(combatant.id, combatant.system.crawlInitiative);
+                await this.crawl.setInitiative(combatant.id, combatant.system.crawlingInit);
 
                 // TODO should this be done only based on a setting of auto remove Monsters or something like that?
                 if(combatant.system.type === "NPC") combatant.delete(); 
@@ -79,7 +79,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         else {
             // save crawling Initiative
             for (const combatant of this.crawl.combatants) {
-                await combatant.update({"system.crawlInitiative": combatant.initiative});
+                await combatant.update({"system.crawlingInit": combatant.initiative});
             }
             //reset Initiative
             this.crawl.resetAll();

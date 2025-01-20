@@ -35,6 +35,8 @@ Hooks.on("ready", async () => {
     if (game.user.isGM){
         game.crawlHelper.crawlTracker.render(true);
     }
+    //show ActorCarousel
+    game.crawlHelper.actorCarousel.render(true);
 });
 
 // -----------------------------------------------
@@ -52,9 +54,26 @@ Hooks.on('combatRound', async (combat, updateData, updateOptions) => {
     game.crawlHelper.crawlTracker.updateRound(updateData, updateOptions.direction);
 });
 
+Hooks.on('updateCombat', async (combat, updates) => {
+    game.crawlHelper.crawlTracker.render(true);
+    game.crawlHelper.actorCarousel.render(true);
+});
+
 // -----------------------------------------------
 // Combatant Triggers
 // -----------------------------------------------
+Hooks.on('createCombatant', async (combat, updates) => {
+    game.crawlHelper.actorCarousel.render(true);
+});
+
+Hooks.on('updateCombatant', async (combat, updates) => {
+    game.crawlHelper.actorCarousel.render(true);
+});
+
+Hooks.on('deleteCombatant', async (combat, updates) => {
+    game.crawlHelper.actorCarousel.render(true);
+});
+
 Hooks.on("preCreateCombatant", async (combatant, data, options, userId) => 
     {
         if (combatant.type === "base") {
@@ -66,6 +85,8 @@ Hooks.on("preCreateCombatant", async (combatant, data, options, userId) =>
             await combatant.updateSource(updateData);
         }
 });
+
+
 
 // -----------------------------------------------
 // Hook: Add Button to Token Layer Controls

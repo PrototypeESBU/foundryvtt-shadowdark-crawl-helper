@@ -7,13 +7,13 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
 
     static DEFAULT_OPTIONS = {
         id: "actorCarousel",
-        classes: ["crawl-helper"],
+        classes: ["actor-carousel"],
         position: {
-            width: 300,
+            width: "auto",
             height: "auto",
         },
         window: {
-            title: "Actor Carousel"
+            frame: false,
         },
         actions: {
             nextRound: this.nextRound,
@@ -28,6 +28,35 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
           template: "./modules/shadowdark-crawl-helper/templates/actor-carousel.hbs"
         }
     };
+
+    /** @override */
+    _prePosition(pos = {}) {
+        const box = this.element.getBoundingClientRect();
+        foundry.utils.mergeObject(pos, {
+          top: 0,
+          left: ui.nav.element[0].getBoundingClientRect().right,
+          width: 1000
+        });
+    }
+
+    /** @override */
+    async _preparePartContext(partId, context, options) {
+        if(game.combat){
+            //get combatants in current initative order
+            const combatants = game.combat.turns.map(c => 
+                ({...c, actor: game.actors.get(c.actorId)})
+            )
+            // add in the round divider
+            combatants.push({isDivider: true});
+
+            // shift order up to current turn
+            for(let x=0; x < game.combat.turn; x++) {
+                combatants.push(combatants.shift());
+            }
+            context.combatants = combatants
+        }
+        return context;
+    }
 
     static async nextRound(event, target) {
         game.combat.nextRound();

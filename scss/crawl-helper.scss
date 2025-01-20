@@ -1,4 +1,33 @@
-.crawl-helper {
+#navigation {
+    max-width: 250px;
+}
+
+.actor-carousel {
+    position:absolute;
+    .combatant-container {
+        display: flex;
+        .combatant {
+            width: 100px;
+            text-align: center;
+            margin: 0px 2px;
+            .name {
+                color:white;
+                background-color: black;
+                font-family: "Old Newspaper Font";
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                padding: 0px 4px;
+            }
+            img {
+                object-fit: cover;
+                border: 2px solid black;
+            }
+        }
+    }
+}
+
+.crawl-tracker {
 
     .window-content {
         padding: 4px;

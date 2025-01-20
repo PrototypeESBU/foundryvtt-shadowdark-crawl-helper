@@ -51,9 +51,9 @@ function lintJavascript() {
 }
 export const lint = lintJavascript;
 
-// Watch for file changes and lint when they do
+// Watch for file changes and lint when they do 
 //
 export async function watchJavascriptUpdates() {
-	gulp.watch(SRC_LINT_PATHS, gulp.parallel(lint, compile));
+	gulp.watch(SRC_LINT_PATHS, gulp.parallel(compile));
 }
 export const watchUpdates = watchJavascriptUpdates;

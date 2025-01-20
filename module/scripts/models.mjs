@@ -21,7 +21,7 @@ static defineSchema() {
             choices: ["GM","Party","Player","NPC"],
             nullable: false,
         }),
-        crawlInitiative: new fields.NumberField({ required: true, integer: true, min: 0, nullable: true, initial: null}),
+        crawlingInit: new fields.NumberField({ required: true, integer: true, min: 0, nullable: true, initial: null}),
     };
 }
 }
