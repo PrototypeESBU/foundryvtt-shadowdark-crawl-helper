@@ -46,34 +46,24 @@ Hooks.on('combatStart', async (combat, updateData) => {  //unsure if this is nee
     game.crawlHelper.crawlTracker.render();  
 });
 
-Hooks.on('combatTurn', async (combat, updateData, updateOptions) => {  //unsure if this is needed
-    game.crawlHelper.crawlTracker.updateTurn(updateData, updateOptions.direction); 
+Hooks.on('combatTurn', async (combat, updateData, updateOptions) => { 
+    game.crawlHelper.actorCarousel.updateTurn(updateData, updateOptions.direction);
+    game.crawlHelper.crawlTracker.updateTurn(updateData, updateOptions.direction);
 });
 
 Hooks.on('combatRound', async (combat, updateData, updateOptions) => {
-    game.crawlHelper.crawlTracker.updateRound(updateData, updateOptions.direction);
+    game.crawlHelper.actorCarousel.updateTurn(updateData, updateOptions.direction);
 });
 
-Hooks.on('updateCombat', async (combat, updates) => {
-    game.crawlHelper.crawlTracker.render(true);
-    game.crawlHelper.actorCarousel.render(true);
+Hooks.on('updateCombat', async (document, changed, options, userId) => {
+    // console.log(document, changed, options, userId);
+    //game.crawlHelper.crawlTracker.render(true);
+    //game.crawlHelper.actorCarousel.render(true);
 });
 
 // -----------------------------------------------
 // Combatant Triggers
 // -----------------------------------------------
-Hooks.on('createCombatant', async (combat, updates) => {
-    game.crawlHelper.actorCarousel.render(true);
-});
-
-Hooks.on('updateCombatant', async (combat, updates) => {
-    game.crawlHelper.actorCarousel.render(true);
-});
-
-Hooks.on('deleteCombatant', async (combat, updates) => {
-    game.crawlHelper.actorCarousel.render(true);
-});
-
 Hooks.on("preCreateCombatant", async (combatant, data, options, userId) => 
     {
         if (combatant.type === "base") {
@@ -86,7 +76,18 @@ Hooks.on("preCreateCombatant", async (combatant, data, options, userId) =>
         }
 });
 
+Hooks.on('createCombatant', async (combat, updates) => {
+    game.crawlHelper.actorCarousel.render(true);
+});
 
+Hooks.on('deleteCombatant', async (combat, updates) => {
+    game.crawlHelper.actorCarousel.render(true);
+});
+
+Hooks.on('updateCombatant', async (combat, updates) => {
+    // console.log(combat, updates);
+    //game.crawlHelper.actorCarousel.updateCombatant(combat, updates);
+});
 
 // -----------------------------------------------
 // Hook: Add Button to Token Layer Controls

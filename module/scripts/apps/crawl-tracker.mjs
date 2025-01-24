@@ -5,12 +5,11 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     constructor() {
 		super();
         this.crawl = null;
-        this.round = 1;
     }
 
     static DEFAULT_OPTIONS = {
         id: "crawlTracker",
-        classes: ["crawl-helper"],
+        classes: ["crawl-tracker"],
         position: {
             width: 300,
             height: "auto",
@@ -29,10 +28,6 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             startCrawling: this.startCrawling,
             endCrawling: this.endCrawling,
             toggleCombat: this.toggleCombat,
-            nextRound: this.nextRound,
-            previousRound: this.previousRound,
-            nextTurn: this.nextTurn,
-            previousTurn: this.previousTurn,
             addParty: this.addParty,
             addGameMaster: this.addGameMaster,
             openCombatTracker: this.openCombatTracker,
@@ -88,26 +83,9 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         this.render();
     }
 
-    static async nextRound(event, target) {
-        game.combat.nextRound();
-    }
-
-    static async previousRound(event, target) {
-        game.combat.previousRound();
-    }
-
-    static async nextTurn(event, target) {
-        game.combat.nextTurn();
-    }
-
-    static async previousTurn(event, target) {
-        game.combat.previousTurn();
-    }
-
     static async addGameMaster() {
-        console.log(this.crawl);
-        if (!game.combat.combatants.map(c => c.id).includes(this.crawl.system.gmId)) {
-            const gm = await game.combat.createEmbeddedDocuments("Combatant", [{
+        if (!this.crawl.combatants.map(c => c.id).includes(this.crawl.system.gmId)) {
+            const gm = await this.crawl.createEmbeddedDocuments("Combatant", [{
                 name: "Game Master", 
                 type: "shadowdark-crawl-helper.crawlActor",
                 system: {type:"GM"},
@@ -125,14 +103,14 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         .map(user => user.character);
 
         //get exiting combatants
-        const combatantActorsIDs = game.combat.combatants
+        const combatantActorsIDs = this.crawl.combatants
         .map(combatant => combatant.actorId);
 
         //create placeholder combatants if not already added
         for (const actor of partyActors) {
             //add any missing actors to combants
             if (!combatantActorsIDs.includes(actor.id)) {
-                await game.combat.createEmbeddedDocuments("Combatant", [{
+                await this.crawl.createEmbeddedDocuments("Combatant", [{
                     actorId: actor.id,
                     name: actor.name, 
                     img: actor.img, 
@@ -153,9 +131,9 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     /** @override */
     async _preparePartContext(partId, context, options) {
-        if(this.crawl && this.crawl.started){
-            context.isStarted = this.crawl.started;
-            context.round = this.round;
+        if(this.crawl?.started){
+            context.isStarted = true
+            context.round = this.crawl.round;
             context.inCombat = this.crawl.system.inCombat;
             context.mode = this.crawl.system.inCombat ? "Combat" : "Crawling"; //TODO needs i18n
             context.nextEncounter = this.crawl.round + this.crawl.system.encounterClock;
@@ -165,62 +143,66 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     
     async initializeCrawl() { // loads tracking data from an exiting combat on initialization
         //Confirm if there is a crawl loaded already
-        if (game?.combat?.type !== "shadowdark-crawl-helper.crawl") {
-            this.crawl = await this.createCrawl();
+        if (game?.combat?.type === "shadowdark-crawl-helper.crawl") {
+            console.warn("Assign Existing Crawl");
+            this.crawl = game.combat;
         }
         else
         {
-            this.crawl = game.combat;
+            console.warn("Creating new Crawl");
+            await this.createCrawl();
         }
 
         //if linked to a scene, unlink combat
-        if (game.combat._source.scene) game.combat.toggleSceneLink();
+        if (this.crawl._source.scene) this.crawl.toggleSceneLink();
     }
 
     async createCrawl() {
         // create encounter
         this.crawl = await Combat.create({type:"shadowdark-crawl-helper.crawl"}); 
-        const partyActors = game.users
-        .filter(user => user.active && user.character)
-        .map(user => user.character);
 
         //add GM to game
-        //await this.addGameMaster();
+        //await this.addGameMaster(); // TODO add GM at the start based on a setting
     }
 
     async updateRound(updateData, direction) {
-        this.round = updateData.round;
         const encounterUpdate = this.crawl.system.encounterClock -= direction;
-        //test for encounters
-        // TODO should be on GM's turn instead
-        if (encounterUpdate <= 0) {
-            await this.crawl.update({"system.encounterClock": this.crawl.system.danagerLevel})
-            ui.notifications.info("encounter");
-        }
-        else {
-            await this.crawl.update({"system.encounterClock": encounterUpdate})
-        }
-
-        this.render();
     }
 
     async updateTurn(updateData, direction) {
-        //set anything related to a new turn
-        this.render();
+        console.log(updateData);
     }
 
+    async _gmTurn() {
+        //test for encounters
+        if (encounterUpdate <= 0) {
+            await this.crawl.update({"system.encounterClock": this.crawl.system.danagerLevel})
+            this._encounter();
+        }
+        else {
+            await this.crawl.update({
+                "system.encounterClock": this.crawl.system.encounterClock
+            })
+        }
+    }
 
-    async connectSceneTokens() { //connects scene tokens to player placeholders
+    async _encounter(){
+        // TODO add more encounter actions based on settings
+        ui.notifications.info("encounter");
+    }
+
+    async connectSceneTokens() { 
+    //connects scene tokens to player placeholders
         const partyActors = game.users
         .filter(user => user.active && user.character)
         .map(user => user.character);
 
         for (const actor of partyActors) {
             //gets first combatant and token and matches them 
-            const combatant = game.combat.combatants.find(c => c.actorId === actor.id); 
+            const combatant = this.crawl.combatants.find(c => c.actorId === actor.id); 
             const token = game.scenes.active.tokens.find(t => t.actorId === actor.id);
             if (combatant && token) {
-                game.combat.updateEmbeddedDocuments("Combatant", [{
+                this.crawl.updateEmbeddedDocuments("Combatant", [{
                     "_id": combatant.id,
                     tokenId: token.id,
                     sceneId: game.scenes.active.id,

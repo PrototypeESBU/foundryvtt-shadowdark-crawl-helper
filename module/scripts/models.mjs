@@ -18,7 +18,7 @@ static defineSchema() {
         type: new fields.StringField({
             required: true,
             initial: "NPC",
-            choices: ["GM","Party","Player","NPC"],
+            choices: ["GM","Player","NPC"],
             nullable: false,
         }),
         crawlingInit: new fields.NumberField({ required: true, integer: true, min: 0, nullable: true, initial: null}),

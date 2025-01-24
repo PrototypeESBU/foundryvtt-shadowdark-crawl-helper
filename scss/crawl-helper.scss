@@ -4,13 +4,24 @@
 
 .actor-carousel {
     position:absolute;
-    .combatant-container {
+    // pointer-events: none;
+    
+    .main-part {
         display: flex;
         justify-content: center;
+    }
+
+    .combatant-container {
+        display: flex;
+        width:800px; // TODO dynamically calc this
+        overflow:hidden;
+
         .combatant {
             width: 90px;
+            min-width: 90px;
             text-align: center;
             margin: 0px 2px;
+            transition: opacity 0.3s, width 0.3s, min-width 0.3s, margin 0.3s ease-in-out;
             .name {
                 color:white;
                 background-color: black;
@@ -23,19 +34,43 @@
             img {
                 object-fit: cover;
                 border: 2px solid black;
+                min-height: 90px;
             }
-            &.bigger {
+            &.first {
                 width: 110px;
+                min-width: 110px;
+                margin: 0 10px;
                 .name {
                     font-size: 16px;
                 }
             }
-        }
+            &.fadeout {
+                opacity: 0;
+                width: 0px;
+                min-width: 0px;
+                margin: 0px;
+            }
+            .health-bar {
+                height: 10px;
+                border: 2px solid black;
+                border-top-width: 0px;
+                div {
+                    height: 8px;
+                    &.Player{
+                        background-color: purple;
+                    }
+                    &.NPC, &.GM {
+                        background-color: rgb(41, 41, 41);
+                    }
+                }
+            }
+        } 
 
     }
     .round-divider {
         text-align: center;
         width: 30px;
+        min-width: 30px;
         div {
             width: 4px;
             height: 54px;
@@ -46,6 +81,7 @@
         span {
             font-family: "Old Newspaper Font";
             font-size: 18px;
+            transition: 0.5s;
         }
     }
 }

@@ -1,22 +1,32 @@
-<div class="combatant-container shadowdark">
-    {{#each combatants}}
-        {{#unless this.isDivider}}
-            <div class="combatant {{styleClass}}">
-                <div class="name">{{this.name}}</div>
-                {{#if this.actor}}
-                    <img src="{{this.actor.img}}">
-                {{else}}
-                    <img src="{{this.img}}">
-                {{/if}}
-                <span>{{this.initiative}}</span>
-            </div>
-        {{/unless}}
-        {{#if this.isDivider}}
-            <div class="round-divider">
-                <div></div>
-                <span>{{this.round}}</span>
-                <div></div>
-            </div>
-        {{/if}}
-    {{/each}}
+<div class="main-part">
+    <div>
+        <button data-action="previousTurn"><i class="fas fa-angles-left"></i></button>
+    </div>
+    <div class="combatant-container shadowdark">
+        {{#each combatants}}
+            {{#unless this.isDivider}}
+                <div class="combatant {{styleClass}}" style="order: {{this.order}}" data-combatant-id="{{this.id}}">
+                    <div class="name">{{this.name}}</div>
+                    {{#if this.actor}}
+                        <img src="{{this.actor.img}}">
+                    {{else}}
+                        <img src="{{this.img}}">
+                    {{/if}}
+                    <div class="health-bar">
+                        <div class="{{this.system.type}}"></div>
+                    </div>
+                </div>
+            {{/unless}}
+            {{#if this.isDivider}}
+                <div class="round-divider" style="order: {{this.order}}" data-combatant-id="{{this.id}}">
+                    <div></div>
+                    <span>{{this.round}}</span>
+                    <div></div>
+                </div>
+            {{/if}}
+        {{/each}}
+    </div>
+    <div>
+        <button data-action="nextTurn"><i class="fas fa-angles-right"></i></button>
+    </div>
 </div>

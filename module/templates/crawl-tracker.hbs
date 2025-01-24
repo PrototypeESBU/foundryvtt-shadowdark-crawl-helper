@@ -1,13 +1,8 @@
-<div id="crawl-tracker" class="shadowdark">
+<div class="shadowdark">
     {{#if isStarted}}
         <div class="grid-5-columns">
             <h2 class="grid-colspan-5 centered">{{mode}}</h2>
             <span class="grid-colspan-5 centered">Round {{round}}</span>
-            <button data-action="previousRound"><i class="fa-solid fa-angles-left"></i></button>
-            <button data-action="previousTurn"><i class="fa-solid fa-angle-left"></i></i></button>
-            <button data-action="nextTurn"><i class="fa-solid fa-angle-right"></i></i></button>
-            <button data-action="nextRound"><i class="fa-solid fa-angles-right"></i></button>
-            <button data-action="openCombatTracker"><i class="fas fa-swords"></i></button>
         </div>
         {{#if inCombat}}
             <button data-action="toggleCombat">End Combat</button>
