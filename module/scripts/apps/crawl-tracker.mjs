@@ -170,7 +170,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
 
     async updateTurn(updateData, direction) {
-        console.log(updateData);
+       // Not sure if this is needed
     }
 
     async _gmTurn() {
@@ -186,10 +186,32 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         }
     }
 
-    async _encounter(){
+    async checkEncounter(){
+        // TODO add more encounter actions based on settings
+    }
+
+    async triggerEncounter(){
         // TODO add more encounter actions based on settings
         ui.notifications.info("encounter");
     }
+
+    async timePasses(minutes){
+        // TODO Clear all round based active effects from players
+        // TODO Game time / Torch timer runs down by minutes
+        // TODO 50% change for random encounter
+    }
+
+    async moralCheck(targets=[], groupRoll=false){
+        // TODO Roll moral checks for all targets as defined on pg 89
+
+    }
+
+    async onCombatantUpdate() {
+        // Do things when a combatant is updated
+
+        // TODO set flag for moral checks
+    }
+
 
     async connectSceneTokens() { 
     //connects scene tokens to player placeholders

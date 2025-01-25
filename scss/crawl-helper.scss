@@ -4,7 +4,8 @@
 
 .actor-carousel {
     position:absolute;
-    // pointer-events: none;
+    padding: 0px 150px;
+    //pointer-events: none;
     
     .main-part {
         display: flex;
@@ -81,7 +82,10 @@
         span {
             font-family: "Old Newspaper Font";
             font-size: 18px;
-            transition: 0.5s;
+            transition: opacity 0.8s ease-in-out;
+            &.fadeout {
+                opacity: 0;
+            }
         }
     }
 }

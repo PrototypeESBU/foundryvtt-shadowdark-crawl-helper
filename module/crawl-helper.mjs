@@ -53,6 +53,7 @@ Hooks.on('combatTurn', async (combat, updateData, updateOptions) => {
 
 Hooks.on('combatRound', async (combat, updateData, updateOptions) => {
     game.crawlHelper.actorCarousel.updateTurn(updateData, updateOptions.direction);
+    game.crawlHelper.actorCarousel.updateRound(updateData, updateOptions.direction);
 });
 
 Hooks.on('updateCombat', async (document, changed, options, userId) => {
@@ -88,6 +89,14 @@ Hooks.on('updateCombatant', async (combat, updates) => {
     // console.log(combat, updates);
     //game.crawlHelper.actorCarousel.updateCombatant(combat, updates);
 });
+
+// -----------------------------------------------
+// UI Triggers
+// -----------------------------------------------
+Hooks.on("collapseSidebar", async (sidebar, collapsed) => {
+    game.crawlHelper.actorCarousel.render();
+});
+
 
 // -----------------------------------------------
 // Hook: Add Button to Token Layer Controls

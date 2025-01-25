@@ -32,11 +32,11 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
 
     /** @override */
     _prePosition(pos = {}) {
-        const box = this.element.getBoundingClientRect();
+        const middle = document.querySelector("#ui-middle").getBoundingClientRect();
         foundry.utils.mergeObject(pos, {
           top: 0,
-          left: ui.nav.element[0].getBoundingClientRect().right,
-          width: 1000
+          left: middle.left,
+          width: middle.width
         });
     }
 
@@ -87,7 +87,6 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
 
     async updateTurn(updateData, direction) {
         this._updateOrder(updateData.turn);
-        
         //get current and next combatant
         const current = this.element.querySelector(
             `div[data-combatant-id="${
@@ -100,11 +99,17 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             }"]`
         );
 
+        //start fadeout for current target
+        let fadeTarget = current;
+        // unless going backwards
+        if (direction < 0) fadeTarget = next;
+
+        //start CSS transitions
+        fadeTarget.classList.add("fadeout");
         current.classList.remove("first");
-        current.classList.add("fadeout");
         next.classList.add("first");
 
-        //wait for transition animations
+        //wait for CSS transitions
         setTimeout(() => {
             // update order of combatant
             this.combatants.forEach( c => {
@@ -112,11 +117,17 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                 .style.setProperty("order", c.order);
             });
             //reveal faded combatant
-            current.classList.remove("fadeout");
-            if (updateData.turn === 0 && direction > 0){
-                this.element.querySelector('div[data-combatant-id="Divider"').text(updateData.turn);
-            }
+            fadeTarget.classList.remove("fadeout");
         }, "300");
+    }
+
+    async updateRound(updateData, direction) {
+        const divider = this.element.querySelector('.round-divider span');
+            divider.classList.add("fadeout");
+       setTimeout(() => {
+            divider.textContent = updateData.round +1;
+            divider.classList.remove("fadeout");
+        }, "800");
     }
 
 
