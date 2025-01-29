@@ -37,6 +37,11 @@ Hooks.on("ready", async () => {
     }
     //show ActorCarousel
     game.crawlHelper.actorCarousel.render(true);
+
+    //collaspe nav bar 
+    // TODO only if actorCarousel is on
+    await ui.nav.collapse();
+    await ui.nav.render();
 });
 
 // -----------------------------------------------
@@ -52,12 +57,11 @@ Hooks.on('combatTurn', async (combat, updateData, updateOptions) => {
 });
 
 Hooks.on('combatRound', async (combat, updateData, updateOptions) => {
-    game.crawlHelper.actorCarousel.updateTurn(updateData, updateOptions.direction);
     game.crawlHelper.actorCarousel.updateRound(updateData, updateOptions.direction);
 });
 
 Hooks.on('updateCombat', async (document, changed, options, userId) => {
-    // console.log(document, changed, options, userId);
+    //console.log(document, changed, options, userId);
     //game.crawlHelper.crawlTracker.render(true);
     //game.crawlHelper.actorCarousel.render(true);
 });
@@ -86,8 +90,7 @@ Hooks.on('deleteCombatant', async (combat, updates) => {
 });
 
 Hooks.on('updateCombatant', async (combat, updates) => {
-    // console.log(combat, updates);
-    //game.crawlHelper.actorCarousel.updateCombatant(combat, updates);
+    game.crawlHelper.actorCarousel.render();
 });
 
 // -----------------------------------------------
@@ -97,6 +100,10 @@ Hooks.on("collapseSidebar", async (sidebar, collapsed) => {
     game.crawlHelper.actorCarousel.render();
 });
 
+Hooks.on('renderSceneNavigation', async (application, html, data) => { 
+    // TODO only if actorCarousel is on
+    ui.nav.element.addClass("verticle");
+});
 
 // -----------------------------------------------
 // Hook: Add Button to Token Layer Controls

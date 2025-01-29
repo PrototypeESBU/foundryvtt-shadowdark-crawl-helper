@@ -1,5 +1,13 @@
-#navigation {
-    max-width: 250px;
+#navigation.verticle {
+    max-width: 220px;
+    #scene-list {
+        min-width: 210px;
+        .scene {
+            float:none;
+            white-space: nowrap;
+            width: min-content;
+        }
+    }
 }
 
 .actor-carousel {
@@ -12,10 +20,46 @@
         justify-content: center;
     }
 
+    .side-buttons {
+        width:40px;
+
+        ol {
+            margin: 0px;
+            padding: 0px;
+            pointer-events: none;
+
+            li {
+                flex: none;
+                width: 36px;
+                height: 36px;
+                margin: 8px 0 0 0;
+                box-sizing: content-box;
+                font-size: 24px;
+                line-height: 36px;
+                background: rgba(0, 0, 0, 0.5);
+                box-shadow: 0 0 10px var(--color-shadow-dark);
+                color: var(--color-text-light-heading);
+                text-align: center;
+                border: 1px solid var(--color-border-dark);
+                border-radius: 5px;
+                cursor: pointer;
+                pointer-events: all;
+                display: inline-grid;
+                place-content: center;
+                
+                &.small {
+                    height: 20px;
+                    font-size: 14px;
+                }
+            }
+
+        }
+    }
+
     .combatant-container {
         display: flex;
-        width:800px; // TODO dynamically calc this
         overflow:hidden;
+        margin-right: 10px;
 
         .combatant {
             width: 90px;
@@ -72,6 +116,7 @@
         text-align: center;
         width: 30px;
         min-width: 30px;
+        transition: opacity 0.3s, width 0.3s, min-width 0.3s, margin 0.3s ease-in-out;
         div {
             width: 4px;
             height: 54px;
@@ -82,10 +127,16 @@
         span {
             font-family: "Old Newspaper Font";
             font-size: 18px;
-            transition: opacity 0.8s ease-in-out;
+            transition: opacity 0.6s ease-in-out;
             &.fadeout {
                 opacity: 0;
             }
+        }
+        &.fadeout {
+            opacity: 0;
+            width: 0px;
+            min-width: 0px;
+            margin: 0px;
         }
     }
 }

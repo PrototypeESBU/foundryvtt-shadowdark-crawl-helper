@@ -166,22 +166,24 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
 
     async updateRound(updateData, direction) {
-        const encounterUpdate = this.crawl.system.encounterClock -= direction;
+        // if GM turn hasn't gone, take the turn now.
     }
 
     async updateTurn(updateData, direction) {
-       // Not sure if this is needed
+       // TODO Announce to player that's it's there turn based on a global setting
+       // play a sound? annouce player that's on deck next?
     }
 
     async _gmTurn() {
         //test for encounters
+        const encounterUpdate = this.crawl.system.encounterClock -= direction;
         if (encounterUpdate <= 0) {
             await this.crawl.update({"system.encounterClock": this.crawl.system.danagerLevel})
             this._encounter();
         }
         else {
             await this.crawl.update({
-                "system.encounterClock": this.crawl.system.encounterClock
+                "system.encounterClock": this.crawl.system.encounterClock + encounterUpdate
             })
         }
     }

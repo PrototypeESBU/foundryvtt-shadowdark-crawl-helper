@@ -1,8 +1,18 @@
 <div class="main-part">
-    <div>
-        <button data-action="previousTurn"><i class="fas fa-angles-left"></i></button>
+    <div class="side-buttons">
+        <ol>
+            <li class="small" data-action="rollAllInit">
+                <i class="fas fa-users"></i>
+            </li>
+            <li class="small" data-action="previousRound">
+                <i class="fas fa-angles-left"></i>
+            </li>
+            <li data-action="previousTurn">
+                <i class="fas fa-angle-left"></i>
+            </li>
+        </ol>
     </div>
-    <div class="combatant-container shadowdark">
+    <div class="combatant-container shadowdark" style="width:{{containerWidth}}px">
         {{#each combatants}}
             {{#unless this.isDivider}}
                 <div class="combatant {{styleClass}}" style="order: {{this.order}}" data-combatant-id="{{this.id}}">
@@ -26,7 +36,17 @@
             {{/if}}
         {{/each}}
     </div>
-    <div>
-        <button data-action="nextTurn"><i class="fas fa-angles-right"></i></button>
+    <div class="side-buttons">
+        <ol>
+            <li class="small" data-action="resetInit">
+                <i class="fas fa-eraser"></i>
+            </li>
+            <li class="small" data-action="nextRound">
+                <i class="fas fa-angles-right"></i>
+            </li>
+            <li data-action="nextTurn">
+                <i class="fas fa-angle-right"></i>
+            </li>
+        </ol>
     </div>
 </div>

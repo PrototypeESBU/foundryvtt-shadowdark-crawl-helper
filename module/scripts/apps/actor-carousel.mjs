@@ -21,6 +21,8 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             previousRound: this.previousRound,
             nextTurn: this.nextTurn,
             previousTurn: this.previousTurn,
+            rollAllInit: this.rollAllInit,
+            resetInit: this.resetInit
         }
     };
 
@@ -42,13 +44,14 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
 
     /** @override */
     async _preparePartContext(partId, context, options) {
-        this._updatecombatants();
+        this._getCombatantsContext();
         this._updateOrder(game.combat.turn);
         context.combatants = this.combatants;
+        context.containerWidth = (this.combatants.length * 94)-28;
         return context;
     }
 
-    _updatecombatants() {
+    _getCombatantsContext() {
         this.combatants = [];
         if(game.combat?.started){
             for (const combatant of game.combat.turns){
@@ -122,12 +125,18 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     }
 
     async updateRound(updateData, direction) {
-        const divider = this.element.querySelector('.round-divider span');
-            divider.classList.add("fadeout");
-       setTimeout(() => {
-            divider.textContent = updateData.round +1;
+        this.updateTurn(updateData, direction);
+        const dividerText = this.element.querySelector('.round-divider span');
+        const divider = this.element.querySelector('.round-divider');
+        dividerText.classList.add("fadeout");
+        divider.classList.add("fadeout");
+        setTimeout(() => {
             divider.classList.remove("fadeout");
-        }, "800");
+        }, "300");
+        setTimeout(() => {
+            dividerText.textContent = updateData.round +1;
+            dividerText.classList.remove("fadeout");  
+        }, "600");
     }
 
 
@@ -145,5 +154,13 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
 
     static async previousTurn(event, target) {
         game.combat.previousTurn();
+    };
+
+    static async rollAllInit(event, target) {
+        game.combat.rollAll();
+    };
+
+    static async resetInit(event, target) {
+        game.combat.resetAll();
     };
 }
