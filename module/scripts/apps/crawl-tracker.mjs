@@ -87,7 +87,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         if (!this.crawl.combatants.map(c => c.id).includes(this.crawl.system.gmId)) {
             const gm = await this.crawl.createEmbeddedDocuments("Combatant", [{
                 name: "Game Master", 
-                type: "shadowdark-crawl-helper.crawlActor",
+                type: "shadowdark-crawl-helper.crawler",
                 system: {type:"GM"},
                 img: "modules/shadowdark-crawl-helper/assets/dungeon-master.png", // TODO needs to be a default config and setting 
                 hidden: false

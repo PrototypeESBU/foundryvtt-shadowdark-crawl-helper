@@ -13,7 +13,7 @@ Hooks.on("init", () => {
         "shadowdark-crawl-helper.crawl": crawlCombat
     });
     Object.assign(CONFIG.Combatant.dataModels, {
-        "shadowdark-crawl-helper.crawlActor": crawlCombatant
+        "shadowdark-crawl-helper.crawler": crawlCombatant
     });
   
     registerSettings();
@@ -72,8 +72,8 @@ Hooks.on('updateCombat', async (document, changed, options, userId) => {
 Hooks.on("preCreateCombatant", async (combatant, data, options, userId) => 
     {
         if (combatant.type === "base") {
-            //switch type to crawlActor
-            const updateData = {type: "shadowdark-crawl-helper.crawlActor"};
+            //switch type to crawler
+            const updateData = {type: "shadowdark-crawl-helper.crawler"};
             if (combatant.actorId && (game.actors.get(combatant.actorId).type === "Player")) {
                 updateData.system = {"type": "Player"};
             }

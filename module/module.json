@@ -18,7 +18,7 @@
             "crawl": {}
         },
         "Combatant": {
-            "crawlActor": {}
+            "crawler": {}
         }
     },
     "relationships": {

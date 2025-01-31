@@ -67,10 +67,11 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                 })
             }
 
-            this.combatants[game.combat.turn].styleClass = "first";
+            //set initial style on first combatant
+            if ( this.combatants.length > 0) {
+                this.combatants[game.combat.turn].styleClass = "first";
 
-            // add in the round divider
-            if (this.combatants.length > 0) {
+                // add in the round divider
                 this.combatants.push({
                     id: "Divider",
                     isDivider: true,
