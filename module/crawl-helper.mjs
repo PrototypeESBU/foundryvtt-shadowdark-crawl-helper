@@ -98,6 +98,7 @@ Hooks.on('updateCombatant', async (combat, updates) => {
 // -----------------------------------------------
 Hooks.on("collapseSidebar", async (sidebar, collapsed) => {
     game.crawlHelper.actorCarousel.render();
+    game.crawlHelper.crawlTracker.render();
 });
 
 Hooks.on('renderSceneNavigation', async (application, html, data) => { 

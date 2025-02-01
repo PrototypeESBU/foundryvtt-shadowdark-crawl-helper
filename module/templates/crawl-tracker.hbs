@@ -1,22 +1,27 @@
-<div class="shadowdark">
+<div class="main-part">
     {{#if isStarted}}
-        <div class="grid-5-columns">
-            <h2 class="grid-colspan-5 centered">{{mode}}</h2>
-            <span class="grid-colspan-5 centered">Round {{round}}</span>
+    <div class="gm-tools">
+        <a data-action="addParty" data-tooltip="Add party to tracker"><i class="fas fa-people-group"></i></a>
+        <a data-action="addGameMaster" data-tooltip="Add GM to tracker"><i class="fas fa-hat-wizard"></i></a>
+        <a data-action="triggerEncounter" data-tooltip="Trigger an encounter"><i class="fa-solid fa-bolt-lightning"></i></a>
+        <a data-action="openConfig" data-tooltip="Configure Tracker"><i class="fa-solid fa-gear"></i></a>
+        <a data-action="endCrawling" data-tooltip="End curret tracker"><i class="fas fa-rectangle-xmark"></i></a>
+    </div>
+
+    <div class="player-view">
+        <div class="heading">
+            <i class="fas fa-dungeon {{#if inCombat}}faded{{/if}}"></i>
+            <h2><a data-action="toggleCombat">{{mode}}</a></h2>
+            <i class="fas fa-swords {{#unless inCombat}}faded{{/unless}}"></i>
         </div>
-        {{#if inCombat}}
-            <button data-action="toggleCombat">End Combat</button>
-        {{else}}
-            Next encounter roll: {{nextEncounter}}
-            <button data-action="toggleCombat">Start Combat</button>
-            <button data-action="endCrawling">End Crawling</button>
-        {{/if}}
+        <div>
+            <h3>Round {{round}}</h3>
+            Next encounter roll: {{#if inCombat}}-{{else}}{{nextEncounter}}{{/if}}
+        </div>
     {{else}}
-        <button data-action="startCrawling">Start Crawling</button>
+        <div class="gm-tools">
+            <a data-action="startCrawling"><i class="fas fa-dungeon"></i></a>
+        </div>
     {{/if}}
-    <hr>
-    <div class="grid-2-columns">
-        <button data-action="addParty">Add Party</button>
-        <button data-action="addGameMaster">Add GM</button>
     </div>
 </div>

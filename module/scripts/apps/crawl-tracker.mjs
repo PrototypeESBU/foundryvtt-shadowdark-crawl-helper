@@ -11,11 +11,12 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         id: "crawlTracker",
         classes: ["crawl-tracker"],
         position: {
-            width: 300,
+            width: 200,
             height: "auto",
         },
         window: {
             title: "Crawl Tracker",
+            frame: false,
             controls: [
                 {
                    icon: 'fa-solid fa-swords',
@@ -30,6 +31,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             toggleCombat: this.toggleCombat,
             addParty: this.addParty,
             addGameMaster: this.addGameMaster,
+            triggerEncounter: this.triggerEncounter,
             openCombatTracker: this.openCombatTracker,
         }
     };
@@ -38,6 +40,17 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         main: {
           template: "./modules/shadowdark-crawl-helper/templates/crawl-tracker.hbs"
         }
+    }
+
+    /** @override */
+    _prePosition(pos = {}) {
+        const middle = document.querySelector("#ui-middle").getBoundingClientRect();
+        const thisApp = this.element.getBoundingClientRect();
+        console.log(thisApp)
+        foundry.utils.mergeObject(pos, {
+            left: middle.right - 210,
+            top: middle.bottom - thisApp.height - 10
+        });
     }
 
     // ***************
@@ -51,6 +64,10 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         await this.crawl.endCombat();
         await this.createCrawl();
         this.render();
+    }
+
+    static async triggerEncounter(event, target) {
+        this.rollEncounter();
     }
 
     static async toggleCombat(event, target) {
@@ -192,7 +209,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         // TODO add more encounter actions based on settings
     }
 
-    async triggerEncounter(){
+    async rollEncounter(){
         // TODO add more encounter actions based on settings
         ui.notifications.info("encounter");
     }
