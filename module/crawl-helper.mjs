@@ -58,12 +58,15 @@ Hooks.on('combatTurn', async (combat, updateData, updateOptions) => {
 
 Hooks.on('combatRound', async (combat, updateData, updateOptions) => {
     game.crawlHelper.actorCarousel.updateRound(updateData, updateOptions.direction);
+    game.crawlHelper.crawlTracker.updateTurn(updateData, updateOptions.direction);
 });
 
 Hooks.on('updateCombat', async (document, changed, options, userId) => {
-    //console.log(document, changed, options, userId);
-    //game.crawlHelper.crawlTracker.render(true);
-    //game.crawlHelper.actorCarousel.render(true);
+    game.crawlHelper.crawlTracker.render(true);
+});
+
+Hooks.on('deleteCombat', async (document, changed, options, userId) => {
+    game.crawlHelper.actorCarousel.render(true);
 });
 
 // -----------------------------------------------
@@ -81,15 +84,18 @@ Hooks.on("preCreateCombatant", async (combatant, data, options, userId) =>
         }
 });
 
-Hooks.on('createCombatant', async (combat, updates) => {
+Hooks.on('createCombatant', async (combatant, updates) => {
     game.crawlHelper.actorCarousel.render(true);
 });
 
-Hooks.on('deleteCombatant', async (combat, updates) => {
+Hooks.on('deleteCombatant', async (combatant, updates) => {
+    if(combatant.id === game.crawlHelper.crawlTracker.system.gmId){
+       await game.crawlHelper.crawlTracker.update({"system.gmId": null})
+    }
     game.crawlHelper.actorCarousel.render(true);
 });
 
-Hooks.on('updateCombatant', async (combat, updates) => {
+Hooks.on('updateCombatant', async (combatant, updates) => {
     game.crawlHelper.actorCarousel.render();
 });
 

@@ -4,8 +4,8 @@ export class crawlCombat extends foundry.abstract.TypeDataModel {
     static defineSchema() {
         return {
             inCombat: new fields.BooleanField({required: true, initial: false}),
-            encounterClock: new fields.NumberField({ required: true, integer: true, min: 0, initial: 3 }),
-            danagerLevel: new fields.NumberField({ required: true, integer: true, min: 0, initial: 3 }),
+            nextEncounter: new fields.NumberField({ required: true, integer: true, min: 0, initial: 3 }),
+            dangerLevel: new fields.NumberField({ required: true, integer: true, min: 0, initial: 2 }),
             encoutnerTable: new fields.DocumentIdField({ required: false, initial: null}),
             gmId: new fields.DocumentIdField({ required: false, initial: null}),
         };

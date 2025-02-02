@@ -3,11 +3,16 @@
     <div class="gm-tools">
         <a data-action="addParty" data-tooltip="Add party to tracker"><i class="fas fa-people-group"></i></a>
         <a data-action="addGameMaster" data-tooltip="Add GM to tracker"><i class="fas fa-hat-wizard"></i></a>
-        <a data-action="triggerEncounter" data-tooltip="Trigger an encounter"><i class="fa-solid fa-bolt-lightning"></i></a>
-        <a data-action="openConfig" data-tooltip="Configure Tracker"><i class="fa-solid fa-gear"></i></a>
+        <a data-action="triggerEncounterCheck" data-tooltip="Encounter check"><i class="fa-solid fa-dice-one"></i></a>
+        <a data-action="triggerEncounter" data-tooltip="Instant encounter"><i class="fa-solid fa-bolt-lightning"></i></a>
+        <a data-action="moralCheck" data-tooltip="Monster moral check"><i class="fa-solid fa-person-running"></i></a>
+        <a data-action="timePasses" data-tooltip="Time Passes"><i class="fa-solid fa-hourglass-half"></i></a>
         <a data-action="endCrawling" data-tooltip="End curret tracker"><i class="fas fa-rectangle-xmark"></i></a>
     </div>
-
+    <div class="danger-level">
+        <div>Encounter table:</div>
+        <div>Danger level: {{danger}}</div>
+    </div>
     <div class="player-view">
         <div class="heading">
             <i class="fas fa-dungeon {{#if inCombat}}faded{{/if}}"></i>
@@ -16,7 +21,7 @@
         </div>
         <div>
             <h3>Round {{round}}</h3>
-            Next encounter roll: {{#if inCombat}}-{{else}}{{nextEncounter}}{{/if}}
+            <h4>Next encounter roll: {{#if inCombat}}-{{else}}{{nextEncounter}}{{/if}}</h4>
         </div>
     {{else}}
         <div class="gm-tools">

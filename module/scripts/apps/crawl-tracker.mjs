@@ -5,13 +5,18 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     constructor() {
 		super();
         this.crawl = null;
+        this.dangerIndex = [
+            "Deadly",
+            "Risky",
+            "Unsafe"
+        ]
     }
 
     static DEFAULT_OPTIONS = {
         id: "crawlTracker",
         classes: ["crawl-tracker"],
         position: {
-            width: 200,
+            width: 180,
             height: "auto",
         },
         window: {
@@ -46,9 +51,8 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     _prePosition(pos = {}) {
         const middle = document.querySelector("#ui-middle").getBoundingClientRect();
         const thisApp = this.element.getBoundingClientRect();
-        console.log(thisApp)
         foundry.utils.mergeObject(pos, {
-            left: middle.right - 210,
+            left: middle.right - 190,
             top: middle.bottom - thisApp.height - 10
         });
     }
@@ -67,7 +71,11 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
 
     static async triggerEncounter(event, target) {
-        this.rollEncounter();
+        this.encounter();
+    }
+
+    static async triggerEncounterCheck(event, target) {
+        this.checkForEncounter();
     }
 
     static async toggleCombat(event, target) {
@@ -81,10 +89,10 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
                 if(combatant.system.type === "NPC") combatant.delete(); 
             }
 
-            // TODO should the encounterClock be reset after combat?
+            // TODO should the nexEncounter be reset after combat?
             await this.crawl.update({"system": {
                 "inCombat": false,
-                "encounterClock": this.crawl.system.danagerLevel
+                "nextEncounter": this.crawl.round + this.crawl.system.dangerLevel
             }})
         }
         //turn on combat
@@ -153,7 +161,8 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             context.round = this.crawl.round;
             context.inCombat = this.crawl.system.inCombat;
             context.mode = this.crawl.system.inCombat ? "Combat" : "Crawling"; //TODO needs i18n
-            context.nextEncounter = this.crawl.round + this.crawl.system.encounterClock;
+            context.danger = this.dangerIndex[this.crawl.system.dangerLevel];
+            context.nextEncounter = this.crawl.system.nextEncounter;
         }
         return context;
     }
@@ -172,6 +181,8 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
         //if linked to a scene, unlink combat
         if (this.crawl._source.scene) this.crawl.toggleSceneLink();
+
+
     }
 
     async createCrawl() {
@@ -183,35 +194,39 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
 
     async updateRound(updateData, direction) {
+        this.updateTurn(updateData, direction);
         // if GM turn hasn't gone, take the turn now.
+        if(this.crawl.system.gmId === null){
+            this._gmTurn();
+        }
     }
 
     async updateTurn(updateData, direction) {
        // TODO Announce to player that's it's there turn based on a global setting
        // play a sound? annouce player that's on deck next?
+
+       //test for GM's turn
+        if((this.crawl.nextCombatant.id === this.crawl.system.gmId) & direction > 0) {
+            this._gmTurn();
+        }
     }
 
     async _gmTurn() {
         //test for encounters
-        const encounterUpdate = this.crawl.system.encounterClock -= direction;
-        if (encounterUpdate <= 0) {
-            await this.crawl.update({"system.encounterClock": this.crawl.system.danagerLevel})
-            this._encounter();
-        }
-        else {
-            await this.crawl.update({
-                "system.encounterClock": this.crawl.system.encounterClock + encounterUpdate
-            })
+        if (this.crawl.system.nextEncounter <= this.crawl.round) {
+            await this.crawl.update({"system.nextEncounter": this.crawl.round + this.crawl.system.dangerLevel + 1})
+            this.checkForEncounter();
         }
     }
 
-    async checkEncounter(){
+    async checkForEncounter(){
         // TODO add more encounter actions based on settings
+        ui.notifications.info("Checking for encounter");
     }
 
-    async rollEncounter(){
+    async encounter(){
         // TODO add more encounter actions based on settings
-        ui.notifications.info("encounter");
+        ui.notifications.info("encounter!");
     }
 
     async timePasses(minutes){
