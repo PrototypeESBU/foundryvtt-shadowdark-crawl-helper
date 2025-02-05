@@ -1,0 +1,26 @@
+<div class="combatant-container shadowdark" style="width:{{containerWidth}}px">
+    {{#each combatants}}
+        {{#unless this.isDivider}}
+            <div class="combatant {{styleClass}}" style="order: {{this.order}}" data-combatant-id="{{this.id}}">
+                <div class="frame">
+                    <div class="name">{{this.name}}</div>
+                    <img src="{{this.img}}">
+                    <div class="health-bar">
+                        <div 
+                            class="{{this.system.type}}" 
+                            style="width:{{hpPercent}}%"
+                        >
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {{/unless}}
+        {{#if this.isDivider}}
+            <div class="round-divider" style="order: {{this.order}}" data-combatant-id="{{this.id}}">
+                <div></div>
+                <span class="transition">{{this.round}}</span>
+                <div></div>
+            </div>
+        {{/if}}
+    {{/each}}
+</div>

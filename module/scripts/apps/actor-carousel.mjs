@@ -32,7 +32,11 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         }
     };
 
-    /** @override */
+    // -----------------------------------------------
+    //  Parent Override Functions
+    // -----------------------------------------------
+
+    // sets the position of the app before rendering
     _prePosition(pos = {}) {
         const middle = document.querySelector("#ui-middle").getBoundingClientRect();
         foundry.utils.mergeObject(pos, {
@@ -42,16 +46,82 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         });
     }
 
-    /** @override */
+    //Generates context for each UI part before rendering it
     async _preparePartContext(partId, context, options) {
-        this._getCombatantsContext();
-        this._updateOrder(game.combat.turn);
-        context.combatants = this.combatants;
-        context.containerWidth = (this.combatants.length * 94)-28;
+        if (partId === "main" && game.combat) {
+            this._updateCombatantsList();
+            this._updateOrder();
+            context.crawlStarted = true;
+            context.combatants = this.combatants;
+            context.containerWidth = 138 + ((this.combatants.length-2) * 98) + 30;
+        }
         return context;
     }
 
-    _getCombatantsContext() {
+    // -----------------------------------------------
+    // Action Functions
+    // -----------------------------------------------
+    static async nextRound(event, target) {
+        game.combat.nextRound();
+    };
+
+    static async previousRound(event, target) {
+        game.combat.previousRound();
+    };
+
+    static async nextTurn(event, target) {
+        game.combat.nextTurn();
+    };
+
+    static async previousTurn(event, target) {
+        game.combat.previousTurn();
+    };
+
+    static async rollAllInit(event, target) {
+        await game.combat.rollAll();
+        await game.combat.update({turn: 0});
+        this.render();
+    };
+
+    static async resetInit(event, target) {
+        game.combat.resetAll();
+        this.render();
+    };
+
+    // -----------------------------------------------
+    // Public functions
+    // -----------------------------------------------
+    async onUpdateCombat(changes, options) {
+        if (changes.turn >=0) {
+            this._updateTurn(options.direction);
+        }
+        if (changes.round) {
+            this._updateRound();
+        }
+    }
+
+    async onCreateCombatant(combatant, updates){
+        this.render(true);
+    }
+
+    async onDeleteCombatant(combatant, updates){
+        if(combatant.id === game.combat.system.gmId){
+            await game.combat.update({"system.gmId": null})
+         }
+         this.render(true);
+    }
+
+    async onUpdateCombatant(combatant, updates) {
+        this.render(true);
+    }
+
+    
+
+    // -----------------------------------------------
+    // Private functions
+    // -----------------------------------------------
+
+    _updateCombatantsList() { //Updates combatants data
         this.combatants = [];
         if(game.combat?.started){
             for (const combatant of game.combat.turns){
@@ -59,11 +129,29 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                 if (combatant.actorId) {
                    actor = game.actors.get(combatant.actorId);
                 } 
+
+                // set actor stats
+                let hpPercent = 100;
+                let ac = null;
+                let level = null;
+                if (actor){
+                    hpPercent = Math.min(100, (
+                        actor.system.attributes.hp.value / 
+                        actor.system.attributes.hp.max
+                        ) * 100
+                    );
+                    ac = actor.system.attributes.ac.value;
+                    level = actor.system.level.value;
+                }
+
                 //add combatant
                 this.combatants.push({
                     ...combatant,
+                    id: combatant.id,
                     img: actor? actor.img : combatant.img,
-                    id: combatant.id
+                    hpPercent,
+                    ac,
+                    level
                 })
             }
 
@@ -81,25 +169,40 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         }
     }
 
-    _updateOrder(currentTurn) {
-        // update order based on combat turn
-        const modifer = this.combatants.length - currentTurn;
+    _updateOrder() { // update order based on combat turn
+        const modifer = this.combatants.length - game.combat.turn;
         for(let x=0; x < this.combatants.length; x++) {
             this.combatants[x].order = (modifer + x) % this.combatants.length;
         }
     }
 
-    async updateTurn(updateData, direction) {
-        this._updateOrder(updateData.turn);
+    
+    async _updateRound() { //updates HTML based on the current round number
+        const dividerText = this.element.querySelector('.round-divider span');
+        const divider = this.element.querySelector('.round-divider');
+        dividerText.classList.add("fadeout");
+        divider.classList.add("fadeout");
+        setTimeout(() => {
+            divider.classList.remove("fadeout");
+        }, "300");
+        setTimeout(() => {
+            dividerText.textContent = game.combat.round +1;
+            dividerText.classList.remove("fadeout");  
+        }, "600");
+    }
+
+    
+    async _updateTurn(direction) { //updates HTML based on the current turn
+        this._updateOrder();
         //get current and next combatant
         const current = this.element.querySelector(
             `div[data-combatant-id="${
-                this.combatants[game.combat.turn].id
+                this.combatants[game.combat.previous.turn].id
             }"]`
         );
         const next = this.element.querySelector(
             `div[data-combatant-id="${
-                this.combatants[updateData.turn].id
+                this.combatants[game.combat.turn].id
             }"]`
         );
 
@@ -125,43 +228,4 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         }, "300");
     }
 
-    async updateRound(updateData, direction) {
-        this.updateTurn(updateData, direction);
-        const dividerText = this.element.querySelector('.round-divider span');
-        const divider = this.element.querySelector('.round-divider');
-        dividerText.classList.add("fadeout");
-        divider.classList.add("fadeout");
-        setTimeout(() => {
-            divider.classList.remove("fadeout");
-        }, "300");
-        setTimeout(() => {
-            dividerText.textContent = updateData.round +1;
-            dividerText.classList.remove("fadeout");  
-        }, "600");
-    }
-
-
-    static async nextRound(event, target) {
-        game.combat.nextRound();
-    };
-
-    static async previousRound(event, target) {
-        game.combat.previousRound();
-    };
-
-    static async nextTurn(event, target) {
-        game.combat.nextTurn();
-    };
-
-    static async previousTurn(event, target) {
-        game.combat.previousTurn();
-    };
-
-    static async rollAllInit(event, target) {
-        game.combat.rollAll();
-    };
-
-    static async resetInit(event, target) {
-        game.combat.resetAll();
-    };
 }

@@ -16,7 +16,13 @@ Hooks.on("init", () => {
         "shadowdark-crawl-helper.crawler": crawlCombatant
     });
   
+    // load settings
     registerSettings();
+
+    // load templates
+    loadTemplates({
+        combatant:"modules/shadowdark-crawl-helper/templates/combatant.hbs"
+    });
 
     // Initialize persistent apps and variables
     game.crawlHelper = {
@@ -24,6 +30,7 @@ Hooks.on("init", () => {
         crawlingHelperMacro: new crawlingHelperMacro(),
         actorCarousel: new actorCarousel()
     };
+
 });
 
 // -----------------------------------------------
@@ -51,17 +58,8 @@ Hooks.on('combatStart', async (combat, updateData) => {  //unsure if this is nee
     game.crawlHelper.crawlTracker.render();  
 });
 
-Hooks.on('combatTurn', async (combat, updateData, updateOptions) => { 
-    game.crawlHelper.actorCarousel.updateTurn(updateData, updateOptions.direction);
-    game.crawlHelper.crawlTracker.updateTurn(updateData, updateOptions.direction);
-});
-
-Hooks.on('combatRound', async (combat, updateData, updateOptions) => {
-    game.crawlHelper.actorCarousel.updateRound(updateData, updateOptions.direction);
-    game.crawlHelper.crawlTracker.updateTurn(updateData, updateOptions.direction);
-});
-
 Hooks.on('updateCombat', async (document, changed, options, userId) => {
+    game.crawlHelper.actorCarousel.onUpdateCombat(changed,options);
     game.crawlHelper.crawlTracker.render(true);
 });
 
@@ -85,18 +83,15 @@ Hooks.on("preCreateCombatant", async (combatant, data, options, userId) =>
 });
 
 Hooks.on('createCombatant', async (combatant, updates) => {
-    game.crawlHelper.actorCarousel.render(true);
+    game.crawlHelper.actorCarousel.onCreateCombatant(combatant, updates);
 });
 
 Hooks.on('deleteCombatant', async (combatant, updates) => {
-    if(combatant.id === game.crawlHelper.crawlTracker.system.gmId){
-       await game.crawlHelper.crawlTracker.update({"system.gmId": null})
-    }
-    game.crawlHelper.actorCarousel.render(true);
+    game.crawlHelper.actorCarousel.onDeleteCombatant(combatant, updates);
 });
 
 Hooks.on('updateCombatant', async (combatant, updates) => {
-    game.crawlHelper.actorCarousel.render();
+    game.crawlHelper.actorCarousel.onUpdateCombatant(combatant, updates);
 });
 
 // -----------------------------------------------
@@ -113,8 +108,14 @@ Hooks.on('renderSceneNavigation', async (application, html, data) => {
 });
 
 // -----------------------------------------------
-// Hook: Add Button to Token Layer Controls
+// Other triggers
 // -----------------------------------------------
+
+Hooks.on("canvasReady", async (canvas) => {
+    game.crawlHelper.crawlTracker.onSceneChange(canvas);
+});
+
+
 Hooks.on("getSceneControlButtons", (controls) => {
     // Only GMs should see the button
     if (game.user.isGM) {

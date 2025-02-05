@@ -16,7 +16,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         id: "crawlTracker",
         classes: ["crawl-tracker"],
         position: {
-            width: 180,
+            width: 200,
             height: "auto",
         },
         window: {
@@ -47,26 +47,45 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         }
     }
 
+    // -----------------------------------------------
+    //  Parent Override Functions
+    // -----------------------------------------------
+
     /** @override */
     _prePosition(pos = {}) {
         const middle = document.querySelector("#ui-middle").getBoundingClientRect();
         const thisApp = this.element.getBoundingClientRect();
         foundry.utils.mergeObject(pos, {
-            left: middle.right - 190,
-            top: middle.bottom - thisApp.height - 10
+            left: middle.right - 210,
+            top: middle.bottom - thisApp.height - 15
         });
     }
 
-    // ***************
-    // Action Handlers
-    // ***************
+    async _preparePartContext(partId, context, options) {
+        if (partId === "main") {
+            if(this.crawl?.started){
+                context.isStarted = true
+                context.round = this.crawl.round;
+                context.inCombat = this.crawl.system.inCombat;
+                context.mode = this.crawl.system.inCombat ? "Combat" : "Crawling"; //TODO needs i18n
+                context.danger = this.dangerIndex[this.crawl.system.dangerLevel];
+                context.nextEncounter = this.crawl.system.nextEncounter;
+            }
+        }
+        return context;
+    }
+
+    // -----------------------------------------------
+    // Action Functions
+    // -----------------------------------------------
+
     static async startCrawling(event, target) {
         await this.crawl.startCombat();
         this.render();
     }
     static async endCrawling(event, target) {
         await this.crawl.endCombat();
-        await this.createCrawl();
+        await this._createCrawl();
         this.render();
     }
 
@@ -89,11 +108,14 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
                 if(combatant.system.type === "NPC") combatant.delete(); 
             }
 
-            // TODO should the nexEncounter be reset after combat?
+            // Reset nexEncounter
             await this.crawl.update({"system": {
                 "inCombat": false,
-                "nextEncounter": this.crawl.round + this.crawl.system.dangerLevel
+                "nextEncounter": this.crawl.round + this.crawl.system.dangerLevel + 1
             }})
+
+            // start a fresh round
+            await game.combat.nextRound();
         }
         //turn on combat
         else {
@@ -104,6 +126,8 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             //reset Initiative
             this.crawl.resetAll();
             await this.crawl.update({"system.inCombat": true})
+
+            // TODO maybe a setting to auto role initative?
         }
         this.render();
     }
@@ -143,29 +167,17 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
                 }]);
             }
         }
-        this.connectSceneTokens();
+        this._connectSceneTokens();
     }
 
     static async openCombatTracker() {
         game.combats.directory.createPopout().render(true);
     }
 
-    // ***************
-    // other functions
-    // ***************
 
-    /** @override */
-    async _preparePartContext(partId, context, options) {
-        if(this.crawl?.started){
-            context.isStarted = true
-            context.round = this.crawl.round;
-            context.inCombat = this.crawl.system.inCombat;
-            context.mode = this.crawl.system.inCombat ? "Combat" : "Crawling"; //TODO needs i18n
-            context.danger = this.dangerIndex[this.crawl.system.dangerLevel];
-            context.nextEncounter = this.crawl.system.nextEncounter;
-        }
-        return context;
-    }
+    // -----------------------------------------------
+    // Public functions
+    // -----------------------------------------------
     
     async initializeCrawl() { // loads tracking data from an exiting combat on initialization
         //Confirm if there is a crawl loaded already
@@ -174,34 +186,80 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             this.crawl = game.combat;
         }
         else
+        // create a new crawl
         {
             console.warn("Creating new Crawl");
-            await this.createCrawl();
+            await this._createCrawl();
         }
 
         //if linked to a scene, unlink combat
         if (this.crawl._source.scene) this.crawl.toggleSceneLink();
-
-
     }
 
-    async createCrawl() {
-        // create encounter
+    async onSceneChange(canvas) {
+        if (this.crawl) this._connectSceneTokens();
+    }
+
+    async onUpdateCombat(changes, options) { 
+        if (changes.turn >=0) {
+            this._updateTurn(options.direction);
+        }
+        if (changes.round) {
+            this._updateRound();
+        }
+    }
+
+    // -----------------------------------------------
+    // Private functions
+    // -----------------------------------------------
+
+    async _connectSceneTokens() { //connects scene tokens to player placeholders in crawl
+        const partyActors = game.users
+        .filter(user => user.active && user.character)
+        .map(user => user.character);
+
+        for (const actor of partyActors) {
+            //gets first combatant and token and matches them 
+            const combatant = this.crawl.combatants.find(c => c.actorId === actor.id); 
+            const token = game.scenes.active.tokens.find(t => t.actorId === actor.id);
+            if (combatant && token) {
+                this.crawl.updateEmbeddedDocuments("Combatant", [{
+                    "_id": combatant.id,
+                    tokenId: token.id,
+                    sceneId: game.scenes.active.id,
+                    actorId: actor.id,
+                    name: actor.name, 
+                    img: actor.img, 
+                }]);
+            }
+        }
+    }
+
+
+    async _createCrawl() { // creates a new crawl type encounter
+        
         this.crawl = await Combat.create({type:"shadowdark-crawl-helper.crawl"}); 
 
         //add GM to game
         //await this.addGameMaster(); // TODO add GM at the start based on a setting
     }
 
-    async updateRound(updateData, direction) {
-        this.updateTurn(updateData, direction);
-        // if GM turn hasn't gone, take the turn now.
+    async _gmTurn() { //Automatic activites that run on the GM turn
+        //test for encounters
+        if (this.crawl.system.nextEncounter <= this.crawl.round) {
+            await this.crawl.update({"system.nextEncounter": this.crawl.round + this.crawl.system.dangerLevel + 1})
+            this.checkForEncounter();
+        }
+    }
+
+    async _updateRound() {
+        // if there is no GM turn, take the turn now.
         if(this.crawl.system.gmId === null){
             this._gmTurn();
         }
     }
 
-    async updateTurn(updateData, direction) {
+    async _updateTurn(direction) {
        // TODO Announce to player that's it's there turn based on a global setting
        // play a sound? annouce player that's on deck next?
 
@@ -211,13 +269,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         }
     }
 
-    async _gmTurn() {
-        //test for encounters
-        if (this.crawl.system.nextEncounter <= this.crawl.round) {
-            await this.crawl.update({"system.nextEncounter": this.crawl.round + this.crawl.system.dangerLevel + 1})
-            this.checkForEncounter();
-        }
-    }
+
 
     async checkForEncounter(){
         // TODO add more encounter actions based on settings
@@ -247,27 +299,5 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
 
 
-    async connectSceneTokens() { 
-    //connects scene tokens to player placeholders
-        const partyActors = game.users
-        .filter(user => user.active && user.character)
-        .map(user => user.character);
 
-        for (const actor of partyActors) {
-            //gets first combatant and token and matches them 
-            const combatant = this.crawl.combatants.find(c => c.actorId === actor.id); 
-            const token = game.scenes.active.tokens.find(t => t.actorId === actor.id);
-            if (combatant && token) {
-                this.crawl.updateEmbeddedDocuments("Combatant", [{
-                    "_id": combatant.id,
-                    tokenId: token.id,
-                    sceneId: game.scenes.active.id,
-                    actorId: actor.id,
-                    name: actor.name, 
-                    img: actor.img, 
-                    hidden: false
-                }]);
-            }
-        }
-    }
 }
