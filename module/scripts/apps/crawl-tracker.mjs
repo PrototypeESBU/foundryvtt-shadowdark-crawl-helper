@@ -182,13 +182,11 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     async initializeCrawl() { // loads tracking data from an exiting combat on initialization
         //Confirm if there is a crawl loaded already
         if (game?.combat?.type === "shadowdark-crawl-helper.crawl") {
-            console.warn("Assign Existing Crawl");
             this.crawl = game.combat;
         }
         else
         // create a new crawl
         {
-            console.warn("Creating new Crawl");
             await this._createCrawl();
         }
 

@@ -82,11 +82,45 @@
                 white-space: nowrap;
                 padding: 0px 4px;
             }
-            img {
-                object-fit: cover;
-                border: 2px solid black;
-                min-height: 90px;
+            .portrait {
+                position: relative;
+
+                img {
+                    object-fit: cover;
+                    border: 2px solid black;
+                    border-radius: 0px;
+                    min-height: 90px;
+                }
+
+                .initiative {
+                    position: absolute;
+                    bottom: 0px;
+                    color: white;
+                    background: rgba(0, 0, 0, 0.5);
+                    padding: 4px;
+                    font-size: 12px;
+                    line-height: 1;
+                }
+                
+                .overlay {
+                    position:absolute;
+                    top: 2px;
+                    bottom: 2px;
+                    left: 2px;
+                    right: 2px;
+                    background: rgb(0, 0, 0, 0.3);
+                    text-shadow: 0 0 10px black;
+
+                    i {
+                        position: relative;
+                        color: white;
+                        font-size: 42px;
+                        top: calc(50% - 21px);
+                    }
+                }
+
             }
+
             &.first {
                 width: 110px;
                 min-width: 110px;
@@ -105,6 +139,7 @@
                 height: 10px;
                 border: 2px solid black;
                 border-top-width: 0px;
+                border-radius: 0px;
                 background-color: rgb(100, 100, 100, 0.3);
                 div {
                     height: 8px;

@@ -1,13 +1,28 @@
 <div class="combatant-container shadowdark" style="width:{{containerWidth}}px">
     {{#each combatants}}
-        {{#unless this.isDivider}}
-            <div class="combatant {{styleClass}}" style="order: {{this.order}}" data-combatant-id="{{this.id}}">
+        {{#unless isDivider}}
+            <div class="combatant {{styleClass}}" style="order: {{order}}" data-combatant-id="{{id}}">
                 <div class="frame">
-                    <div class="name">{{this.name}}</div>
-                    <img src="{{this.img}}">
+                    <div class="name">{{name}}</div>
+                    <div class="portrait">
+                        <img src="{{img}}">
+                        {{#if initiativeSet}}
+                            <div class="initiative">{{initiative}}</div>
+                        {{else}}
+                            <div class="overlay">
+                                <a 
+                                    data-action="rollInitiative" 
+                                    data-combatant-id="{{id}}"
+                                    data-tooltip="End curret tracker"
+                                >
+                                    <i class="far fa-dice-d20"></i>
+                                </a>
+                            </div>
+                        {{/if}}
+                    </div>
                     <div class="health-bar">
                         <div 
-                            class="{{this.system.type}}" 
+                            class="{{system.type}}" 
                             style="width:{{hpPercent}}%"
                         >
                         </div>
@@ -15,10 +30,10 @@
                 </div>
             </div>
         {{/unless}}
-        {{#if this.isDivider}}
-            <div class="round-divider" style="order: {{this.order}}" data-combatant-id="{{this.id}}">
+        {{#if isDivider}}
+            <div class="round-divider" style="order: {{order}}" data-combatant-id="{{id}}">
                 <div></div>
-                <span class="transition">{{this.round}}</span>
+                <span class="transition">{{round}}</span>
                 <div></div>
             </div>
         {{/if}}

@@ -21,6 +21,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             previousRound: this.previousRound,
             nextTurn: this.nextTurn,
             previousTurn: this.previousTurn,
+            rollInitiative: this.rollInitiative,
             rollAllInit: this.rollAllInit,
             resetInit: this.resetInit
         }
@@ -77,6 +78,10 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         game.combat.previousTurn();
     };
 
+    static async rollInitiative(event, target) {
+        game.combat.rollInitiative(target.dataset.combatantId);
+    }
+
     static async rollAllInit(event, target) {
         await game.combat.rollAll();
         await game.combat.update({turn: 0});
@@ -112,6 +117,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     }
 
     async onUpdateCombatant(combatant, updates) {
+        // TODO just update the changed combatant
         this.render(true);
     }
 
@@ -130,7 +136,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                    actor = game.actors.get(combatant.actorId);
                 } 
 
-                // set actor stats
+                //Set actor stats
                 let hpPercent = 100;
                 let ac = null;
                 let level = null;
@@ -144,10 +150,12 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                     level = actor.system.level.value;
                 }
 
+
                 //add combatant
                 this.combatants.push({
                     ...combatant,
                     id: combatant.id,
+                    initiativeSet: (combatant.initiative != null),
                     img: actor? actor.img : combatant.img,
                     hpPercent,
                     ac,
