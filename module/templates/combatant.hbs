@@ -1,41 +1,30 @@
-<div class="combatant-container shadowdark" style="width:{{containerWidth}}px">
-    {{#each combatants}}
-        {{#unless isDivider}}
-            <div class="combatant {{styleClass}}" style="order: {{order}}" data-combatant-id="{{id}}">
-                <div class="frame">
-                    <div class="name">{{name}}</div>
-                    <div class="portrait">
-                        <img src="{{img}}">
-                        {{#if initiativeSet}}
-                            <div class="initiative">{{initiative}}</div>
-                        {{else}}
-                            <div class="overlay">
-                                <a 
-                                    data-action="rollInitiative" 
-                                    data-combatant-id="{{id}}"
-                                    data-tooltip="End curret tracker"
-                                >
-                                    <i class="far fa-dice-d20"></i>
-                                </a>
-                            </div>
-                        {{/if}}
-                    </div>
-                    <div class="health-bar">
-                        <div 
-                            class="{{system.type}}" 
-                            style="width:{{hpPercent}}%"
-                        >
-                        </div>
-                    </div>
-                </div>
-            </div>
-        {{/unless}}
-        {{#if isDivider}}
-            <div class="round-divider" style="order: {{order}}" data-combatant-id="{{id}}">
-                <div></div>
-                <span class="transition">{{round}}</span>
-                <div></div>
+<div class="frame">
+    <div class="name">{{name}}</div>
+    <div class="portrait">
+        <img src="{{img}}">
+        {{#if initiativeSet}}
+            <div class="initiative">{{initiative}}</div>
+        {{else}}
+            <div class="overlay">
+                {{#if control}}
+                <a 
+                    data-action="rollInitiative" 
+                    data-combatant-id="{{id}}"
+                    data-tooltip="End curret tracker"
+                >
+                    <i class="fal fa-dice-d20"></i>
+                </a>
+                {{else}}
+                    <i class="fal fa-dice-d20" style="color:rgb(255,255,255,0.5)"></i>
+                {{/if}}
             </div>
         {{/if}}
-    {{/each}}
+    </div>
+    <div class="health-bar">
+        <div 
+            class="{{system.type}}" 
+            style="width:{{hpPercent}}%"
+        >
+        </div>
+    </div>
 </div>

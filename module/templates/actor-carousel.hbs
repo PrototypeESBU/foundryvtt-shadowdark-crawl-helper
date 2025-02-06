@@ -1,31 +1,53 @@
 <div class="main-part">
-    {{#if crawlStarted}}
-    <div class="side-buttons">
-        <ol>
-            <li class="small" data-action="rollAllInit" data-tooltip="Roll All Initiatives">
-                <i class="fas fa-dice-d20"></i>
-            </li>
-            <li class="small" data-action="previousRound" data-tooltip="Previous Round">
-                <i class="fas fa-angles-left"></i>
-            </li>
-            <li data-action="previousTurn" data-tooltip="Previous Turn">
-                <i class="fas fa-angle-left"></i>
-            </li>
-        </ol>
-    </div>
-    {{> combatant}}
-    <div class="side-buttons">
-        <ol>
-            <li class="small" data-action="resetInit" data-tooltip="Reset All Initiative">
-                <i class="fas fa-eraser"></i>
-            </li>
-            <li class="small" data-action="nextRound" data-tooltip="Next Round">
-                <i class="fas fa-angles-right"></i>
-            </li>
-            <li data-action="nextTurn" data-tooltip="Next Turn">
-                <i class="fas fa-angle-right"></i>
-            </li>
-        </ol>
-    </div>
+{{#if crawlStarted}}
+
+    {{#if isGM}}
+        <div class="side-buttons">
+            <ol>
+                <li class="small" data-action="rollAllInit" data-tooltip="Roll All Initiatives">
+                    <i class="fas fa-dice-d20"></i>
+                </li>
+                <li class="small" data-action="previousRound" data-tooltip="Previous Round">
+                    <i class="fas fa-angles-left"></i>
+                </li>
+                <li data-action="previousTurn" data-tooltip="Previous Turn">
+                    <i class="fas fa-angle-left"></i>
+                </li>
+            </ol>
+        </div>
     {{/if}}
+
+    <div class="combatant-container shadowdark" style="width:{{containerWidth}}px">
+        {{#each combatants}}
+            {{#if isDivider}}
+                <div class="round-divider" style="order: {{order}}" data-combatant-id="{{id}}">
+                    <div></div>
+                    <span class="transition">{{round}}</span>
+                    <div></div>
+                </div>
+            {{else}}
+                <div class="combatant {{styleClass}}" style="order: {{order}}" data-combatant-id="{{id}}">
+                    {{> combatant}}
+                </div>
+            {{/if}}
+        {{/each}}
+    </div>
+
+    {{#if isGM}}
+        <div class="side-buttons">
+            <ol>
+                <li class="small" data-action="resetInit" data-tooltip="Reset All Initiative">
+                    <i class="fas fa-eraser"></i>
+                </li>
+                <li class="small" data-action="nextRound" data-tooltip="Next Round">
+                    <i class="fas fa-angles-right"></i>
+                </li>
+                <li data-action="nextTurn" data-tooltip="Next Turn">
+                    <i class="fas fa-angle-right"></i>
+                </li>
+            </ol>
+        </div>
+    {{/if}}
+
+{{/if}}
 </div>

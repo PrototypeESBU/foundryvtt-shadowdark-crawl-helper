@@ -13,7 +13,7 @@
 .actor-carousel {
     position:absolute;
     padding: 0px 150px;
-    //pointer-events: none;
+    pointer-events: none;
     
     .main-part {
         display: flex;
@@ -116,6 +116,7 @@
                         color: white;
                         font-size: 42px;
                         top: calc(50% - 21px);
+                        pointer-events: all;
                     }
                 }
 

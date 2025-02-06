@@ -53,6 +53,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             this._updateCombatantsList();
             this._updateOrder();
             context.crawlStarted = true;
+            context.isGM = game.user.isGM;
             context.combatants = this.combatants;
             context.containerWidth = 138 + ((this.combatants.length-2) * 98) + 30;
         }
@@ -79,29 +80,30 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     };
 
     static async rollInitiative(event, target) {
-        game.combat.rollInitiative(target.dataset.combatantId);
+        game.combat.rollInitiative(target.dataset.combatantId, {updateTurn: false});
     }
 
     static async rollAllInit(event, target) {
         await game.combat.rollAll();
         await game.combat.update({turn: 0});
-        this.render();
     };
 
     static async resetInit(event, target) {
         game.combat.resetAll();
-        this.render();
     };
 
     // -----------------------------------------------
     // Public functions
     // -----------------------------------------------
     async onUpdateCombat(changes, options) {
-        if (changes.turn >=0) {
+        if ("turn" in changes) {
             this._updateTurn(options.direction);
         }
         if (changes.round) {
             this._updateRound();
+        }
+        if ("combatants" in changes) {
+            this.render(true);
         }
     }
 
@@ -110,15 +112,25 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     }
 
     async onDeleteCombatant(combatant, updates){
-        if(combatant.id === game.combat.system.gmId){
+        if(combatant.id === game.combat.system.gmId && game.user.isGM){
             await game.combat.update({"system.gmId": null})
-         }
-         this.render(true);
+        }
+        this.render(true);
     }
 
     async onUpdateCombatant(combatant, updates) {
-        // TODO just update the changed combatant
-        this.render(true);
+        /*
+        const newHTML = await renderTemplate(
+            "modules/shadowdark-crawl-helper/templates/combatant.hbs", 
+            this._enrichCombatant(combatant)
+        );
+
+        const elm = this.element.querySelector(
+            `div[data-combatant-id="${combatant.id}"]`
+        );
+        elm.innerHTML = newHTML;
+        */
+       this.render(true);
     }
 
     
@@ -127,11 +139,8 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     // Private functions
     // -----------------------------------------------
 
-    _updateCombatantsList() { //Updates combatants data
-        this.combatants = [];
-        if(game.combat?.started){
-            for (const combatant of game.combat.turns){
-                let actor = null;
+    _enrichCombatant(combatant) {
+        let actor = null;
                 if (combatant.actorId) {
                    actor = game.actors.get(combatant.actorId);
                 } 
@@ -149,18 +158,25 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                     ac = actor.system.attributes.ac.value;
                     level = actor.system.level.value;
                 }
+        return {
+            ...combatant,
+            id: combatant.id,
+            initiativeSet: (combatant.initiative != null),
+            control: (game.user.isGM || game.user.character.id === combatant.actorId),
+            img: actor? actor.img : combatant.img,
+            hpPercent,
+            ac,
+            level
+        }
 
+    }
 
+    _updateCombatantsList() { //Updates combatants data
+        this.combatants = [];
+        if(game.combat?.started){
+            for (const combatant of game.combat.turns){
                 //add combatant
-                this.combatants.push({
-                    ...combatant,
-                    id: combatant.id,
-                    initiativeSet: (combatant.initiative != null),
-                    img: actor? actor.img : combatant.img,
-                    hpPercent,
-                    ac,
-                    level
-                })
+                this.combatants.push(this._enrichCombatant(combatant))
             }
 
             //set initial style on first combatant

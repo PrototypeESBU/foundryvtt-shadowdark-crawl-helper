@@ -100,34 +100,11 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     static async toggleCombat(event, target) {
         //turn off combat
         if (this.crawl.system.inCombat) {
-            for (const combatant of this.crawl.combatants) {
-                // restore saved crawling Initiative
-                await this.crawl.setInitiative(combatant.id, combatant.system.crawlingInit);
-
-                // TODO should this be done only based on a setting of auto remove Monsters or something like that?
-                if(combatant.system.type === "NPC") combatant.delete(); 
-            }
-
-            // Reset nexEncounter
-            await this.crawl.update({"system": {
-                "inCombat": false,
-                "nextEncounter": this.crawl.round + this.crawl.system.dangerLevel + 1
-            }})
-
-            // start a fresh round
-            await game.combat.nextRound();
+            this._stopCombat();
         }
         //turn on combat
         else {
-            // save crawling Initiative
-            for (const combatant of this.crawl.combatants) {
-                await combatant.update({"system.crawlingInit": combatant.initiative});
-            }
-            //reset Initiative
-            this.crawl.resetAll();
-            await this.crawl.update({"system.inCombat": true})
-
-            // TODO maybe a setting to auto role initative?
+           this._startCombat();
         }
         this.render();
     }
@@ -240,6 +217,41 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
         //add GM to game
         //await this.addGameMaster(); // TODO add GM at the start based on a setting
+    }
+
+    async _startCombat() {
+        // save crawling Initiative
+        for (const combatant of this.crawl.combatants) {
+            await combatant.update({"system.crawlingInit": combatant.initiative});
+        }
+        //reset Initiative
+        this.crawl.resetAll();
+        await this.crawl.update({"system.inCombat": true})
+
+        // TODO maybe a setting to auto role initative?
+    }
+
+    async _stopCombat() {
+            //Remove NPCs from tracker
+            // TODO should this be done only based on a setting of auto remove Monsters or something like that?
+            const npcs = this.crawl.combatants
+                .filter(c => c.system.type === "NPC")
+                .map(c => c.id);
+            await this.crawl.deleteEmbeddedDocuments("Combatant", npcs);
+
+            // restore saved crawling Initiative
+            for (const combatant of this.crawl.combatants) {
+                await this.crawl.setInitiative(combatant.id, combatant.system.crawlingInit);
+            }
+
+            // Reset nexEncounter
+            await this.crawl.update({"system": {
+                "inCombat": false,
+                "nextEncounter": this.crawl.round + this.crawl.system.dangerLevel + 1
+            }})
+
+            // start a fresh round
+            await this.crawl.nextRound();
     }
 
     async _gmTurn() { //Automatic activites that run on the GM turn
