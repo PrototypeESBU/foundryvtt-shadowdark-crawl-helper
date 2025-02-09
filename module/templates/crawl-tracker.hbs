@@ -1,19 +1,5 @@
 <div class="main-part">
-    {{#if isStarted}}
-    <div class="gm-tools">
-        <a data-action="addParty" data-tooltip="Add party to tracker"><i class="fas fa-people-group"></i></a>
-        <a data-action="addGameMaster" data-tooltip="Add GM to tracker"><i class="fas fa-hat-wizard"></i></a>
-        <a data-action="triggerEncounterCheck" data-tooltip="Encounter check"><i class="fa-solid fa-dice-one"></i></a>
-        <a data-action="triggerEncounter" data-tooltip="Instant encounter"><i class="fa-solid fa-bolt-lightning"></i></a>
-        <a data-action="moralCheck" data-tooltip="Monster moral check"><i class="fa-solid fa-person-running"></i></a>
-        <a data-action="timePasses" data-tooltip="Time Passes"><i class="fa-solid fa-hourglass-half"></i></a>
-        <a data-action="endCrawling" data-tooltip="End curret tracker"><i class="fas fa-rectangle-xmark"></i></a>
-    </div>
-    <div class="danger-level">
-        <div>Encounter table:</div>
-        <div>Danger level: {{danger}}</div>
-    </div>
-    <div class="player-view">
+    {{#if started}}
         <div class="heading">
             <i class="fas fa-dungeon {{#if inCombat}}faded{{/if}}"></i>
             <h2><a data-action="toggleCombat">{{mode}}</a></h2>
@@ -23,10 +9,9 @@
             <h3>Round {{round}}</h3>
             <h4>Next Encounter Check: {{#if inCombat}}-{{else}}{{nextEncounter}}{{/if}}</h4>
         </div>
-    </div>
     {{else}}
-        <div class="gm-tools">
-            <a data-action="startCrawling"><i class="fas fa-dungeon"></i></a>
+        <div class="stub">
+            <a data-action="startCrawling" data-tooltip="Start Crawling"><i class="fas fa-dungeon"></i></a>
         </div>
     {{/if}}
 </div>

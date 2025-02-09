@@ -31,19 +31,18 @@ Hooks.on("init", () => {
         actorCarousel: new actorCarousel()
     };
 
+    
+
 });
 
 // -----------------------------------------------
 // Triggers once the module is fully loaded
 // -----------------------------------------------
 Hooks.on("ready", async () => {
-    //show crawlTracker
+    //Setup and render apps
     await game.crawlHelper.crawlTracker.initializeCrawl();
-    if (game.user.isGM){
-        game.crawlHelper.crawlTracker.render(true);
-    }
-    //show ActorCarousel
-    game.crawlHelper.actorCarousel.render(true);
+    await game.crawlHelper.actorCarousel.render(true);
+    
 
     //collaspe nav bar 
     // TODO only if actorCarousel is on
@@ -54,16 +53,14 @@ Hooks.on("ready", async () => {
 // -----------------------------------------------
 // Combat Triggers
 // -----------------------------------------------
-Hooks.on('combatStart', async (combat, updateData) => {  //unsure if this is needed
-    game.crawlHelper.crawlTracker.render();  
-});
 
 Hooks.on('updateCombat', async (document, changed, options, userId) => {
     game.crawlHelper.actorCarousel.onUpdateCombat(changed,options);
-    game.crawlHelper.crawlTracker.render(true);
+    game.crawlHelper.crawlTracker.onUpdateCombat(changed,options);
 });
 
 Hooks.on('deleteCombat', async (document, changed, options, userId) => {
+    game.crawlHelper.crawlTracker.onDeleteCombat(document); 
     game.crawlHelper.actorCarousel.render(true);
 });
 

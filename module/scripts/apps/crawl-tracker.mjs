@@ -1,10 +1,11 @@
+import { render } from "sass";
+
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 export default class crawlTracker extends HandlebarsApplicationMixin(ApplicationV2) {
 
     constructor() {
 		super();
-        this.crawl = null;
         this.dangerIndex = [
             "Deadly",
             "Risky",
@@ -35,13 +36,16 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             endCrawling: this.endCrawling,
             toggleCombat: this.toggleCombat,
             addParty: this.addParty,
-            addGameMaster: this.addGameMaster,
+            toggleGameMaster: this.toggleGameMaster,
             triggerEncounter: this.triggerEncounter,
             openCombatTracker: this.openCombatTracker,
         }
     };
 
     static PARTS = {
+        gmtools: {
+            template: "./modules/shadowdark-crawl-helper/templates/crawl-tracker-gmtools.hbs"
+        },
         main: {
           template: "./modules/shadowdark-crawl-helper/templates/crawl-tracker.hbs"
         }
@@ -61,15 +65,31 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         });
     }
 
+    _configureRenderOptions(options) {
+        super._configureRenderOptions(options);
+
+        if (game.user.isGM) {
+            options.parts = ['gmtools','main']
+        }
+        else {
+            options.parts = ['main']
+        }
+    }
+    async _prepareContext(context, options) {
+        if(game.combat?.started) context.started = true;
+        return context;
+    }
+
     async _preparePartContext(partId, context, options) {
-        if (partId === "main") {
-            if(this.crawl?.started){
-                context.isStarted = true
-                context.round = this.crawl.round;
-                context.inCombat = this.crawl.system.inCombat;
-                context.mode = this.crawl.system.inCombat ? "Combat" : "Crawling"; //TODO needs i18n
-                context.danger = this.dangerIndex[this.crawl.system.dangerLevel];
-                context.nextEncounter = this.crawl.system.nextEncounter;
+        if(game.combat) {
+            if (partId === "gmtools") {
+                context.danger = this.dangerIndex[game.combat.system.dangerLevel];
+            }
+            else if (partId === "main") {
+                context.round = game.combat.round;
+                context.inCombat = game.combat.system.inCombat;
+                context.mode = game.combat.system.inCombat ? "Combat" : "Crawling"; //TODO needs i18n
+                context.nextEncounter = game.combat.system.nextEncounter;
             }
         }
         return context;
@@ -80,13 +100,14 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     // -----------------------------------------------
 
     static async startCrawling(event, target) {
-        await this.crawl.startCombat();
-        this.render();
+        await this.initializeCrawl();
+        await this._addGameMaster(); // TODO add GM at the start based on a setting
+        await this._addParty(); // TODO add party based on settings
+        await game.combat.startCombat();
+    
     }
     static async endCrawling(event, target) {
-        await this.crawl.endCombat();
-        await this._createCrawl();
-        this.render();
+        await game.combat.endCombat();
     }
 
     static async triggerEncounter(event, target) {
@@ -99,52 +120,23 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     static async toggleCombat(event, target) {
         //turn off combat
-        if (this.crawl.system.inCombat) {
-            this._stopCombat();
+        if (game.combat.system.inCombat) {
+           await this._stopCombat();
         }
         //turn on combat
         else {
-           this._startCombat();
-        }
-        this.render();
-    }
-
-    static async addGameMaster() {
-        if (!this.crawl.combatants.map(c => c.id).includes(this.crawl.system.gmId)) {
-            const gm = await this.crawl.createEmbeddedDocuments("Combatant", [{
-                name: "Game Master", 
-                type: "shadowdark-crawl-helper.crawler",
-                system: {type:"GM"},
-                img: "modules/shadowdark-crawl-helper/assets/dungeon-master.png", // TODO needs to be a default config and setting 
-                hidden: false
-            }]);
-            await this.crawl.update({"system.gmId": gm[0].id})
+           await this._startCombat();
         }
     }
 
-    static async addParty() {
-        //get all party members
-        const partyActors = game.users
-        .filter(user => user.active && user.character)
-        .map(user => user.character);
+    static async toggleGameMaster() {
+        // TODO make this it a toggle
+        this._addGameMaster();
+    }
 
-        //get exiting combatants
-        const combatantActorsIDs = this.crawl.combatants
-        .map(combatant => combatant.actorId);
-
-        //create placeholder combatants if not already added
-        for (const actor of partyActors) {
-            //add any missing actors to combants
-            if (!combatantActorsIDs.includes(actor.id)) {
-                await this.crawl.createEmbeddedDocuments("Combatant", [{
-                    actorId: actor.id,
-                    name: actor.name, 
-                    img: actor.img, 
-                    hidden: false
-                }]);
-            }
-        }
-        this._connectSceneTokens();
+    static async toggleParty() {
+        // TODO make this it a toggle
+        this._addParty();
     }
 
     static async openCombatTracker() {
@@ -157,36 +149,87 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     // -----------------------------------------------
     
     async initializeCrawl() { // loads tracking data from an exiting combat on initialization
-        //Confirm if there is a crawl loaded already
-        if (game?.combat?.type === "shadowdark-crawl-helper.crawl") {
-            this.crawl = game.combat;
-        }
-        else
-        // create a new crawl
-        {
-            await this._createCrawl();
-        }
 
-        //if linked to a scene, unlink combat
-        if (this.crawl._source.scene) this.crawl.toggleSceneLink();
+        if (game.user.isGM) {
+            //Check if there is a crawl loaded already
+            if (game?.combat?.type !== "shadowdark-crawl-helper.crawl") {
+                await Combat.create({type:"shadowdark-crawl-helper.crawl"});
+            }
+
+            if (game.combat._source.scene) game.combat.toggleSceneLink();  
+        } 
+
+        if(game?.combat?.started || game.user.isGM){
+            this.render(true);
+        }
     }
 
     async onSceneChange(canvas) {
-        if (this.crawl) this._connectSceneTokens();
+        if (game.combat) this._connectSceneTokens();
     }
 
     async onUpdateCombat(changes, options) { 
-        if (changes.turn >=0) {
+        if ("turn" in changes) {
             this._updateTurn(options.direction);
         }
-        if (changes.round) {
+        if ("round" in changes) {
             this._updateRound();
+        }
+        if (game.combat) {
+            this.render();
+        }
+    }
+
+    async onDeleteCombat() { 
+        if (game.user.isGM) {
+            this.render(true);
+        }
+        else {
+            this.close({animate:false});
         }
     }
 
     // -----------------------------------------------
     // Private functions
     // -----------------------------------------------
+
+    async _addGameMaster() {
+        if (!game.combat.combatants.map(c => c.id).includes(game.combat.system.gmId)) {
+            const gm = await game.combat.createEmbeddedDocuments("Combatant", [{
+                name: "Game Master", 
+                type: "shadowdark-crawl-helper.crawler",
+                system: {type:"GM"},
+                img: "modules/shadowdark-crawl-helper/assets/dungeon-master.png", // TODO needs to be a default config and setting 
+                hidden: false
+            }]);
+            await game.combat.update({"system.gmId": gm[0].id})
+        }
+    }
+
+    async _addParty() {
+        //get all party members
+        const partyActors = game.users
+        .filter(user => user.active && user.character)
+        .map(user => user.character);
+
+        //get exiting combatants
+        const combatantActorsIDs = game.combat.combatants
+        .map(combatant => combatant.actorId);
+
+        //create placeholder combatants if not already added
+        for (const actor of partyActors) {
+            //add any missing actors to combants
+            if (!combatantActorsIDs.includes(actor.id)) {
+                await game.combat.createEmbeddedDocuments("Combatant", [{
+                    actorId: actor.id,
+                    name: actor.name, 
+                    img: actor.img, 
+                    hidden: false
+                }]);
+            }
+        }
+        this._connectSceneTokens();
+    }
 
     async _connectSceneTokens() { //connects scene tokens to player placeholders in crawl
         const partyActors = game.users
@@ -195,10 +238,10 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
         for (const actor of partyActors) {
             //gets first combatant and token and matches them 
-            const combatant = this.crawl.combatants.find(c => c.actorId === actor.id); 
+            const combatant = game.combat.combatants.find(c => c.actorId === actor.id); 
             const token = game.scenes.active.tokens.find(t => t.actorId === actor.id);
             if (combatant && token) {
-                this.crawl.updateEmbeddedDocuments("Combatant", [{
+                game.combat.updateEmbeddedDocuments("Combatant", [{
                     "_id": combatant.id,
                     tokenId: token.id,
                     sceneId: game.scenes.active.id,
@@ -210,23 +253,14 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         }
     }
 
-
-    async _createCrawl() { // creates a new crawl type encounter
-        
-        this.crawl = await Combat.create({type:"shadowdark-crawl-helper.crawl"}); 
-
-        //add GM to game
-        //await this.addGameMaster(); // TODO add GM at the start based on a setting
-    }
-
     async _startCombat() {
         // save crawling Initiative
-        for (const combatant of this.crawl.combatants) {
+        for (const combatant of game.combat.combatants) {
             await combatant.update({"system.crawlingInit": combatant.initiative});
         }
         //reset Initiative
-        this.crawl.resetAll();
-        await this.crawl.update({"system.inCombat": true})
+        game.combat.resetAll();
+        await game.combat.update({"system.inCombat": true})
 
         // TODO maybe a setting to auto role initative?
     }
@@ -234,49 +268,57 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     async _stopCombat() {
             //Remove NPCs from tracker
             // TODO should this be done only based on a setting of auto remove Monsters or something like that?
-            const npcs = this.crawl.combatants
+            const npcs = game.combat.combatants
                 .filter(c => c.system.type === "NPC")
                 .map(c => c.id);
-            await this.crawl.deleteEmbeddedDocuments("Combatant", npcs);
+            await game.combat.deleteEmbeddedDocuments("Combatant", npcs);
 
             // restore saved crawling Initiative
-            for (const combatant of this.crawl.combatants) {
-                await this.crawl.setInitiative(combatant.id, combatant.system.crawlingInit);
+            for (const combatant of game.combat.combatants) {
+                await game.combat.setInitiative(combatant.id, combatant.system.crawlingInit);
             }
 
             // Reset nexEncounter
-            await this.crawl.update({"system": {
+            await game.combat.update({"system": {
                 "inCombat": false,
-                "nextEncounter": this.crawl.round + this.crawl.system.dangerLevel + 1
+                "nextEncounter": game.combat.round + game.combat.system.dangerLevel + 1
             }})
 
             // start a fresh round
-            await this.crawl.nextRound();
+            await game.combat.nextRound();
     }
 
     async _gmTurn() { //Automatic activites that run on the GM turn
         //test for encounters
-        if (this.crawl.system.nextEncounter <= this.crawl.round) {
-            await this.crawl.update({"system.nextEncounter": this.crawl.round + this.crawl.system.dangerLevel + 1})
+        if (game.combat.system.nextEncounter <= game.combat.round) {
+            await game.combat.update({"system.nextEncounter": game.combat.round + game.combat.system.dangerLevel + 1})
             this.checkForEncounter();
         }
+
     }
 
     async _updateRound() {
         // if there is no GM turn, take the turn now.
-        if(this.crawl.system.gmId === null){
-            this._gmTurn();
+        if (game.user.isGM){
+            if(game.combat.system.gmId === null){
+                this._gmTurn();
+            }
         }
+
+        this.render(true);
     }
 
     async _updateTurn(direction) {
        // TODO Announce to player that's it's there turn based on a global setting
        // play a sound? annouce player that's on deck next?
 
-       //test for GM's turn
-        if((this.crawl.nextCombatant.id === this.crawl.system.gmId) & direction > 0) {
-            this._gmTurn();
-        }
+       if (game.user.isGM){
+            //test for GM's turn
+            if ((game.combat.combatant.id === game.combat.system.gmId) && (direction > 0))
+                {
+                this._gmTurn();
+            }
+       }
     }
 
 
@@ -289,6 +331,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     async encounter(){
         // TODO add more encounter actions based on settings
         ui.notifications.info("encounter!");
+        this.render();
     }
 
     async timePasses(minutes){

@@ -96,14 +96,18 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     // Public functions
     // -----------------------------------------------
     async onUpdateCombat(changes, options) {
-        if ("turn" in changes) {
-            this._updateTurn(options.direction);
-        }
-        if (changes.round) {
-            this._updateRound();
-        }
-        if ("combatants" in changes) {
-            this.render(true);
+        if(game.combat.combatants.size > 0) {
+            if ("combatants" in changes || game.combat.previous.round === 0) {
+                await this.render(true);
+            } else {
+                if ("turn" in changes ) {
+                    this._updateTurn(options.direction);
+                }
+                if ("round" in changes) {
+                    this._updateRound();
+                }
+            }
+
         }
     }
 
@@ -218,6 +222,10 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     
     async _updateTurn(direction) { //updates HTML based on the current turn
         this._updateOrder();
+
+        //only animate is more than 1 combatant
+        if (this.combatants.length < 2) return
+
         //get current and next combatant
         const current = this.element.querySelector(
             `div[data-combatant-id="${
