@@ -95,6 +95,7 @@ Hooks.on('updateCombatant', async (combatant, updates) => {
 // UI Triggers
 // -----------------------------------------------
 Hooks.on("collapseSidebar", async (sidebar, collapsed) => {
+    //TODO only render if app is suppose to be shown
     game.crawlHelper.actorCarousel.render();
     game.crawlHelper.crawlTracker.render();
 });
@@ -102,6 +103,11 @@ Hooks.on("collapseSidebar", async (sidebar, collapsed) => {
 Hooks.on('renderSceneNavigation', async (application, html, data) => { 
     // TODO only if actorCarousel is on
     ui.nav.element.addClass("verticle");
+});
+
+Hooks.on("renderSidebar", async function(app, html) {
+    //hide combat tracker
+    document.querySelector('#sidebar [data-tab="combat"]').classList.add("hidden");
 });
 
 // -----------------------------------------------

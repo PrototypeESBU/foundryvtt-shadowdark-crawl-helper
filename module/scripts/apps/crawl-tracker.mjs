@@ -6,6 +6,10 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     constructor() {
 		super();
+        this._dragDrop = this.options.dragDrop.map(d => {
+            d.callbacks = {drop: this._onDrop.bind(this)};
+            return new DragDrop(d);
+        });
         this.dangerIndex = [
             "Deadly",
             "Risky",
@@ -15,30 +19,25 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     static DEFAULT_OPTIONS = {
         id: "crawlTracker",
-        classes: ["crawl-tracker"],
+        classes: ["crawl-tracker", "collapsed"],
         position: {
             width: 200,
             height: "auto",
         },
+        dragDrop: [{ dragSelector: null, dropSelector: '[data-drop]' }],
         window: {
             title: "Crawl Tracker",
             frame: false,
-            controls: [
-                {
-                   icon: 'fa-solid fa-swords',
-                  label: "Combat Tracker",
-                  action: "openCombatTracker",
-                },
-              ]
         },
         actions: {
             startCrawling: this.startCrawling,
             endCrawling: this.endCrawling,
             toggleCombat: this.toggleCombat,
-            addParty: this.addParty,
+            toggleParty: this.toggleParty,
             toggleGameMaster: this.toggleGameMaster,
             triggerEncounter: this.triggerEncounter,
             openCombatTracker: this.openCombatTracker,
+            collapseGmTools: this.collapseGmTools,
         }
     };
 
@@ -83,7 +82,10 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     async _preparePartContext(partId, context, options) {
         if(game.combat) {
             if (partId === "gmtools") {
-                context.danger = this.dangerIndex[game.combat.system.dangerLevel];
+                context.dangerLevel = game.combat.system.dangerLevel;
+                context.encounterTable = game.combat.system.encounterTable ? 
+                    fromUuidSync(game.combat.system.encounterTable) : "";
+                context.dangerIndex = this.dangerIndex
             }
             else if (partId === "main") {
                 context.round = game.combat.round;
@@ -95,15 +97,24 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         return context;
     }
 
+    _onRender(context, options) {
+        //add dragdrop event lisners
+        this._dragDrop.forEach((d) => d.bind(this.element));
+
+        //Add event handler for danger selection
+        const dangerSelect = this.element.querySelector('select[name="dangerLevel"]');
+        dangerSelect.addEventListener("change", event => this._onDangerChange(event));
+    }
+
     // -----------------------------------------------
     // Action Functions
     // -----------------------------------------------
 
     static async startCrawling(event, target) {
-        await this.initializeCrawl();
+        await this._setEncounterCheck();
         await this._addGameMaster(); // TODO add GM at the start based on a setting
         await this._addParty(); // TODO add party based on settings
-        await game.combat.startCombat();
+        await game.combat.startCombat(); 
     
     }
     static async endCrawling(event, target) {
@@ -141,6 +152,11 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     static async openCombatTracker() {
         game.combats.directory.createPopout().render(true);
+    }
+
+    static async collapseGmTools(){
+        this.element.classList.toggle("collapsed");
+        this.render();
     }
 
 
@@ -182,6 +198,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     async onDeleteCombat() { 
         if (game.user.isGM) {
+            await this.initializeCrawl();
             this.render(true);
         }
         else {
@@ -253,6 +270,10 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         }
     }
 
+    async _onDangerChange(event) {
+        await game.combat.update({"system.dangerLevel": parseInt(event.currentTarget.value)})
+    }
+
     async _startCombat() {
         // save crawling Initiative
         for (const combatant of game.combat.combatants) {
@@ -277,12 +298,11 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             for (const combatant of game.combat.combatants) {
                 await game.combat.setInitiative(combatant.id, combatant.system.crawlingInit);
             }
+            //
+            await game.combat.update({"system.inCombat": false});
 
-            // Reset nexEncounter
-            await game.combat.update({"system": {
-                "inCombat": false,
-                "nextEncounter": game.combat.round + game.combat.system.dangerLevel + 1
-            }})
+            // Set next encounter
+            await this._setEncounterCheck()
 
             // start a fresh round
             await game.combat.nextRound();
@@ -291,11 +311,27 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     async _gmTurn() { //Automatic activites that run on the GM turn
         //test for encounters
         if (game.combat.system.nextEncounter <= game.combat.round) {
-            await game.combat.update({"system.nextEncounter": game.combat.round + game.combat.system.dangerLevel + 1})
-            this.checkForEncounter();
+            await this.checkForEncounter();
+
+            //set new encounter check
+            await this._setEncounterCheck();
         }
 
     }
+
+    async _onDrop(event) {
+        // get table that was dropped based on event
+		const eventData = TextEditor.getDragEventData(event);
+        if(eventData.type === "RollTable") {
+            await game.combat.update({"system.encounterTable": eventData.uuid});
+            this.render();
+        }
+    }
+
+    async _roll(formula) {
+		let roll = await new Roll(formula).evaluate();
+		return roll._total;
+	}
 
     async _updateRound() {
         // if there is no GM turn, take the turn now.
@@ -304,7 +340,6 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
                 this._gmTurn();
             }
         }
-
         this.render(true);
     }
 
@@ -321,16 +356,25 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
        }
     }
 
-
+    async _setEncounterCheck() {
+        await game.combat.update({"system": {
+            "nextEncounter": game.combat.round + game.combat.system.dangerLevel + 1
+        }})
+    }
 
     async checkForEncounter(){
         // TODO add more encounter actions based on settings
+        const result = this._roll("1d6");
+        if (result === 1) {
+            this._encounter
+        }
         ui.notifications.info("Checking for encounter");
     }
 
     async encounter(){
         // TODO add more encounter actions based on settings
         ui.notifications.info("encounter!");
+
         this.render();
     }
 

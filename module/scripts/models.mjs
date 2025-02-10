@@ -6,7 +6,7 @@ export class crawlCombat extends foundry.abstract.TypeDataModel {
             inCombat: new fields.BooleanField({required: true, initial: false}),
             nextEncounter: new fields.NumberField({ required: true, integer: true, min: 0, initial: 3 }),
             dangerLevel: new fields.NumberField({ required: true, integer: true, min: 0, initial: 2 }),
-            encoutnerTable: new fields.DocumentIdField({ required: false, initial: null}),
+            encounterTable: new fields.DocumentUUIDField({ required: false, initial: null}),
             gmId: new fields.DocumentIdField({ required: false, initial: null}),
         };
     }
