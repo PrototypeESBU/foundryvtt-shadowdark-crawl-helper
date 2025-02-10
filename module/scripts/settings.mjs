@@ -7,5 +7,14 @@ export default function registerSettings() {
 		type: String,
 	});
 
+    //
+    game.settings.register("shadowdark-crawl-helper", "carousel", {
+		name: "Enabled Actor Carousel",
+        scope: "world",
+        config: true,
+		default: true,
+		type: Boolean,
+        requiresReload: true,
+	});
     
 }

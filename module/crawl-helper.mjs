@@ -1,6 +1,5 @@
 import registerSettings from "./scripts/settings.mjs";
 import crawlTracker from "./scripts/apps/crawl-tracker.mjs";
-import actorCarousel from "./scripts/apps/actor-carousel.mjs";
 import crawlingHelperMacro from "./scripts/apps/crawling-helper-macro.mjs";
 import {crawlCombat, crawlCombatant} from "./scripts/models.mjs";
 
@@ -26,28 +25,24 @@ Hooks.on("init", () => {
 
     // Initialize persistent apps and variables
     game.crawlHelper = {
-        crawlTracker: new crawlTracker(),
-        crawlingHelperMacro: new crawlingHelperMacro(),
-        actorCarousel: new actorCarousel()
+        tracker: new crawlTracker(),
+        crawlingHelperMacro: new crawlingHelperMacro()
     };
-
     
-
 });
 
 // -----------------------------------------------
 // Triggers once the module is fully loaded
 // -----------------------------------------------
 Hooks.on("ready", async () => {
-    //Setup and render apps
-    await game.crawlHelper.crawlTracker.initializeCrawl();
-    await game.crawlHelper.actorCarousel.render(true);
-    
+    //Setup a crawl
+    await game.crawlHelper.tracker.initializeCrawl();
 
     //collaspe nav bar 
-    // TODO only if actorCarousel is on
-    await ui.nav.collapse();
-    await ui.nav.render();
+    if(game.settings.get("shadowdark-crawl-helper", "carousel")) {
+        await ui.nav.collapse();
+        await ui.nav.render();
+    }
 });
 
 // -----------------------------------------------
@@ -55,13 +50,11 @@ Hooks.on("ready", async () => {
 // -----------------------------------------------
 
 Hooks.on('updateCombat', async (document, changed, options, userId) => {
-    game.crawlHelper.actorCarousel.onUpdateCombat(changed,options);
-    game.crawlHelper.crawlTracker.onUpdateCombat(changed,options);
+    game.crawlHelper.tracker.onUpdateCombat(changed,options);
 });
 
 Hooks.on('deleteCombat', async (document, changed, options, userId) => {
-    game.crawlHelper.crawlTracker.onDeleteCombat(document); 
-    game.crawlHelper.actorCarousel.render(true);
+    game.crawlHelper.tracker.onDeleteCombat(document); 
 });
 
 // -----------------------------------------------
@@ -80,28 +73,30 @@ Hooks.on("preCreateCombatant", async (combatant, data, options, userId) =>
 });
 
 Hooks.on('createCombatant', async (combatant, updates) => {
-    game.crawlHelper.actorCarousel.onCreateCombatant(combatant, updates);
+    game.crawlHelper.tracker.onCreateCombatant(combatant, updates);
 });
 
 Hooks.on('deleteCombatant', async (combatant, updates) => {
-    game.crawlHelper.actorCarousel.onDeleteCombatant(combatant, updates);
+    game.crawlHelper.tracker.onDeleteCombatant(combatant, updates);
 });
 
 Hooks.on('updateCombatant', async (combatant, updates) => {
-    game.crawlHelper.actorCarousel.onUpdateCombatant(combatant, updates);
+    game.crawlHelper.tracker.onUpdateCombatant(combatant, updates);
+});
+
+Hooks.on('updateActor', async (actor, updates) => {
+    game.crawlHelper.tracker.onUpdateActor(actor, updates);
 });
 
 // -----------------------------------------------
 // UI Triggers
 // -----------------------------------------------
 Hooks.on("collapseSidebar", async (sidebar, collapsed) => {
-    //TODO only render if app is suppose to be shown
-    game.crawlHelper.actorCarousel.render();
-    game.crawlHelper.crawlTracker.render();
+    game.crawlHelper.tracker.onSideBarChange();
 });
 
 Hooks.on('renderSceneNavigation', async (application, html, data) => { 
-    // TODO only if actorCarousel is on
+    // TODO only if Carousel is on
     ui.nav.element.addClass("verticle");
 });
 
@@ -115,7 +110,7 @@ Hooks.on("renderSidebar", async function(app, html) {
 // -----------------------------------------------
 
 Hooks.on("canvasReady", async (canvas) => {
-    game.crawlHelper.crawlTracker.onSceneChange(canvas);
+    game.crawlHelper.tracker.onSceneChange(canvas);
 });
 
 

@@ -251,20 +251,30 @@
         }
 
         .danger {
-            .table {
-                a {
-                    color:grey;
-                }
+            padding: 0px 4px 4px;
+            .section {
+                display: grid;
+                grid-template-columns: 3fr 1fr;
+            }
+            
+            label{
+                font-family: "Montserrat-bold"
             }
 
             select {
                 color: white;
                 border: none;
+              
             }
 
+            a {
+                color:grey;
+            }
+            
             fieldset {
                 border: 1px dashed grey;
-                margin: 4px;
+                color:grey;
+                text-align: center;
             }
         }
     }

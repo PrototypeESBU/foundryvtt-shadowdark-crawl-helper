@@ -1,4 +1,4 @@
-import { render } from "sass";
+import actorCarousel from "./actor-carousel.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -15,6 +15,11 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             "Risky",
             "Unsafe"
         ]
+        if(game.settings.get("shadowdark-crawl-helper", "carousel")) {
+            this.carousel = new actorCarousel();
+        } else {
+            this.carousel = null
+        }   
     }
 
     static DEFAULT_OPTIONS = {
@@ -36,8 +41,11 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             toggleParty: this.toggleParty,
             toggleGameMaster: this.toggleGameMaster,
             triggerEncounter: this.triggerEncounter,
+            moralCheck: this.moralCheck,
             openCombatTracker: this.openCombatTracker,
             collapseGmTools: this.collapseGmTools,
+            openSettingsMenu: this.openSettingsMenu,
+            clearRollTable: this.clearRollTable,
         }
     };
 
@@ -150,6 +158,14 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         this._addParty();
     }
 
+    
+    static async moralCheck(){
+        // TODO Roll moral checks for all targets as defined on pg 89
+        //const npcs = game.combat.combatants.filter(c => c.system.type === "NPC").find(c => c.actorId === actor.id); 
+
+    }
+
+
     static async openCombatTracker() {
         game.combats.directory.createPopout().render(true);
     }
@@ -158,7 +174,16 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         this.element.classList.toggle("collapsed");
         this.render();
     }
+    static async openSettingsMenu(){
+        Hooks.once("renderSettingsConfig", (app, html, data) => {
+            html[0].querySelector('a[data-tab="shadowdark-crawl-helper"]').click();
+        });
+        game.settings.sheet.render(true)
+    }
 
+    static async clearRollTable() {
+        game.combat.update({"system.encounterTable": ""})
+    }
 
     // -----------------------------------------------
     // Public functions
@@ -177,21 +202,57 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
         if(game?.combat?.started || game.user.isGM){
             this.render(true);
+
+            if(this.carousel) 
+                this.carousel.render(true);
         }
     }
 
     async onSceneChange(canvas) {
         if (game.combat) this._connectSceneTokens();
     }
+    
+    async onSideBarChange() {
+        //TODO only render if app is suppose to be shown
+        if(this.carousel) 
+            this.carousel.render(true);
+        this.render();
+    }
+
+    //Combatants
+
+    async onCreateCombatant(combatant, updates){
+        if(this.carousel) 
+            this.carousel.render(true);
+    }
+
+    async onDeleteCombatant(combatant, updates){
+        if(combatant.id === game.combat.system.gmId && game.user.isGM){
+            await game.combat.update({"system.gmId": null})
+        }
+        if(this.carousel) 
+            this.carousel.render(true);
+    }
+
+    async onUpdateCombatant(combatant, updates) {
+        if(this.carousel) 
+            this.carousel.render(true);
+        // TODO check for < 50% defeated and call moral check
+    }
+
+    //Combat
 
     async onUpdateCombat(changes, options) { 
+        if(this.carousel) 
+            this.carousel.onUpdateCombat(changes, options)
+
         if ("turn" in changes) {
             this._updateTurn(options.direction);
         }
         if ("round" in changes) {
             this._updateRound();
         }
-        if (game.combat) {
+        if (game?.combat?.started || game.user.isGM) {
             this.render();
         }
     }
@@ -204,6 +265,15 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         else {
             this.close({animate:false});
         }
+        this.carousel.render();
+    }
+
+    // Actors
+
+    async onUpdateActor(actor, updates) {
+        if(this.carousel) 
+            this.carousel.render(true);
+        console.log("actor")
     }
 
     // -----------------------------------------------
@@ -310,7 +380,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     async _gmTurn() { //Automatic activites that run on the GM turn
         //test for encounters
-        if (game.combat.system.nextEncounter <= game.combat.round) {
+        if ((game.combat.system.nextEncounter <= game.combat.round) && !game.combat.system.inCombat) {
             await this.checkForEncounter();
 
             //set new encounter check
@@ -383,18 +453,5 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         // TODO Game time / Torch timer runs down by minutes
         // TODO 50% change for random encounter
     }
-
-    async moralCheck(targets=[], groupRoll=false){
-        // TODO Roll moral checks for all targets as defined on pg 89
-
-    }
-
-    async onCombatantUpdate() {
-        // Do things when a combatant is updated
-
-        // TODO set flag for moral checks
-    }
-
-
 
 }

@@ -111,34 +111,6 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         }
     }
 
-    async onCreateCombatant(combatant, updates){
-        this.render(true);
-    }
-
-    async onDeleteCombatant(combatant, updates){
-        if(combatant.id === game.combat.system.gmId && game.user.isGM){
-            await game.combat.update({"system.gmId": null})
-        }
-        this.render(true);
-    }
-
-    async onUpdateCombatant(combatant, updates) {
-        /*
-        const newHTML = await renderTemplate(
-            "modules/shadowdark-crawl-helper/templates/combatant.hbs", 
-            this._enrichCombatant(combatant)
-        );
-
-        const elm = this.element.querySelector(
-            `div[data-combatant-id="${combatant.id}"]`
-        );
-        elm.innerHTML = newHTML;
-        */
-       this.render(true);
-    }
-
-    
-
     // -----------------------------------------------
     // Private functions
     // -----------------------------------------------

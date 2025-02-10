@@ -13,25 +13,26 @@
             <a data-action="triggerEncounterCheck" data-tooltip="Encounter check"><i class="fa-solid fa-dice"></i></a>
             <a data-action="triggerEncounter" data-tooltip="Instant encounter"><i class="fa-solid fa-bolt-lightning"></i></a>
             <a data-action="moralCheck" data-tooltip="Monster moral check"><i class="fa-solid fa-person-running"></i></a>
-            <span></span>
             <a data-action="timePasses" data-tooltip="Time Passes"><i class="fa-solid fa-hourglass-half"></i></a>
             <a data-action="openCombatTracker" data-tooltip="Open Default Combat Trakcer"><i class="fa-solid fa-swords"></i></a>
+            <span></span>
             <a data-action="endCrawling" data-tooltip="End curret tracker"><i class="fas fa-rectangle-xmark"></i></a>
-            <a data-action="openSettings" data-tooltip="Open Combat Tracker Settings"><i class="fa-solid fa-gears"></i></a>
+            <a data-action="openSettingsMenu" data-tooltip="Open Combat Tracker Settings"><i class="fa-solid fa-gears"></i></a>
         </div>
         <div class="danger">
-            <div>
-                <label>Danger level:</label>
+            <div class="section">
+                <label style="line-height: 2;">Danger level:</label>
                 <select name="dangerLevel">
                     {{selectOptions dangerIndex selected=dangerLevel}}
                 </select>
             </div>
-            <div class="table">
-                <label>Encounter Table:</label><br>
+            <div class="section">
+                <label>Encounter Table:</label> 
                 {{#if encounterTable}}
-                    <a data-link data-uuid="{{encounterTable.uuid}}">{{encounterTable.name}}</a>
+                    <a data-action="clearRollTable" data-tooltip="Remove Encounter Table" style="text-align: right;"><i class="fa-solid fa-delete-left"></i></a>
+                    <a data-link data-uuid="{{encounterTable.uuid}}" style="grid-column: 1 / span 2;">{{encounterTable.name}}</a>
                 {{else}}
-                    <fieldset>
+                    <fieldset style="grid-column: 1 / span 2;">
                         <span>Drop Table Here</span>
                     </fieldset>
                 {{/if}}
