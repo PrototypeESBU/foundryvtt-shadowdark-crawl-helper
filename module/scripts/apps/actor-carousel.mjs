@@ -23,7 +23,11 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             previousTurn: this.previousTurn,
             rollInitiative: this.rollInitiative,
             rollAllInit: this.rollAllInit,
-            resetInit: this.resetInit
+            resetInit: this.resetInit,
+            toggleVisibility: this.toggleVisibility,
+            toggleDefeated: this.toggleDefeated,
+            editCombatant: this.editCombatant,
+            deleteCombatant: this.deleteCombatant
         }
     };
 
@@ -92,6 +96,29 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         game.combat.resetAll();
     };
 
+    static async toggleVisibility(event, target) {
+        const combatant = game.combat.combatants.get(target.dataset.combatantId);
+        await combatant.update({hidden: !combatant.hidden});
+    };
+
+    static async toggleDefeated(event, target) {
+        const combatant = game.combat.combatants.get(target.dataset.combatantId);
+        const isDefeated = !combatant.isDefeated;
+        await combatant.update({defeated: isDefeated});
+        const defeatedId = CONFIG.specialStatusEffects.DEFEATED;
+        await combatant.actor?.toggleStatusEffect(defeatedId, {overlay: true, active: isDefeated});
+    };
+
+    static async editCombatant(event, target) {
+        const combatant = game.combat.combatants.get(target.dataset.combatantId);
+        new CombatantConfig(combatant).render(true);
+    };
+
+    static async deleteCombatant(event, target) {
+        const combatant = game.combat.combatants.get(target.dataset.combatantId);
+        combatant.delete();
+    };
+
     // -----------------------------------------------
     // Public functions
     // -----------------------------------------------
@@ -122,15 +149,17 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                 } 
 
                 //Set actor stats
-                let hpPercent = 100;
+                let barPercent = 100;
+                let hp = null;
                 let ac = null;
                 let level = null;
                 if (actor){
-                    hpPercent = Math.min(100, (
+                    barPercent = Math.min(100, (
                         actor.system.attributes.hp.value / 
                         actor.system.attributes.hp.max
                         ) * 100
                     );
+                    hp = actor.system.attributes.hp
                     ac = actor.system.attributes.ac.value;
                     level = actor.system.level.value;
                 }
@@ -139,10 +168,12 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             id: combatant.id,
             initiativeSet: (combatant.initiative != null),
             control: (game.user.isGM || game.user.character.id === combatant.actorId),
+            canView: (game.user.isGM || combatant.system.type === "Player"),
             img: actor? actor.img : combatant.img,
-            hpPercent,
+            barPercent,
+            hp,
             ac,
-            level
+            level,
         }
 
     }

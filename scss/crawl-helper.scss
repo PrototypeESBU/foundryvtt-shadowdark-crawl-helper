@@ -71,6 +71,7 @@
 
             .frame {
                 box-shadow: 0 0 10px rgb(20,20,20);
+                pointer-events: all;
             }
 
             .name {
@@ -116,7 +117,6 @@
                         color: white;
                         font-size: 42px;
                         top: calc(50% - 21px);
-                        pointer-events: all;
                     }
                 }
 
@@ -151,6 +151,39 @@
                         background-color: rgb(41, 41, 41);
                     }
                 }
+            }
+
+            .menu {
+                display: none;
+                color: white;
+                background-color: rgba(0, 0, 0, 0.7);
+                box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+                padding: 4px;
+                z-index: 1;
+
+                label {
+                    text-align: left;
+                    font-family: "Montserrat-Bold";
+                }
+
+                .actions {
+                    margin-top:4px;
+                    padding-top:4px;
+                    border-top:1px solid var(--color-text-dark-5);
+                    grid-column: 1 / span 2;
+                    color: var(--color-text-dark-5);
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                }
+
+                .active {
+                    color: white;
+                }
+            }
+
+            .frame:hover .menu {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
             }
         } 
 

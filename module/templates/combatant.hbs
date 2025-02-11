@@ -23,8 +23,33 @@
     <div class="health-bar">
         <div 
             class="{{system.type}}" 
-            style="width:{{hpPercent}}%"
+            style="width:{{barPercent}}%"
         >
         </div>
     </div>
+    {{#if canView}}
+    <div class="menu">
+        {{#if hp}}<label>HP</label><span>{{hp.value}} / {{hp.max}}</span>{{/if}}
+        {{#if level}}<label>AC</label><span>{{ac}}</span>{{/if}}
+        {{#if ac}}<label>LVL</label><span>{{level}}</span>{{/if}}
+
+        {{#if isGM}}
+            <div class="actions">
+                <a data-action="toggleVisibility" data-combatant-id="{{id}}">
+                    <i class="fa-solid fa-eye-slash {{#if hidden}}active{{/if}}"></i>
+                </a>
+                <a data-action="toggleDefeated" data-combatant-id="{{id}}">
+                    <i class="fa-solid fa-skull {{#if defeated}}active{{/if}}"></i>
+                </a>
+                <a data-action="editCombatant" data-combatant-id="{{id}}">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </a>
+                <a data-action="deleteCombatant" data-combatant-id="{{id}}">
+                    <i class="fa-solid fa-trash"></i>
+                </a>
+            </div>
+        {{/if}}
+
+    </div>
+    {{/if}}
 </div>

@@ -27,7 +27,7 @@
                 </div>
             {{else}}
                 <div class="combatant {{styleClass}}" style="order: {{order}}" data-combatant-id="{{id}}">
-                    {{> combatant}}
+                    {{> combatant isGM=../isGM}}
                 </div>
             {{/if}}
         {{/each}}
