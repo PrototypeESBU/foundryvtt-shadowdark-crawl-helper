@@ -76,7 +76,8 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     };
 
     static async nextTurn(event, target) {
-        game.combat.nextTurn();
+        if(game.user.isGM || this.combatants[game.combat.turn].control)
+            game.combat.nextTurn();
     };
 
     static async previousTurn(event, target) {
@@ -153,6 +154,13 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                 let hp = null;
                 let ac = null;
                 let level = null;
+                
+                let overlay = "";
+                if (combatant.initiative === null) overlay = "initiative";
+                else if (combatant.hidden) overlay = "hidden";
+                else if (combatant.defeated) overlay = "defeated";
+
+
                 if (actor){
                     barPercent = Math.min(100, (
                         actor.system.attributes.hp.value / 
@@ -169,6 +177,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             initiativeSet: (combatant.initiative != null),
             control: (game.user.isGM || game.user.character.id === combatant.actorId),
             canView: (game.user.isGM || combatant.system.type === "Player"),
+            overlay,
             img: actor? actor.img : combatant.img,
             barPercent,
             hp,
@@ -183,7 +192,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         if(game.combat?.started){
             for (const combatant of game.combat.turns){
                 //add combatant
-                this.combatants.push(this._enrichCombatant(combatant))
+                this.combatants.push(this._enrichCombatant(combatant));
             }
 
             //set initial style on first combatant
