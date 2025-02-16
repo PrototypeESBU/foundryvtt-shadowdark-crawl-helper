@@ -33,23 +33,21 @@
         {{/each}}
     </div>
 
- 
-    <div class="side-buttons">
-        <ol>
-            {{#if isGM}}
-            <li class="small" data-action="resetInit" data-tooltip="Reset All Initiative">
-                <i class="fas fa-eraser"></i>
-            </li>
-            <li class="small" data-action="nextRound" data-tooltip="Next Round">
-                <i class="fas fa-angles-right"></i>
-            </li>
-            {{/if}}
-            <li data-action="nextTurn" data-tooltip="Next Turn">
-                <i class="fas fa-angle-right"></i>
-            </li>
-        </ol>
-    </div>
-
+    {{#if isGM}}
+        <div class="side-buttons">
+            <ol>
+                <li class="small" data-action="resetInit" data-tooltip="Reset All Initiative">
+                    <i class="fas fa-eraser"></i>
+                </li>
+                <li class="small" data-action="nextRound" data-tooltip="Next Round">
+                    <i class="fas fa-angles-right"></i>
+                </li>
+                <li data-action="nextTurn" data-tooltip="Next Turn">
+                    <i class="fas fa-angle-right"></i>
+                </li>
+            </ol>
+        </div>
+    {{/if}}
 
 {{/if}}
 </div>

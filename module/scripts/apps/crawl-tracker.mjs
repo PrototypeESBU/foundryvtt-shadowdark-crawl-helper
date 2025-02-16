@@ -106,12 +106,14 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
 
     _onRender(context, options) {
-        //add dragdrop event lisners
-        this._dragDrop.forEach((d) => d.bind(this.element));
+        if(game.user.isGM){
+            //add dragdrop event lisners
+            this._dragDrop.forEach((d) => d.bind(this.element));
 
-        //Add event handler for danger selection
-        const dangerSelect = this.element.querySelector('select[name="dangerLevel"]');
-        dangerSelect.addEventListener("change", event => this._onDangerChange(event));
+            //Add event handler for danger selection
+            const dangerSelect = this.element.querySelector('select[name="dangerLevel"]');
+            dangerSelect.addEventListener("change", event => this._onDangerChange(event));
+        }
     }
 
     // -----------------------------------------------
@@ -209,7 +211,8 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
 
     async onSceneChange(canvas) {
-        if (game.combat) this._connectSceneTokens();
+        if (game.combat && game.user.isGM) 
+            this._connectSceneTokens();
     }
     
     async onSideBarChange() {
@@ -273,7 +276,6 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     async onUpdateActor(actor, updates) {
         if(this.carousel) 
             this.carousel.render(true);
-        console.log("actor")
     }
 
     // -----------------------------------------------

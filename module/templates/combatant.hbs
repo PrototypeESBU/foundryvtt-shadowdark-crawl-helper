@@ -5,27 +5,34 @@
         {{#if initiativeSet}}
             <div class="initiative">{{initiative}}</div>
         {{/if}}
-        {{#if overlay}}
-            <div class="overlay">
-                {{#ifEq overlay "initiative"}}
-                    {{#if control}}
-                        <a 
-                            data-action="rollInitiative" 
-                            data-combatant-id="{{id}}"
-                            data-tooltip="Roll Initiative"
-                        ><i class="fal fa-dice-d20"></i></a>
-                    {{else}}
-                        <i class="fal fa-dice-d20" style="color:rgb(255,255,255,0.5)"></i>
-                    {{/if}}
-                {{/ifEq}}
-                {{#ifEq overlay "hidden"}}
-                    <i class="fas fa-eye-slash" style="color:rgb(255,255,255,0.5)"></i>
-                {{/ifEq}}
-                {{#ifEq overlay "defeated"}}
-                    <i class="fas fa-skull" style="color:rgb(255,255,255,0.5)"></i>
-                {{/ifEq}}
-            </div>
-        {{/if}}
+        
+        <div class="overlay {{#unless overlay}}hidden{{/unless}}">
+            {{#ifEq overlay "initiative"}}
+                {{#if isOwner}}
+                    <a 
+                        data-action="rollInitiative" 
+                        data-combatant-id="{{id}}"
+                        data-tooltip="Roll Initiative"
+                    ><i class="fal fa-dice-d20"></i></a>
+                {{else}}
+                    <i class="fal fa-dice-d20" style="color:rgb(255,255,255,0.5)"></i>
+                {{/if}}
+            {{/ifEq}}
+            {{#ifEq overlay "hidden"}}
+                <i class="fas fa-eye-slash" style="color:rgb(255,255,255,0.5)"></i>
+            {{/ifEq}}
+            {{#ifEq overlay "defeated"}}
+                <i class="fas fa-skull" style="color:rgb(255,255,255,0.5)"></i>
+            {{/ifEq}}
+            {{#unless overlay}}
+                <a 
+                    data-action="nextTurn" 
+                    data-combatant-id="{{id}}"
+                    data-tooltip="End Turn"
+                ><i class="fas fa-angle-right"></i></a>
+            {{/unless}}
+        </div>
+
     </div>
     <div class="health-bar">
         <div 

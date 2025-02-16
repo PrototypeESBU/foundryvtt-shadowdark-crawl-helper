@@ -56,12 +56,21 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         if (partId === "main" && game.combat) {
             this._updateCombatantsList();
             this._updateOrder();
-            context.crawlStarted = true;
+            context.crawlStarted = game.combat.started;
             context.isGM = game.user.isGM;
             context.combatants = this.combatants;
             context.containerWidth = 138 + ((this.combatants.length-2) * 98) + 30;
         }
         return context;
+    }
+
+    _onRender(context, options) {
+
+        //shows player overlay on first render
+        const currentCombatant = this.combatants[game.combat.turn];
+        if(currentCombatant.overlay === "" && currentCombatant.isOwner && !game.user.isGM) {
+            this.element.querySelector(".first .overlay").classList.remove("hidden");
+        }
     }
 
     // -----------------------------------------------
@@ -76,7 +85,6 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     };
 
     static async nextTurn(event, target) {
-        if(game.user.isGM || this.combatants[game.combat.turn].control)
             game.combat.nextTurn();
     };
 
@@ -175,8 +183,8 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             ...combatant,
             id: combatant.id,
             initiativeSet: (combatant.initiative != null),
-            control: (game.user.isGM || game.user.character.id === combatant.actorId),
-            canView: (game.user.isGM || combatant.system.type === "Player"),
+            isOwner: (combatant.actor?.permission === 3 || game.user.isGM),
+            canView: (combatant.system.type === "Player" || game.user.isGM),
             overlay,
             img: actor? actor.img : combatant.img,
             barPercent,
@@ -195,9 +203,11 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                 this.combatants.push(this._enrichCombatant(combatant));
             }
 
-            //set initial style on first combatant
             if ( this.combatants.length > 0) {
-                this.combatants[game.combat.turn].styleClass = "first";
+                const current = this.combatants[game.combat.turn]
+
+                //set initial style on first combatant
+                current.styleClass = "first";
 
                 // add in the round divider
                 this.combatants.push({
@@ -238,27 +248,37 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         //only animate is more than 1 combatant
         if (this.combatants.length < 2) return
 
-        //get current and next combatant
-        const current = this.element.querySelector(
+        //get previous and current combatants
+        const previousCombatant = this.combatants[game.combat.previous.turn];
+        const previousElement = this.element.querySelector(
             `div[data-combatant-id="${
-                this.combatants[game.combat.previous.turn].id
+                previousCombatant.id
             }"]`
         );
-        const next = this.element.querySelector(
+        const currentCombatant = this.combatants[game.combat.turn];
+        const currentElement = this.element.querySelector(
             `div[data-combatant-id="${
-                this.combatants[game.combat.turn].id
+                currentCombatant.id
             }"]`
         );
 
-        //start fadeout for current target
-        let fadeTarget = current;
+        //start fadeout for previous target
+        let fadeTarget = previousElement;
         // unless going backwards
-        if (direction < 0) fadeTarget = next;
+        if (direction < 0) fadeTarget = currentElement;
 
         //start CSS transitions
         fadeTarget.classList.add("fadeout");
-        current.classList.remove("first");
-        next.classList.add("first");
+        previousElement.classList.remove("first");
+        currentElement.classList.add("first");
+
+        //add or remove nextTurn overlay
+        if(previousCombatant.overlay === "") {
+            previousElement.querySelector(".overlay").classList.add("hidden");
+        }
+        if(currentCombatant.overlay === "" && currentCombatant.isOwner && !game.user.isGM) {
+            currentElement.querySelector(".overlay").classList.remove("hidden");
+        }
 
         //wait for CSS transitions
         setTimeout(() => {
