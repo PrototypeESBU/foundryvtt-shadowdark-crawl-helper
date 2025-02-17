@@ -7,7 +7,7 @@ export default function registerSettings() {
 		type: String,
 	});
 
-    //
+    //GM Settings (World level)
     game.settings.register("shadowdark-crawl-helper", "carousel", {
 		name: "Enabled Actor Carousel",
         scope: "world",
@@ -16,5 +16,40 @@ export default function registerSettings() {
 		type: Boolean,
         requiresReload: true,
 	});
+
+    game.settings.register("shadowdark-crawl-helper", "roll-encounter", {
+		name: "Automatically Roll Encounter Table",
+        scope: "world",
+        config: true,
+		default: true,
+		type: Boolean,
+	});
+
+    game.settings.register("shadowdark-crawl-helper", "notify-on-turn", {
+		name: "Turn Start Notifications",
+        scope: "world",
+        config: true,
+		default: true,
+		type: Boolean,
+	});
+
+    game.settings.register("shadowdark-crawl-helper", "sound-on-turn-path", {
+		name: "Turn Start Sound File",
+        scope: "world",
+        config: true,
+		default: "sounds/combat/epic-turn-1hit.ogg",
+		type: String,
+        filePicker: true,
+	});
     
+
+    //Player Settings (client level)
+
+    game.settings.register("shadowdark-crawl-helper", "sound-on-turn", {
+		name: "Play Sound on Turn Start",
+        scope: "Client",
+        config: true,
+		default: true,
+		type: Boolean,
+	});
 }

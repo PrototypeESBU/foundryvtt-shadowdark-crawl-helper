@@ -67,9 +67,11 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     _onRender(context, options) {
 
         //shows player overlay on first render
-        const currentCombatant = this.combatants[game.combat.turn];
-        if(currentCombatant.overlay === "" && currentCombatant.isOwner && !game.user.isGM) {
-            this.element.querySelector(".first .overlay").classList.remove("hidden");
+        if (this.combatants.length > 1) {
+            const currentCombatant = this.combatants[game.combat.turn];
+            if(currentCombatant.overlay === "" && currentCombatant.isOwner && !game.user.isGM) {
+                this.element.querySelector(".first .overlay").classList.remove("hidden");
+            }
         }
     }
 

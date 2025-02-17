@@ -2,7 +2,13 @@
     {{#if started}}
         <div class="heading">
             <i class="fas fa-dungeon {{#if inCombat}}faded{{/if}}"></i>
-            <h2><a data-action="toggleCombat">{{mode}}</a></h2>
+            <h2>
+                {{#if isGM}}
+                    <a data-action="toggleCombat">{{mode}}</a>
+                {{else}}
+                    {{mode}}
+                {{/if}}
+            </h2>
             <i class="fas fa-swords {{#unless inCombat}}faded{{/unless}}"></i>
         </div>
         <div>

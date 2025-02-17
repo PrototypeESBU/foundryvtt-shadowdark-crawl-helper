@@ -40,6 +40,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             toggleCombat: this.toggleCombat,
             toggleParty: this.toggleParty,
             toggleGameMaster: this.toggleGameMaster,
+            triggerEncounterCheck: this.triggerEncounterCheck,
             triggerEncounter: this.triggerEncounter,
             moralCheck: this.moralCheck,
             openCombatTracker: this.openCombatTracker,
@@ -96,6 +97,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
                 context.dangerIndex = this.dangerIndex
             }
             else if (partId === "main") {
+                context.isGM = game.user.isGM;
                 context.round = game.combat.round;
                 context.inCombat = game.combat.system.inCombat;
                 context.mode = game.combat.system.inCombat ? "Combat" : "Crawling"; //TODO needs i18n
@@ -132,11 +134,12 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
 
     static async triggerEncounter(event, target) {
-        this.encounter();
+        this._encounter();
+        this._setEncounterCheck();
     }
 
     static async triggerEncounterCheck(event, target) {
-        this.checkForEncounter();
+        this._checkForEncounter();
     }
 
     static async toggleCombat(event, target) {
@@ -268,7 +271,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         else {
             this.close({animate:false});
         }
-        this.carousel.render();
+        this.carousel.close();
     }
 
     // Actors
@@ -383,7 +386,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     async _gmTurn() { //Automatic activites that run on the GM turn
         //test for encounters
         if ((game.combat.system.nextEncounter <= game.combat.round) && !game.combat.system.inCombat) {
-            await this.checkForEncounter();
+            await this._checkForEncounter();
 
             //set new encounter check
             await this._setEncounterCheck();
@@ -400,8 +403,9 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         }
     }
 
-    async _roll(formula) {
+    async _roll(formula, sound=false) {
 		let roll = await new Roll(formula).evaluate();
+        if(sound) shadowdark.utils.diceSound()
 		return roll._total;
 	}
 
@@ -416,38 +420,54 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
 
     async _updateTurn(direction) {
-       // TODO Announce to player that's it's there turn based on a global setting
-       // play a sound? annouce player that's on deck next?
 
-       if (game.user.isGM){
+        // 
+        if (game.combat.combatant.actorId === game.user.character?.id){
+            // TODO Announce to player that's it's there turn based on a global setting
+
+            const notifyOnTurn = game.settings.get("shadowdark-crawl-helper", "notify-on-turn");
+            const soundOnTurn = game.settings.get("shadowdark-crawl-helper", "sound-on-turn");
+            const soundOnTurnPath = game.settings.get("shadowdark-crawl-helper", "sound-on-turn-path");
+
+            if(soundOnTurn && soundOnTurnPath) {
+                await foundry.audio.AudioHelper.play({
+                    src: soundOnTurnPath,
+                    volume: 1,
+                    autoplay: true,
+                }, false)
+            }
+            if (notifyOnTurn)
+                ui.notifications.info("It's you turn!");
+        }
+
+        if (game.user.isGM){
             //test for GM's turn
-            if ((game.combat.combatant.id === game.combat.system.gmId) && (direction > 0))
-                {
+            if ((game.combat.combatant.id === game.combat.system.gmId) && (direction > 0)) {
                 this._gmTurn();
             }
-       }
+        }
     }
 
     async _setEncounterCheck() {
         await game.combat.update({"system": {
             "nextEncounter": game.combat.round + game.combat.system.dangerLevel + 1
         }})
+        this.render();
     }
 
-    async checkForEncounter(){
-        // TODO add more encounter actions based on settings
-        const result = this._roll("1d6");
-        if (result === 1) {
-            this._encounter
+    async _checkForEncounter(failure=1){
+        const result = await this._roll("1d6", true);
+        if (result <= failure) {
+            this._encounter();
         }
-        ui.notifications.info("Checking for encounter");
+        // TODO post to chat
+        this._setEncounterCheck();
     }
 
-    async encounter(){
+    async _encounter(){
         // TODO add more encounter actions based on settings
         ui.notifications.info("encounter!");
 
-        this.render();
     }
 
     async timePasses(minutes){
