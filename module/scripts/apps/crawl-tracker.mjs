@@ -125,8 +125,10 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     static async startCrawling(event, target) {
         await this._setEncounterCheck();
-        await this._addGameMaster(); // TODO add GM at the start based on a setting
-        await this._addParty(); // TODO add party based on settings
+        if (game.settings.get("shadowdark-crawl-helper", "add-gm"))
+            await this._addGameMaster(); 
+        if (game.settings.get("shadowdark-crawl-helper", "add-party"))
+            await this._addParty();
         await game.combat.startCombat(); 
     
     }
@@ -135,11 +137,11 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
 
     static async triggerEncounter(event, target) {
-        this._checkForEncounter(1);
+        this._checkForEncounter(0);
     }
 
     static async triggerEncounterCheck(event, target) {
-        this._checkForEncounter();
+        this._checkForEncounter(1);
     }
 
     static async toggleCombat(event, target) {
@@ -169,9 +171,9 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         this._checkForEncounter(3) // 50% change for random encounter
     }
     
-    static async moralCheck(){
+    static async moralCheck(mode="individual"){
         // TODO Roll moral checks for all targets as defined on pg 89
-        //const npcs = game.combat.combatants.filter(c => c.system.type === "NPC").find(c => c.actorId === actor.id); 
+        const npcs = game.combat.combatants.filter(c => c.system.type === "NPC"); 
 
     }
 
@@ -291,11 +293,12 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     async _addGameMaster() {
         if (!game.combat.combatants.map(c => c.id).includes(game.combat.system.gmId)) {
+            const gmImg = game.settings.get("shadowdark-crawl-helper", "gm-img");
             const gm = await game.combat.createEmbeddedDocuments("Combatant", [{
                 name: "Game Master", 
                 type: "shadowdark-crawl-helper.crawler",
                 system: {type:"GM"},
-                img: "modules/shadowdark-crawl-helper/assets/dungeon-master.png", // TODO needs to be a default config and setting 
+                img: gmImg, 
                 hidden: false
             }]);
             await game.combat.update({"system.gmId": gm[0].id})
@@ -389,7 +392,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     async _gmTurn() { //Automatic activites that run on the GM turn
         //test for encounters
         if ((game.combat.system.nextEncounter <= game.combat.round) && !game.combat.system.inCombat) {
-            await this._checkForEncounter();
+            await this._checkForEncounter(1);
 
             //set new encounter check
             await this._setEncounterCheck();
@@ -457,14 +460,19 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         this.render();
     }
 
-    async _checkForEncounter(rollOver=1){
-        const result = await this._roll("1d6", true);
-        const encounter = result <= rollOver;
+    async _checkForEncounter(onOrUnder=1){
+
+        let result = null;
+        let encounter = true;
+
+        if (onOrUnder!=0){
+            result = await this._roll("1d6", true);
+            encounter = result <= onOrUnder;
+        }
 
         //post message to chat
         const content = await renderTemplate("modules/shadowdark-crawl-helper/templates/chats/encounter-check.hbs", {result, encounter});
         await ChatMessage.create( {
-            flavor: "Encounter Check",
             content: content,
             whisper: [game.user],
         });

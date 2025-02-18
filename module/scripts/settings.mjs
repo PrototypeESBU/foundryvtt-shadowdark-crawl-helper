@@ -17,6 +17,31 @@ export default function registerSettings() {
         requiresReload: true,
 	});
 
+    game.settings.register("shadowdark-crawl-helper", "add-gm", {
+		name: "Add GM When Crawl Starts",
+        scope: "world",
+        config: true,
+		default: true,
+		type: Boolean,
+	});
+
+    game.settings.register("shadowdark-crawl-helper", "gm-img", {
+		name: "GM Portrait Art",
+        scope: "world",
+        config: true,
+		default: "modules/shadowdark-crawl-helper/assets/dungeon-master.png",
+		type: String,
+        filePicker: true,
+	});
+
+    game.settings.register("shadowdark-crawl-helper", "add-party", {
+		name: "Add Party When Crawl Starts",
+        scope: "world",
+        config: true,
+		default: true,
+		type: Boolean,
+	});
+
     game.settings.register("shadowdark-crawl-helper", "roll-encounter", {
 		name: "Automatically Roll Encounter Table",
         scope: "world",

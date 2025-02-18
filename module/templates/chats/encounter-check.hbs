@@ -6,8 +6,11 @@
         No Encounter
         {{/if}}
     </h2>
-    <div class="grid-2-column">
-        <span>Result:</span> 
-         <span>{{result}}</span>
-    </div>
+    <h3 style="font-family: 'Montserrat-Medium'">
+        {{#if result}}
+            Rolled: {{result}}
+        {{else}}
+            Instant 
+        {{/if}}
+    </h3> 
 </div>
