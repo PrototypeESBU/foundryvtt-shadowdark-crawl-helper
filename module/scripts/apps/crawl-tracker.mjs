@@ -43,6 +43,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             triggerEncounterCheck: this.triggerEncounterCheck,
             triggerEncounter: this.triggerEncounter,
             moralCheck: this.moralCheck,
+            timePasses: this.timePasses,
             openCombatTracker: this.openCombatTracker,
             collapseGmTools: this.collapseGmTools,
             openSettingsMenu: this.openSettingsMenu,
@@ -134,8 +135,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
 
     static async triggerEncounter(event, target) {
-        this._encounter();
-        this._setEncounterCheck();
+        this._checkForEncounter(1);
     }
 
     static async triggerEncounterCheck(event, target) {
@@ -163,6 +163,11 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         this._addParty();
     }
 
+    static async timePasses(){
+        // TODO Clear all round based active effects from players
+        // TODO Game time / Torch timer runs down by minutes
+        this._checkForEncounter(3) // 50% change for random encounter
+    }
     
     static async moralCheck(){
         // TODO Roll moral checks for all targets as defined on pg 89
@@ -219,7 +224,6 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
     
     async onSideBarChange() {
-        //TODO only render if app is suppose to be shown
         if(this.carousel) 
             this.carousel.render(true);
         this.render();
@@ -358,7 +362,6 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         game.combat.resetAll();
         await game.combat.update({"system.inCombat": true})
 
-        // TODO maybe a setting to auto role initative?
     }
 
     async _stopCombat() {
@@ -423,7 +426,6 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
         // 
         if (game.combat.combatant.actorId === game.user.character?.id){
-            // TODO Announce to player that's it's there turn based on a global setting
 
             const notifyOnTurn = game.settings.get("shadowdark-crawl-helper", "notify-on-turn");
             const soundOnTurn = game.settings.get("shadowdark-crawl-helper", "sound-on-turn");
@@ -455,25 +457,29 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         this.render();
     }
 
-    async _checkForEncounter(failure=1){
+    async _checkForEncounter(rollOver=1){
         const result = await this._roll("1d6", true);
-        if (result <= failure) {
-            this._encounter();
-        }
-        // TODO post to chat
+        const encounter = result <= rollOver;
+
+        //post message to chat
+        const content = await renderTemplate("modules/shadowdark-crawl-helper/templates/chats/encounter-check.hbs", {result, encounter});
+        await ChatMessage.create( {
+            flavor: "Encounter Check",
+            content: content,
+            whisper: [game.user],
+        });
+
+        if (encounter) this._encounter();
+ 
         this._setEncounterCheck();
     }
 
     async _encounter(){
-        // TODO add more encounter actions based on settings
-        ui.notifications.info("encounter!");
-
-    }
-
-    async timePasses(minutes){
-        // TODO Clear all round based active effects from players
-        // TODO Game time / Torch timer runs down by minutes
-        // TODO 50% change for random encounter
+        const encounterTable = await fromUuid(game.combat.system.encounterTable);
+        if (encounterTable && game.settings.get("shadowdark-crawl-helper", "roll-encounter")) {
+            const options = {displayChat:true, rollMode: CONST.DICE_ROLL_MODES.PRIVATE};
+            const results = encounterTable.draw(options);
+        }
     }
 
 }

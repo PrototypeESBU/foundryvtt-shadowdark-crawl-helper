@@ -94,8 +94,9 @@ Hooks.on("collapseSidebar", async (sidebar, collapsed) => {
 });
 
 Hooks.on('renderSceneNavigation', async (application, html, data) => { 
-    // TODO only if Carousel is on
-    ui.nav.element.addClass("verticle");
+    if(game.settings.get("shadowdark-crawl-helper", "carousel")) {
+        ui.nav.element.addClass("verticle");
+    }
 });
 
 Hooks.on("renderSidebar", async function(app, html) {
