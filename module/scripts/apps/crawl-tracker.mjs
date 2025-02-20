@@ -258,12 +258,14 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         if(this.carousel) 
             this.carousel.onUpdateCombat(changes, options)
 
-        if ("turn" in changes) {
-            this._updateTurn(options.direction);
-        }
         if ("round" in changes) {
-            this._updateRound();
+            await this._updateRound();
+            await this._updateTurn(options.direction);
+        } 
+        else if ("turn" in changes) {
+            await this._updateTurn(options.direction);
         }
+
         if (game?.combat?.started || game.user.isGM) {
             this.render();
         }
@@ -354,6 +356,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     async _onDangerChange(event) {
         await game.combat.update({"system.dangerLevel": parseInt(event.currentTarget.value)})
+        this._setEncounterCheck();
     }
 
     async _startCombat() {
@@ -389,13 +392,15 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             await game.combat.nextRound();
     }
 
-    async _gmTurn() { //Automatic activites that run on the GM turn
+    async _gmTurn(round) { 
         //test for encounters
-        if ((game.combat.system.nextEncounter <= game.combat.round) && !game.combat.system.inCombat) {
+        if ((game.combat.system.nextEncounter <= round) && !game.combat.system.inCombat) {
             await this._checkForEncounter(1);
 
             //set new encounter check
-            await this._setEncounterCheck();
+            await game.combat.update({"system": {
+                "nextEncounter": round + game.combat.system.dangerLevel + 1
+            }})
         }
 
     }
@@ -405,7 +410,6 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 		const eventData = TextEditor.getDragEventData(event);
         if(eventData.type === "RollTable") {
             await game.combat.update({"system.encounterTable": eventData.uuid});
-            this.render();
         }
     }
 
@@ -416,18 +420,16 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 	}
 
     async _updateRound() {
-        // if there is no GM turn, take the turn now.
+        // Do a GM turn in case it was skipped.
         if (game.user.isGM){
-            if(game.combat.system.gmId === null){
-                this._gmTurn();
-            }
+            await this._gmTurn(game.combat.round-1);
         }
-        this.render(true);
+
     }
 
     async _updateTurn(direction) {
 
-        // 
+        //if current player's turn
         if (game.combat.combatant.actorId === game.user.character?.id){
 
             const notifyOnTurn = game.settings.get("shadowdark-crawl-helper", "notify-on-turn");
@@ -442,13 +444,13 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
                 }, false)
             }
             if (notifyOnTurn)
-                ui.notifications.info("It's you turn!");
+                ui.notifications.info("It's you turn!"); // TODO needs i18n
         }
 
         if (game.user.isGM){
             //test for GM's turn
             if ((game.combat.combatant.id === game.combat.system.gmId) && (direction > 0)) {
-                this._gmTurn();
+                await this._gmTurn(game.combat.round);
             }
         }
     }
@@ -457,7 +459,6 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         await game.combat.update({"system": {
             "nextEncounter": game.combat.round + game.combat.system.dangerLevel + 1
         }})
-        this.render();
     }
 
     async _checkForEncounter(onOrUnder=1){
