@@ -155,32 +155,45 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
 
     _enrichCombatant(combatant) {
         let actor = null;
-                if (combatant.actorId) {
-                   actor = game.actors.get(combatant.actorId);
-                } 
+        if (combatant.actorId) {
+            actor = game.actors.get(combatant.actorId);
+        } 
 
-                //Set actor stats
-                let barPercent = 100;
-                let hp = null;
-                let ac = null;
-                let level = null;
-                
-                let overlay = "";
-                if (combatant.initiative === null) overlay = "initiative";
-                else if (combatant.hidden) overlay = "hidden";
-                else if (combatant.defeated) overlay = "defeated";
+        //Set actor stats
+        let barPercent = 100;
+        let hp = null;
+        let ac = null;
+        let level = null;
+        let styleClass = "";
+        
+        //Calculate overlays
+        let overlay = "";
+        if (combatant.initiative === null) {
+            overlay = "initiative";
+        }
+        else if (combatant.hidden) {
+            overlay = "hidden";
+            if(!game.user.isGM) {
+                styleClass = "unknown";
+                combatant.name = "unknown";
+            }
+        }
+        else if (combatant.defeated) {
+            overlay = "defeated";
+        }
 
+        // calculate health bar
+        if (actor){
+            barPercent = Math.min(100, (
+                actor.system.attributes.hp.value / 
+                actor.system.attributes.hp.max
+                ) * 100
+            );
+            hp = actor.system.attributes.hp
+            ac = actor.system.attributes.ac.value;
+            level = actor.system.level.value;
+        }
 
-                if (actor){
-                    barPercent = Math.min(100, (
-                        actor.system.attributes.hp.value / 
-                        actor.system.attributes.hp.max
-                        ) * 100
-                    );
-                    hp = actor.system.attributes.hp
-                    ac = actor.system.attributes.ac.value;
-                    level = actor.system.level.value;
-                }
         return {
             ...combatant,
             id: combatant.id,
@@ -193,6 +206,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             hp,
             ac,
             level,
+            styleClass
         }
 
     }
@@ -209,7 +223,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                 const current = this.combatants[game.combat.turn]
 
                 //set initial style on first combatant
-                current.styleClass = "first";
+                current.styleClass = current.styleClass.concat(" first");
 
                 // add in the round divider
                 this.combatants.push({

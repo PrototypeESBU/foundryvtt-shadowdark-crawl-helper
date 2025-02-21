@@ -15,14 +15,14 @@
                         data-tooltip="Roll Initiative"
                     ><i class="fal fa-dice-d20"></i></a>
                 {{else}}
-                    <i class="fal fa-dice-d20" style="color:rgb(255,255,255,0.5)"></i>
+                    <i class="fal fa-dice-d20 faded"></i>
                 {{/if}}
             {{/ifEq}}
             {{#ifEq overlay "hidden"}}
-                <i class="fas fa-eye-slash" style="color:rgb(255,255,255,0.5)"></i>
+                <i class="fas fa-eye-slash faded"></i>
             {{/ifEq}}
             {{#ifEq overlay "defeated"}}
-                <i class="fas fa-skull" style="color:rgb(255,255,255,0.5)"></i>
+                <i class="fas fa-skull faded"></i>
             {{/ifEq}}
             {{#unless overlay}}
                 <a 
