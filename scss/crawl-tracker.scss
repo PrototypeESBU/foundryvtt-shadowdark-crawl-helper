@@ -1,0 +1,131 @@
+.crawl-tracker {
+    position:absolute;
+    font-family: "Montserrat-Medium";
+    margin: 5px;
+    padding: 4px;
+    border: 1px solid var(--color-border-dark);
+    background: url(/ui/denim075.png) repeat rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+    box-shadow: 0 0 20px var(--color-shadow-dark);
+    color: var(--color-text-light-highlight);
+
+    .stub {
+        font-size: 26px;
+        text-align: center;
+    }
+
+    &.collapsed {
+        .gm-tools {
+            .heading {
+                #arrow::before {
+                    content: "\f106";
+                }
+            }
+            .content {
+                visibility: hidden;
+                height:0px;
+                margin: 0px;
+                border: none;
+            }
+        }
+            
+    }
+
+    .gm-tools {
+        .heading, .tools, .danger{
+            margin-bottom: 4px;
+            border-bottom: 2px groove var(--color-border-dark-secondary);
+        }
+
+        .heading {
+            font-size: 1.25em;
+            padding: 4px;
+            span {
+                font-family: "Montserrat-Medium";
+            }
+
+            i {
+                margin: 0px 8px;
+                vertical-align: middle;
+            }
+        }
+
+        .tools {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            a {
+                display: block;
+                margin: auto;
+                text-align: center;
+                line-height: 2;
+                font-size: 16px;
+            }
+        }
+
+        .danger {
+            padding: 0px 4px 4px;
+            .section {
+                display: grid;
+                grid-template-columns: 3fr 1fr;
+            }
+            
+            label{
+                font-family: "Montserrat-bold"
+            }
+
+            select {
+                color: white;
+                border: none;
+              
+            }
+
+            a {
+                color:grey;
+            }
+            
+            fieldset {
+                border: 1px dashed grey;
+                color:grey;
+                text-align: center;
+            }
+        }
+    }
+
+
+
+    .main-part {
+        justify-content: center;
+        .heading {
+            display: grid;
+            grid-template-columns: 1fr 4fr 1fr;
+            height: 40px;
+    
+            h2 {
+                font-family: "Old Newspaper Font";
+                font-size: 26px;
+                text-align: center;
+            }
+
+            i {
+                font-size: 24px;
+                margin: auto;
+            }
+        }
+
+        .faded {
+            opacity: 0;
+        }
+
+        h3 {
+            text-align: center;
+            font-family: "Montserrat-Bold";
+            font-size: 16px;
+        }
+
+        h4 {
+            font-size: 12px;
+            text-align: center;
+        }
+
+    }
+}

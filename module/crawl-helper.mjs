@@ -18,9 +18,12 @@ Hooks.on("init", () => {
     registerSettings();
 
     // load templates
-    loadTemplates({
-        combatant:"modules/shadowdark-crawl-helper/templates/combatant.hbs"
-    });
+    if (game.modules.get("lights-out-theme-shadowdark")?.active){
+        loadTemplates({combatant:"modules/shadowdark-crawl-helper/templates/lights-out-combatant.hbs"});
+    }
+    else{
+        loadTemplates({combatant:"modules/shadowdark-crawl-helper/templates/combatant.hbs"});
+    }
 
     // Initialize persistent apps and variables
     game.crawlHelper = {

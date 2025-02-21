@@ -1,0 +1,27 @@
+<div class="combatant {{styleClass}}" style="order: {{order}}" data-combatant-id="{{id}}">
+
+    <div class="character-picture" data-character="{{actorId}}">
+        <div class="overlay">
+            <img src="{{img}}" alt="{{name}}" />
+        </div>
+    </div>
+
+    <div class="character-info">
+        <div class="character-info-wrapper">
+            <div class="character-details">
+                <div class="character-name">{{name}}</div>
+            </div>
+            <div class="character-health">
+                <div class="bar-wrapper">
+                    <div class="bar healthy" style="width: {{barPercent}}%"></div>
+
+                    <input type="text" class="current-health" data-value="{{hp.value}}" data-id="{{actorId}}"
+                        value="{{hp.value}}" />
+                    <span class="divider">/</span>
+                    <input type="text" value="{{hp.max}}" disabled />
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

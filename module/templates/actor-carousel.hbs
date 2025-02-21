@@ -26,9 +26,7 @@
                     <div></div>
                 </div>
             {{else}}
-                <div class="combatant {{styleClass}}" style="order: {{order}}" data-combatant-id="{{id}}">
                     {{> combatant isGM=../isGM}}
-                </div>
             {{/if}}
         {{/each}}
     </div>

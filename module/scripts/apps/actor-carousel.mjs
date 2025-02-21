@@ -4,11 +4,15 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     constructor() {
 		super();
         this.combatants = [];
+        if (game.modules.get("lights-out-theme-shadowdark")?.active){
+            this.lightsOut = true;
+        } else {
+            this.lightsOut = false;
+        }
     };
 
     static DEFAULT_OPTIONS = {
         id: "actorCarousel",
-        classes: ["actor-carousel"],
         position: {
             width: "auto",
             height: "auto",
@@ -44,11 +48,19 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     // sets the position of the app before rendering
     _prePosition(pos = {}) {
         const middle = document.querySelector("#ui-middle").getBoundingClientRect();
-        foundry.utils.mergeObject(pos, {
-          top: 0,
-          left: middle.left,
-          width: middle.width
-        });
+        if (this.lightsOut) {
+            foundry.utils.mergeObject(pos, {
+                top: 250,
+                left: 250,
+                width: 500
+                });
+        } else {
+            foundry.utils.mergeObject(pos, {
+            top: 0,
+            left: middle.left,
+            width: middle.width
+            });
+        }
     }
 
     //Generates context for each UI part before rendering it
@@ -65,6 +77,12 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     }
 
     _onRender(context, options) {
+
+        if (this.lightsOut){
+            this.classList.add("lights-out-carousel");
+        } else {
+            this.classList.add("actor-carousel");
+        }
 
         //shows player overlay on first render
         if (this.combatants.length > 1) {

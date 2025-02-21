@@ -1,0 +1,226 @@
+.actor-carousel {
+    position:absolute;
+    padding: 0px 150px;
+    pointer-events: none;
+    
+    .main-part {
+        display: flex;
+        justify-content: center;
+    }
+
+    .side-buttons {
+        width:40px;
+
+        ol {
+            margin: 0px;
+            padding: 0px;
+            pointer-events: none;
+
+            li {
+                flex: none;
+                width: 36px;
+                height: 36px;
+                margin: 8px 0 0 0;
+                box-sizing: content-box;
+                font-size: 24px;
+                line-height: 36px;
+                background: rgba(0, 0, 0, 0.5);
+                box-shadow: 0 0 10px var(--color-shadow-dark);
+                color: var(--color-text-light-heading);
+                text-align: center;
+                border: 1px solid var(--color-border-dark);
+                border-radius: 5px;
+                cursor: pointer;
+                pointer-events: all;
+                display: inline-grid;
+                place-content: center;
+                
+                &.small {
+                    height: 20px;
+                    font-size: 14px;
+                }
+            }
+
+        }
+    }
+
+    .unknown {
+        .frame {
+            background-color:rgb(0, 0, 0, 0.5);
+        }  
+        .portrait {
+            visibility:hidden;
+        }
+        .health-bar {
+            visibility:hidden;
+        }
+    }
+
+    .combatant-container {
+        display: flex;
+        overflow:hidden;
+        margin-right: 10px;
+        padding-bottom: 20px;
+
+        .combatant {
+            width: 90px;
+            min-width: 90px;
+            text-align: center;
+            margin: 0px 4px;
+            transition: opacity 0.3s, width 0.3s, min-width 0.3s, margin 0.3s ease-in-out;
+
+            .frame {
+                box-shadow: 0 0 10px rgb(20,20,20);
+                pointer-events: all;
+            }
+
+            .name {
+                color:white;
+                background-color: black;
+                font-family: "Old Newspaper Font";
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                padding: 0px 4px;
+            }
+            .portrait {
+                position: relative;
+
+                img {
+                    object-fit: cover;
+                    border: 2px solid black;
+                    border-radius: 0px;
+                    min-height: 90px;
+                }
+
+                .initiative {
+                    position: absolute;
+                    bottom: 0px;
+                    color: white;
+                    background: rgba(0, 0, 0, 0.5);
+                    padding: 4px;
+                    font-size: 12px;
+                    line-height: 1;
+                }
+                
+                .overlay {
+                    position:absolute;
+                    top: 2px;
+                    bottom: 2px;
+                    left: 2px;
+                    right: 2px;
+                    background: rgb(0, 0, 0, 0.3);
+                    text-shadow: 0 0 10px black;
+
+                    i {
+                        position: relative;
+                        color: white;
+                        font-size: 42px;
+                        top: calc(50% - 21px);
+
+                        &.faded {
+                            color:rgb(255,255,255,0.5)
+                        }
+                    }
+
+                }
+
+            }
+
+            &.first {
+                width: 110px;
+                min-width: 110px;
+                margin: 0 14px;
+                .name {
+                    font-size: 16px;
+                }
+            }
+            &.fadeout {
+                opacity: 0;
+                width: 0px;
+                min-width: 0px;
+                margin: 0px;
+            }
+            .health-bar {
+                height: 10px;
+                border: 2px solid black;
+                border-top-width: 0px;
+                border-radius: 0px;
+                background-color: rgb(100, 100, 100, 0.3);
+                div {
+                    height: 8px;
+                    &.Player{
+                        background-color: purple;
+                    }
+                    &.NPC, &.GM {
+                        background-color: rgb(41, 41, 41);
+                    }
+                }
+            }
+
+            .menu {
+                display: none;
+                color: white;
+                background-color: rgba(0, 0, 0, 0.7);
+                box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+                padding: 4px;
+                z-index: 1;
+
+                label {
+                    text-align: left;
+                    font-family: "Montserrat-Bold";
+                }
+
+                .actions {
+                    margin-top:4px;
+                    padding-top:4px;
+                    border-top:1px solid var(--color-text-dark-5);
+                    grid-column: 1 / span 2;
+                    color: var(--color-text-dark-5);
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                }
+
+                .active {
+                    color: white;
+                }
+            }
+
+            .frame:hover .menu {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+        } 
+
+    }
+
+    .round-divider {
+        text-align: center;
+        width: 30px;
+        min-width: 30px;
+        transition: opacity 0.3s, width 0.3s, min-width 0.3s, margin 0.3s ease-in-out;
+        div {
+            width: 4px;
+            height: 54px;
+            margin: auto;
+            border: 2px solid black;
+            box-shadow: 0 0 10px rgb(255, 255, 255, 0.2);
+        }
+        span {
+            font-family: "Old Newspaper Font";
+            font-weight: bold;
+            font-size: 18px;
+            text-shadow: 0 0 8px #ffffff;
+            transition: opacity 0.6s ease-in-out;
+            &.fadeout {
+                opacity: 0;
+            }
+        }
+        &.fadeout {
+            opacity: 0;
+            width: 0px;
+            min-width: 0px;
+            margin: 0px;
+        }
+    }
+}
