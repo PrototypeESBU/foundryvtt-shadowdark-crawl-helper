@@ -43,6 +43,6 @@
         }
     ],
     "url": "https://github.com/PrototypeESBU/foundryvtt-shadowdark-crawl-helper",
-	"manifest": "https://raw.githubusercontent.com/PrototypeESBU/foundryvtt-shadowdark-crawl-helper/main/module/module.json",
+	"manifest": "https://github.com/PrototypeESBU/foundryvtt-shadowdark-crawl-helper/main/module/module.json",
 	"download": "https://github.com/PrototypeESBU/foundryvtt-shadowdark-crawl-helper/releases/latest/download/shadowdark-crawl-helper.zip"
 }
