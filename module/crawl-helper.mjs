@@ -40,10 +40,8 @@ Hooks.on("ready", async () => {
     await game.crawlHelper.tracker.initializeCrawl();
 
     //collaspe nav bar 
-    if(game.settings.get("shadowdark-crawl-helper", "carousel")) {
-        await ui.nav.collapse();
-        await ui.nav.render();
-    }
+    await ui.nav.collapse();
+    await ui.nav.render();
 });
 
 // -----------------------------------------------
@@ -97,7 +95,8 @@ Hooks.on("collapseSidebar", async (sidebar, collapsed) => {
 });
 
 Hooks.on('renderSceneNavigation', async (application, html, data) => { 
-    if(game.settings.get("shadowdark-crawl-helper", "carousel")) {
+    if(game.settings.get("shadowdark-crawl-helper", "carousel")
+    && !game.modules.get("lights-out-theme-shadowdark")?.active){
         ui.nav.element.addClass("verticle");
     }
 });

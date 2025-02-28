@@ -1,8 +1,32 @@
 <div class="combatant {{styleClass}}" style="order: {{order}}" data-combatant-id="{{id}}">
 
     <div class="character-picture" data-character="{{actorId}}">
-        <div class="overlay">
-            <img src="{{img}}" alt="{{name}}" />
+        <img src="{{img}}" alt="{{name}}" />
+        <div class="overlay {{#unless overlay}}hidden{{/unless}}">
+            {{#ifEq overlay "initiative"}}
+                {{#if isOwner}}
+                    <a 
+                        data-action="rollInitiative" 
+                        data-combatant-id="{{id}}"
+                        data-tooltip="Roll Initiative"
+                    ><i class="fal fa-dice-d20"></i></a>
+                {{else}}
+                    <i class="fal fa-dice-d20 faded"></i>
+                {{/if}}
+            {{/ifEq}}
+            {{#ifEq overlay "hidden"}}
+                <i class="fas fa-eye-slash faded"></i>
+            {{/ifEq}}
+            {{#ifEq overlay "defeated"}}
+                <i class="fas fa-skull faded"></i>
+            {{/ifEq}}
+            {{#unless overlay}}
+                <a 
+                    data-action="nextTurn" 
+                    data-combatant-id="{{id}}"
+                    data-tooltip="End Turn"
+                ><i class="fas fa-angle-right"></i></a>
+            {{/unless}}
         </div>
     </div>
 

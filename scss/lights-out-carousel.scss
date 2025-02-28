@@ -1,15 +1,17 @@
 .lights-out-carousel {
     position:absolute;
-    padding: 0px 150px;
+    padding: 140px 0px;
     pointer-events: none;
     
     .main-part {
         display: flex;
+        flex-direction: column-reverse;
         justify-content: center;
+        height: 100%;
     }
 
     .side-buttons {
-        width:40px;
+        margin-left:65px;
 
         ol {
             margin: 0px;
@@ -57,19 +59,21 @@
     }
 
     .combatant-container {
-        position: absolute;
+        display: flex;
+        flex-direction: column;
         left: 0;
         top: 200px;
         color: white;
         font-family: "QTFrizQuad";
-        pointer-events: all;
+        pointer-events: none;
 
         .combatant {
             position: relative;
             display: flex;
             align-items: center;
             font-family: var(--font-body);
-            transition: opacity 0.3s, width 0.3s, min-width 0.3s, margin 0.3s ease-in-out;
+            height: 64px;
+            transition: opacity 0.3s, height 0.3s, transform 0.3s, margin 0.3s ease-in-out;
 
 
             .character-picture {
@@ -84,6 +88,7 @@
                 margin: 0.5em;
                 z-index: 10;
                 padding: 2px;
+                pointer-events: all;
 
                 img {
                     background-size: cover;
@@ -92,7 +97,30 @@
                     border-radius: 50%;
                     border: 1px solid rgba(0, 0, 0, 0.5);
                     cursor: pointer;
-                  }
+                }
+
+                .overlay {
+                    position:absolute;
+                    top: 2px;
+                    bottom: 2px;
+                    left: 2px;
+                    right: 2px;
+                    background: rgb(0, 0, 0, 0.3);
+                    text-shadow: 0 0 10px black;
+                    text-align: center;
+
+                    i {
+                        position: relative;
+                        color: white;
+                        font-size: 30px;
+                        top: calc(50% - 15px);
+
+                        &.faded {
+                            color:rgb(255,255,255,0.5)
+                        }
+                    }
+
+                }
             }
 
             .character-name {
@@ -112,6 +140,7 @@
                 box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
                 margin-left: -29px;
                 padding: 2px;
+                pointer-events: all;
 
                 .bar-wrapper {
                     width: 100%;
@@ -174,11 +203,13 @@
 
 
             }
+            &.first {
+                transform: scale(1.2) translate(5%, 0%);
+            }
 
             &.fadeout {
                 opacity: 0;
-                width: 0px;
-                min-width: 0px;
+                height: 0px;
                 margin: 0px;
             }
             
@@ -188,21 +219,21 @@
 
     .round-divider {
         text-align: center;
-        width: 30px;
-        min-width: 30px;
-        transition: opacity 0.3s, width 0.3s, min-width 0.3s, margin 0.3s ease-in-out;
+        width: 200px;
+        display: flex;
+        transition: opacity 0.3s, height 0.3s, margin 0.3s ease-in-out;
         div {
-            width: 20px;
-            height: 4px;
+            width: 70px;
+            height: 2px;
             margin: auto;
-            border: 2px solid black;
+            background-color: rgb(255, 255, 255);
             box-shadow: 0 0 10px rgb(255, 255, 255, 0.2);
         }
         span {
             font-family: "Old Newspaper Font";
             font-weight: bold;
             font-size: 18px;
-            text-shadow: 0 0 8px #ffffff;
+            text-shadow: 0 0 8px #000000;
             transition: opacity 0.6s ease-in-out;
             &.fadeout {
                 opacity: 0;
@@ -210,8 +241,7 @@
         }
         &.fadeout {
             opacity: 0;
-            width: 0px;
-            min-width: 0px;
+            height: 0px;
             margin: 0px;
         }
     }

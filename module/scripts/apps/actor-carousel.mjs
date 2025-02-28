@@ -50,9 +50,9 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         const middle = document.querySelector("#ui-middle").getBoundingClientRect();
         if (this.lightsOut) {
             foundry.utils.mergeObject(pos, {
-                top: 250,
+                top: 0,
                 left: 250,
-                width: 500
+                height: middle.height
                 });
         } else {
             foundry.utils.mergeObject(pos, {
@@ -71,7 +71,11 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             context.crawlStarted = game.combat.started;
             context.isGM = game.user.isGM;
             context.combatants = this.combatants;
-            context.containerWidth = 138 + ((this.combatants.length-2) * 98) + 30;
+            if (this.lightsOut) {
+                context.containerStyle = `height:${(this.combatants.length*64)-37}px`;
+            } else {
+                context.containerStyle = `width:${138 + ((this.combatants.length-2) * 98) + 30}px`;
+            }
         }
         return context;
     }
