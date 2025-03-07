@@ -68,6 +68,15 @@ export default function registerSettings() {
 	});
     
 
+    game.settings.register("shadowdark-crawl-helper", "hide-combat-sidebar", {
+		name: "Hide Combat Sidebar",
+        scope: "world",
+        config: true,
+		default: true,
+		type: Boolean,
+        requiresReload: true,
+	});
+
     //Player Settings (client level)
 
     game.settings.register("shadowdark-crawl-helper", "sound-on-turn", {

@@ -2,7 +2,7 @@
     "id": "shadowdark-crawl-helper",
     "title": "Shadowdark Crawl Helper",
 	"description": "",
-    "version": "0.5",
+    "version": "0.6",
     "compatibility": {
         "minimum": "12",
         "verified": "12"

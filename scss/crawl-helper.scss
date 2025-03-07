@@ -10,6 +10,10 @@
     }
 }
 
+.hide-combat-sidebar #sidebar-tabs a[data-tab="combat"] {
+    display: none !important;
+}
+
 .actor-carousel {
     position:absolute;
     padding: 0px 150px;
@@ -181,6 +185,9 @@
                 label {
                     text-align: left;
                     font-family: "Montserrat-Bold";
+                }
+                span {
+                    white-space: nowrap;
                 }
 
                 .actions {

@@ -86,11 +86,19 @@ Hooks.on('updateActor', async (actor, updates) => {
     game.crawlHelper.tracker.onUpdateActor(actor, updates);
 });
 
+//Hooks.on('updateToken', async (token, updates) => {
+    //game.crawlHelper.tracker.onUpdateToken(token, updates);
+//});
+
 // -----------------------------------------------
 // UI Triggers
 // -----------------------------------------------
 Hooks.on("collapseSidebar", async (sidebar, collapsed) => {
     game.crawlHelper.tracker.onSideBarChange();
+});
+
+Hooks.on("applyTokenStatusEffect",  async (token, statusId, active) => {
+    game.crawlHelper.tracker.onStatusEffect(statusId);
 });
 
 Hooks.on('renderSceneNavigation', async (application, html, data) => { 
@@ -100,8 +108,10 @@ Hooks.on('renderSceneNavigation', async (application, html, data) => {
 });
 
 Hooks.on("renderSidebar", async function(app, html) {
-    //hide combat tracker
-    document.querySelector('#sidebar [data-tab="combat"]').classList.add("hidden");
+    //hide combat tracker from sidebar
+    if(game.settings.get("shadowdark-crawl-helper", "hide-combat-sidebar")) {
+        document.querySelector("#sidebar").classList.add(`hide-combat-sidebar`);
+    }
 });
 
 // -----------------------------------------------

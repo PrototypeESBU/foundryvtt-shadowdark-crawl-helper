@@ -117,6 +117,8 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             const dangerSelect = this.element.querySelector('select[name="dangerLevel"]');
             dangerSelect.addEventListener("change", event => this._onDangerChange(event));
         }
+
+        this.bringToFront();
     }
 
     // -----------------------------------------------
@@ -282,10 +284,14 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         this.carousel.close();
     }
 
-    // Actors
-
+    // Actors & Tokens
     async onUpdateActor(actor, updates) {
         if(this.carousel) 
+            this.carousel.render(true);
+    }
+
+    async onStatusEffect(statusId) {
+        if(this.carousel && statusId === "dead") 
             this.carousel.render(true);
     }
 

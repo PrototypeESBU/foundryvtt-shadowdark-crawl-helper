@@ -66,12 +66,19 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
 
     _onRender(context, options) {
 
-        //shows player overlay on first render
+        //shows player the next turn overlay on first render
         if (this.combatants.length > 1) {
             const currentCombatant = this.combatants[game.combat.turn];
             if(currentCombatant.overlay === "" && currentCombatant.isOwner && !game.user.isGM) {
                 this.element.querySelector(".first .overlay").classList.remove("hidden");
             }
+        }
+
+        //
+        const portraits = this.element.querySelectorAll('.portrait img');
+        for (const portrait of portraits) {
+            portrait.addEventListener("click", this.controlToken);
+            portrait.addEventListener("dblclick", this.openSheet);
         }
     }
 
@@ -148,6 +155,24 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
 
         }
     }
+    async controlToken(event) {
+        const combatantId = event.currentTarget.dataset.combatantId;
+        if (combatantId) {
+            const combatant = game.combat.combatants.get(combatantId);
+            if (combatant.token?.object.control()) {
+                const {x, y} = combatant.token.object.center;
+                await canvas.animatePan({x, y, scale: Math.max(canvas.stage.scale.x, 0.5)});
+            }
+        }
+    }
+
+    async openSheet(event) {
+        const actorId = event.currentTarget.dataset.actorId;
+        if (actorId) {
+            const actor = game.actors.get(actorId);
+            actor.sheet.render(true);
+        }
+    }
 
     // -----------------------------------------------
     // Private functions
@@ -178,7 +203,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                 combatant.name = "unknown";
             }
         }
-        else if (combatant.defeated) {
+        else if (combatant.isDefeated) {
             overlay = "defeated";
         }
 
