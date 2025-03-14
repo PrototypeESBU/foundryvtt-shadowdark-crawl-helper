@@ -2,7 +2,7 @@
     "id": "shadowdark-crawl-helper",
     "title": "Shadowdark Crawl Helper",
 	"description": "",
-    "version": "0.4",
+    "version": "0.6",
     "compatibility": {
         "minimum": "12",
         "verified": "12"
@@ -28,7 +28,7 @@
                 "type": "system",
                 "compatibility": {
                     "minimum": "3.3.0",
-                    "verified": "3.3.0"
+                    "verified": "3.3.1"
                 }
             }
         ]
@@ -43,6 +43,6 @@
         }
     ],
     "url": "https://github.com/PrototypeESBU/foundryvtt-shadowdark-crawl-helper",
-	"manifest": "https://raw.githubusercontent.com/PrototypeESBU/foundryvtt-shadowdark-crawl-helper/main/module/module.json",
+	"manifest": "https://github.com/PrototypeESBU/foundryvtt-shadowdark-crawl-helper/releases/latest/download/module.json",
 	"download": "https://github.com/PrototypeESBU/foundryvtt-shadowdark-crawl-helper/releases/latest/download/shadowdark-crawl-helper.zip"
 }
