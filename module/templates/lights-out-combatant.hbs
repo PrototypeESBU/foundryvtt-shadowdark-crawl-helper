@@ -1,7 +1,7 @@
 <div class="combatant {{styleClass}}" style="order: {{order}}" data-combatant-id="{{id}}">
 
-    <div class="character-picture" data-character="{{actorId}}">
-        <img src="{{img}}" alt="{{name}}" />
+    <div class="portrait">
+        <img src="{{img}}" data-actor-id="{{actorId}}" data-combatant-id="{{id}}">
         <div class="overlay {{#unless overlay}}hidden{{/unless}}">
             {{#ifEq overlay "initiative"}}
                 {{#if isOwner}}
@@ -37,15 +37,19 @@
             </div>
             <div class="character-health">
                 <div class="bar-wrapper">
-                    <div class="bar healthy" style="width: {{barPercent}}%"></div>
-
-                    <input type="text" class="current-health" data-value="{{hp.value}}" data-id="{{actorId}}"
-                        value="{{hp.value}}" />
-                    <span class="divider">/</span>
-                    <input type="text" value="{{hp.max}}" disabled />
+                    <div class="bar healthy {{system.type}}" style="width: {{barPercent}}%"></div>
+                    {{#if canView}}
+                        <input type="text" class="current-health" data-value="{{hp.value}}" data-id="{{actorId}}"
+                            value="{{hp.value}}" />
+                        <span class="divider">/</span>
+                        <input type="text" value="{{hp.max}}" disabled />
+                    {{/if}}
                 </div>
             </div>
         </div>
     </div>
 
+    {{#if initiativeSet}}
+        <div class="initiative">{{initiative}}</div>
+    {{/if}}
 </div>

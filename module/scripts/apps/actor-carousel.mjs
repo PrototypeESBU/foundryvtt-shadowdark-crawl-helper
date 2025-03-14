@@ -72,7 +72,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             context.isGM = game.user.isGM;
             context.combatants = this.combatants;
             if (this.lightsOut) {
-                context.containerStyle = `height:${(this.combatants.length*64)-37}px`;
+                context.containerStyle = `height:${(this.combatants.length*64)-24}px`;
             } else {
                 context.containerStyle = `width:${138 + ((this.combatants.length-2) * 98) + 30}px`;
             }

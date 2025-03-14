@@ -19,6 +19,11 @@
             pointer-events: none;
 
             li {
+                box-shadow: none;
+                text-shadow: none;
+                border: 1px solid black;
+                box-shadow: 0 0 0 2px var(--color-primary) inset;
+                border-radius: 50%;
                 flex: none;
                 width: 36px;
                 height: 36px;
@@ -27,19 +32,15 @@
                 font-size: 24px;
                 line-height: 36px;
                 background: rgba(0, 0, 0, 0.5);
-                box-shadow: 0 0 10px var(--color-shadow-dark);
                 color: var(--color-text-light-heading);
                 text-align: center;
-                border: 1px solid var(--color-border-dark);
-                border-radius: 5px;
                 cursor: pointer;
                 pointer-events: all;
                 display: inline-grid;
                 place-content: center;
                 
                 &.small {
-                    height: 20px;
-                    font-size: 14px;
+                    transform: scale(0.75);
                 }
             }
 
@@ -61,11 +62,15 @@
     .combatant-container {
         display: flex;
         flex-direction: column;
+        overflow:hidden;
         left: 0;
         top: 200px;
         color: white;
         font-family: "QTFrizQuad";
         pointer-events: none;
+        padding-top: 20px;
+        align-items: flex-start;
+        width:300px;
 
         .combatant {
             position: relative;
@@ -76,7 +81,7 @@
             transition: opacity 0.3s, height 0.3s, transform 0.3s, margin 0.3s ease-in-out;
 
 
-            .character-picture {
+            .portrait {
                 width: 50px;
                 height: 50px;
                 background: white;
@@ -163,7 +168,7 @@
                         border-radius: 2px;
                         z-index: 2;
                         box-shadow: 0px 1px 0 1px rgba(255, 255, 255, 0.4) inset;
-                        &.healthy {
+                        &.Player {
                             background: linear-gradient(180deg, #de2f2d, #a41413ff);
                         }
                         &.hurt {
@@ -174,6 +179,10 @@
                         }
                         &.critical {
                             background: linear-gradient(180deg, #6a1413, #410808);
+                        }
+
+                        &.NPC, &.GM {
+                            background: linear-gradient(180deg, #414141, #0c0c0c);
                         }
                     }
 
@@ -203,6 +212,14 @@
 
 
             }
+
+            .initiative {
+                position: absolute;
+                left: 198px;
+                top: 30px;
+                text-shadow: 0 0 4px #000000;
+            }
+
             &.first {
                 transform: scale(1.2) translate(5%, 0%);
             }
