@@ -12,4 +12,3 @@ Crawl Helper streamlines dungeon crawling and combat transitions in your Shadowd
 ## In Development:
 - Monster Moral checks
 - Time Passes
-- Lights Out UI integration
