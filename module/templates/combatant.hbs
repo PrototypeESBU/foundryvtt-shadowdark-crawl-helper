@@ -1,4 +1,4 @@
-<div class="combatant {{styleClass}}" style="order: {{order}}" data-combatant-id="{{id}}">
+<div class="combatant {{styleClass}}" style="order: {{order}}" data-combatant-id="{{id}}" data-is-owner="{{isOwner}}">
     <div class="frame">
         <div class="name">{{name}}</div>
         <div class="portrait">
@@ -44,27 +44,16 @@
         </div>
         {{#if canView}}
             <div class="menu">
-                {{#if hp}}<label>HP</label><span>{{hp.value}} / {{hp.max}}</span>{{/if}}
-                {{#if level}}<label>AC</label><span>{{ac}}</span>{{/if}}
-                {{#if ac}}<label>LVL</label><span>{{level}}</span>{{/if}}
-
-                {{#if isGM}}
-                    <div class="actions">
-                        <a data-action="toggleVisibility" data-combatant-id="{{id}}">
-                            <i class="fa-solid fa-eye-slash {{#if hidden}}active{{/if}}"></i>
-                        </a>
-                        <a data-action="toggleDefeated" data-combatant-id="{{id}}">
-                            <i class="fa-solid fa-skull {{#if defeated}}active{{/if}}"></i>
-                        </a>
-                        <a data-action="editCombatant" data-combatant-id="{{id}}">
-                            <i class="fa-solid fa-pen-to-square"></i>
-                        </a>
-                        <a data-action="deleteCombatant" data-combatant-id="{{id}}">
-                            <i class="fa-solid fa-trash"></i>
-                        </a>
+                {{#if hp}}
+                    <div class="hp-wrapper">
+                        <input type="text" class="current-health" data-value="{{hp.value}}" data-combatant-id="{{id}}"
+                                value="{{hp.value}}" />
+                        <span>/</span> 
+                        <span>{{hp.max}}</span>
                     </div>
                 {{/if}}
-
+                {{#if ac}}<div style="font-size:10px">AC {{ac}}</div>{{/if}}
+                {{#if level}}<div style="font-size:10px">Level {{level}}</div>{{/if}}
             </div>
         {{/if}}
     </div>

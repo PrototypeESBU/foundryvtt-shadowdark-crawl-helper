@@ -51,7 +51,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         if (this.lightsOut) {
             foundry.utils.mergeObject(pos, {
                 top: 0,
-                left: 250,
+                left: 10,
                 height: middle.height
                 });
         } else {
@@ -80,15 +80,23 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         return context;
     }
 
+    _onFirstRender(context, options) {
+        //register context menu handler
+        new ContextMenu(this.element, ".combatant", this._getContextOptions());
+        
+    }
+
+
     _onRender(context, options) {
 
+        // activate the correct CSS class
         if (this.lightsOut){
             this.classList.add("lights-out-carousel");
         } else {
             this.classList.add("actor-carousel");
         }
 
-        //shows player the next turn overlay on first render
+        //shows player the next turn overlay
         if (this.combatants.length > 1) {
             const currentCombatant = this.combatants[game.combat.turn];
             if(currentCombatant.overlay === "" && currentCombatant.isOwner && !game.user.isGM) {
@@ -96,12 +104,21 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             }
         }
 
-        //
+        //register click handlers
         const portraits = this.element.querySelectorAll('.portrait img');
         for (const portrait of portraits) {
             portrait.addEventListener("click", this.controlToken);
             portrait.addEventListener("dblclick", this.openSheet);
         }
+
+        //register HP input handlers
+        const healthInputs = this.element.querySelectorAll('.current-health');
+        for (const input of healthInputs) {
+            input.addEventListener("focus", (e) => {e.currentTarget.value = "";});
+            input.addEventListener("blur", (e) => {e.currentTarget.value = e.currentTarget.dataset.value;});
+            input.addEventListener("keyup", this._inputHP);
+        }
+
     }
 
     // -----------------------------------------------
@@ -189,11 +206,15 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     }
 
     async openSheet(event) {
-        const actorId = event.currentTarget.dataset.actorId;
-        if (actorId) {
-            const actor = game.actors.get(actorId);
-            actor.sheet.render(true);
+        let actor;
+        const combatant = game.combat.combatants.get(event.currentTarget.dataset.combatantId);
+        if (combatant.tokenId) {
+            actor = game.scenes.active.tokens.get(combatant.tokenId).actor;
         }
+        else {
+            actor = game.actors.get(combatant.actorId);
+        }
+        actor.sheet.render(true);
     }
 
     // -----------------------------------------------
@@ -201,10 +222,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     // -----------------------------------------------
 
     _enrichCombatant(combatant) {
-        let actor = null;
-        if (combatant.actorId) {
-            actor = game.actors.get(combatant.actorId);
-        } 
+        const actor = this._getActor(combatant.id);
 
         //Set actor stats
         let barPercent = 100;
@@ -212,6 +230,8 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         let ac = null;
         let level = null;
         let styleClass = "";
+        const canView = (combatant.system.type === "Player" || game.user.isGM);
+        const isOwner = (combatant.actor?.permission === 3 || game.user.isGM);
         
         //Calculate overlays
         let overlay = "";
@@ -231,11 +251,14 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
 
         // calculate health bar
         if (actor){
-            barPercent = Math.min(100, (
-                actor.system.attributes.hp.value / 
-                actor.system.attributes.hp.max
-                ) * 100
-            );
+            const showNPCHealthBars = game.settings.get("shadowdark-crawl-helper", "show-NPC-Health-Bars");
+            if(game.user.isGM || canView || showNPCHealthBars) {
+                barPercent = Math.min(100, (
+                    actor.system.attributes.hp.value / 
+                    actor.system.attributes.hp.max
+                    ) * 100
+                );
+            }
             hp = actor.system.attributes.hp
             ac = actor.system.attributes.ac.value;
             level = actor.system.level.value;
@@ -245,8 +268,8 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             ...combatant,
             id: combatant.id,
             initiativeSet: (combatant.initiative != null),
-            isOwner: (combatant.actor?.permission === 3 || game.user.isGM),
-            canView: (combatant.system.type === "Player" || game.user.isGM),
+            isOwner,
+            canView,
             overlay,
             img: actor? actor.img : combatant.img,
             barPercent,
@@ -254,6 +277,97 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             ac,
             level,
             styleClass
+        }
+
+    }
+    //TODO make into a global untility
+    _getActor(combatantId) {
+        const combatant = game.combat.combatants.get(combatantId);
+        if (combatant.tokenId) {
+            return game.scenes.active.tokens.get(combatant.tokenId).actor;
+        }
+        else {
+            return game.actors.get(combatant.actorId);
+        }
+    }
+
+    _getContextOptions() {
+    	return [
+			{
+				name: "",
+				icon: '<i class="fas fa-eye-slash"></i>',
+				condition: game.user.isGM,
+				callback: element => {
+                    const combatant = game.combat.combatants.get(element.data("combatant-id"));
+                    combatant.update({hidden: !combatant.hidden});
+				}
+			},
+            {
+				name: "",
+				icon: '<i class="fas fa-skull"></i>',
+				condition: game.user.isGM,
+				callback: element => {
+                    const combatant = game.combat.combatants.get(element.data("combatant-id"));
+                    const isDefeated = !combatant.isDefeated;
+                    combatant.update({defeated: isDefeated});
+                    const defeatedId = CONFIG.specialStatusEffects.DEFEATED;
+                    combatant.actor?.toggleStatusEffect(defeatedId, {overlay: true, active: isDefeated});
+				}
+			},
+            {
+				name: "",
+				icon: '<i class="fas fa-edit"></i>',
+				condition: game.user.isGM,
+				callback: element => {
+                    const combatant = game.combat.combatants.get(element.data("combatant-id"));
+                    return new CombatantConfig(combatant).render(true);
+				}
+			},
+            {
+				name: "",
+				icon: '<i class="fas fa-trash"></i>',
+				condition: game.user.isGM,
+				callback: element => {
+                    const combatant = game.combat.combatants.get(element.data("combatant-id"));
+                    combatant.delete();
+				}
+			}
+		];
+	}
+
+    _inputHP(event) {
+        if (event.keyCode !== 13) return;
+
+        let actor;
+        const combatant = game.combat.combatants.get(event.currentTarget.dataset.combatantId);
+        if (combatant.tokenId) {
+            actor = game.scenes.active.tokens.get(combatant.tokenId).actor;
+        }
+        else {
+            actor = game.actors.get(combatant.actorId);
+        }
+        if (!actor) return;
+
+        const currentHP = actor.system.attributes.hp.value;
+        const inputValue = event.currentTarget.value.trim();
+    
+        let damageAmount;
+        let multiplier;
+    
+        if (inputValue.startsWith('+')) {
+          damageAmount = parseInt(inputValue.slice(1), 10);
+          multiplier = -1;
+        } else if (inputValue.startsWith('-')) {
+          damageAmount = parseInt(inputValue.slice(1), 10);
+          multiplier = 1;
+        } else {
+          const newHP = parseInt(inputValue, 10);
+          damageAmount = currentHP - newHP;
+          multiplier = 1; 
+        }
+    
+        if (!isNaN(damageAmount)) {
+          actor.applyDamage(damageAmount, multiplier);
         }
 
     }

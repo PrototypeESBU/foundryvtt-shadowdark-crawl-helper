@@ -1,4 +1,4 @@
-<div class="combatant {{styleClass}}" style="order: {{order}}" data-combatant-id="{{id}}">
+<div class="combatant {{styleClass}}" style="order: {{order}}" data-combatant-id="{{id}}" data-is-owner="{{isOwner}}">
 
     <div class="portrait">
         <img src="{{img}}" data-actor-id="{{actorId}}" data-combatant-id="{{id}}">
@@ -39,7 +39,7 @@
                 <div class="bar-wrapper">
                     <div class="bar healthy {{system.type}}" style="width: {{barPercent}}%"></div>
                     {{#if canView}}
-                        <input type="text" class="current-health" data-value="{{hp.value}}" data-id="{{actorId}}"
+                        <input type="text" class="current-health" data-value="{{hp.value}}" data-combatant-id="{{id}}"
                             value="{{hp.value}}" />
                         <span class="divider">/</span>
                         <input type="text" value="{{hp.max}}" disabled />
@@ -50,6 +50,10 @@
     </div>
 
     {{#if initiativeSet}}
-        <div class="initiative">{{initiative}}</div>
+        <div class="initiative">
+            <div class="initiative-wrapper">
+                {{initiative}}
+            </div>
+        </div>
     {{/if}}
 </div>

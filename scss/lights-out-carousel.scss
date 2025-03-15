@@ -11,7 +11,7 @@
     }
 
     .side-buttons {
-        margin-left:65px;
+        margin-left:40px;
 
         ol {
             margin: 0px;
@@ -111,17 +111,21 @@
                     left: 2px;
                     right: 2px;
                     background: rgb(0, 0, 0, 0.3);
+                    border-radius: 50%;
                     text-shadow: 0 0 10px black;
                     text-align: center;
+                    pointer-events: none;
 
                     i {
                         position: relative;
                         color: white;
                         font-size: 30px;
                         top: calc(50% - 15px);
+                        pointer-events: auto;
 
                         &.faded {
-                            color:rgb(255,255,255,0.5)
+                            color:rgb(255,255,255,0.5);
+                            pointer-events: none;
                         }
                     }
 
@@ -215,13 +219,48 @@
 
             .initiative {
                 position: absolute;
-                left: 198px;
-                top: 30px;
-                text-shadow: 0 0 4px #000000;
+                left: 0px;
+                top: 0px;
+                background: white;
+                border-radius: 50%;
+                border: 1px solid black;
+                padding: 2px;
+                height: 20px;
+                width: 20px;
+
+                .initiative-wrapper {
+                    width: 100%;
+                    height: 100%;
+                    background: black;
+                    border: 1px solid black;
+                    box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+                    position: relative;
+                    border-radius: 50%;
+                    font-size: 11px;
+                    text-align: center;
+                    line-height: 1.1;
+                }
+            }
+
+            #context-menu {
+                pointer-events: all;
+                left: 56px;
+                top: 31px;
+                width:126px;
+                min-width: 0px;
+                height:19px;
+
+                ol {
+                    display: flex;
+                    li {
+                        line-height: 1.5;
+                        font-size: 12px;
+                    }
+                }
             }
 
             &.first {
-                transform: scale(1.2) translate(5%, 0%);
+                transform: scale(1.2) translate(8%, 0%);
             }
 
             &.fadeout {
