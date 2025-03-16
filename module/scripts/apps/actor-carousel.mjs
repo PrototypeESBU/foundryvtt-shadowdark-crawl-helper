@@ -180,7 +180,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     // Public functions
     // -----------------------------------------------
     async onUpdateCombat(changes, options) {
-        if(game.combat.combatants.size > 0) {
+        if(game.combat.combatants.size > 0 && game.combat.started) {
             if ("combatants" in changes || game.combat.previous.round === 0) {
                 await this.render(true);
             } else {
@@ -191,7 +191,9 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                     this._updateRound();
                 }
             }
-
+        }
+        else {
+            this.close({animate: false});
         }
     }
     async controlToken(event) {

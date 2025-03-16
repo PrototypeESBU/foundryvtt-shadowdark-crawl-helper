@@ -256,21 +256,23 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     //Combat
 
-    async onUpdateCombat(changes, options) { 
+    async onUpdateCombat(changes, options) {
         if(this.carousel) 
             this.carousel.onUpdateCombat(changes, options)
 
-        if ("round" in changes) {
-            await this._updateRound();
-            await this._updateTurn(options.direction);
-        } 
-        else if ("turn" in changes) {
-            await this._updateTurn(options.direction);
-        }
-
-        if (game?.combat?.started || game.user.isGM) {
+        if (game?.combat?.started) { 
+            if ("round" in changes) {
+                await this._updateRound();
+                await this._updateTurn(options.direction);
+            } 
+            else if ("turn" in changes) {
+                await this._updateTurn(options.direction);
+            }
             this.render();
-        }
+
+        } else if ( game.user.isGM) {
+            this.render();
+        } 
     }
 
     async onDeleteCombat() { 
