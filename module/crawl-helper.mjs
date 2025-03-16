@@ -118,11 +118,14 @@ Hooks.on("renderSidebar", async function(app, html) {
 
 Hooks.on("renderTokenHUD", async function(app, html) {
     const combatHub = html[0].querySelector("[data-action=combat]");
+    
     if (combatHub.classList.contains("active")){
         combatHub.innerHTML = '<i class="fa-solid fa-minus"></i>';
+        combatHub.setAttribute('data-tooltip', "Remove From Tracker");
     }
     else {
         combatHub.innerHTML = '<i class="fa-solid fa-plus"></i>';
+        combatHub.setAttribute('data-tooltip', "Add To Tracker");
     }
 });
 
