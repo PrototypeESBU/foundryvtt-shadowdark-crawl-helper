@@ -376,6 +376,9 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         game.combat.resetAll();
         await game.combat.update({"system.inCombat": true})
 
+        //add selected tokens to combat
+        const tokens = game.canvas.tokens.controlled.map(t => t.document);
+        TokenDocument.implementation.createCombatants(tokens);
     }
 
     async _stopCombat() {
