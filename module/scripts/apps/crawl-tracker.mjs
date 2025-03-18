@@ -455,7 +455,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
                 }, false)
             }
             if (notifyOnTurn)
-                ui.notifications.info("It's you turn!"); // TODO needs i18n
+                ui.notifications.info("It's your turn!"); // TODO needs i18n
         }
 
         if (game.user.isGM){
