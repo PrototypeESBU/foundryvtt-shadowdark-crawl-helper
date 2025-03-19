@@ -98,6 +98,13 @@ Hooks.on("collapseSidebar", async (sidebar, collapsed) => {
     game.crawlHelper.tracker.onSideBarChange();
 });
 
+Hooks.on("rtcSettingsChanged", async (settings, changes) => {
+    if (changes.client) {
+        if ("hideDock" in changes.client || "dockPosition" in changes.client) 
+            game.crawlHelper.tracker.onSideBarChange();
+    }
+});
+
 Hooks.on("applyTokenStatusEffect",  async (token, statusId, active) => {
     game.crawlHelper.tracker.onStatusEffect(statusId);
 });
