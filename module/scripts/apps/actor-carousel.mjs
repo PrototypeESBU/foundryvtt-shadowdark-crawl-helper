@@ -225,7 +225,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
 
     _enrichCombatant(combatant) {
         const actor = this._getActor(combatant.id);
-
+    
         //Set actor stats
         let barPercent = 100;
         let hp = null;
@@ -250,22 +250,36 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         else if (combatant.isDefeated) {
             overlay = "defeated";
         }
-
-        // calculate health bar
+    
+        // --- New Spoiler-Free Logic ---
+        let displayName = combatant.name;
+        // Only hide non-player actor names if spoiler-free is enabled,
+        // the combatant is an NPC, and the current user is not GM.
+        if (game.settings.get("shadowdark-crawl-helper", "spoiler-free") &&
+            combatant.system.type === "NPC" &&
+            !game.user.isGM) {
+            displayName = "? ? ? ?";
+            combatant.hideName = true;
+        } else {
+            combatant.hideName = false;
+        }
+        // --- End New Logic ---
+    
+        // Calculate health bar and other stats if actor is present
         if (actor){
             const showNPCHealthBars = game.settings.get("shadowdark-crawl-helper", "show-NPC-Health-Bars");
             if(game.user.isGM || canView || showNPCHealthBars) {
                 barPercent = Math.min(100, (
-                    actor.system.attributes.hp.value / 
+                    actor.system.attributes.hp.value /
                     actor.system.attributes.hp.max
-                    ) * 100
-                );
+                ) * 100
+            );
             }
-            hp = actor.system.attributes.hp
+            hp = actor.system.attributes.hp;
             ac = actor.system.attributes.ac.value;
             level = actor.system.level.value;
         }
-
+    
         return {
             ...combatant,
             id: combatant.id,
@@ -278,10 +292,13 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             hp,
             ac,
             level,
-            styleClass
-        }
-
+            styleClass,
+            name: displayName,
+            hideName: combatant.hideName
+        };
     }
+   
+        
     //TODO make into a global untility
     _getActor(combatantId) {
         const combatant = game.combat.combatants.get(combatantId);

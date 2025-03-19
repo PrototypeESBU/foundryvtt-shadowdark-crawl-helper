@@ -1,6 +1,12 @@
 <div class="combatant {{styleClass}}" style="order: {{order}}" data-combatant-id="{{id}}" data-is-owner="{{isOwner}}">
     <div class="frame">
-        <div class="name">{{name}}</div>
+        <div class="name">
+            {{#if hideName}}
+                ? ? ? ?
+            {{else}}
+                {{name}}
+            {{/if}}
+        </div>
         <div class="portrait">
             <img src="{{img}}" data-actor-id="{{actorId}}" data-combatant-id="{{id}}">
             {{#if initiativeSet}}
