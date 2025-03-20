@@ -95,6 +95,18 @@ export default function registerSettings() {
         requiresReload: true,
 	});
 
+    game.settings.register("shadowdark-crawl-helper","offset-tracker-ui", {
+        name: "Offset Tracker UI",
+        scope: "world",
+        config: true,
+        default: 0,
+        type: new foundry.data.fields.NumberField({
+            min: 0, max: 300, step: 5,
+            initial: 0, nullable: false
+        }),
+        requiresReload: true,
+    });
+
     //Player Settings (client level)
 
     game.settings.register("shadowdark-crawl-helper", "sound-on-turn", {

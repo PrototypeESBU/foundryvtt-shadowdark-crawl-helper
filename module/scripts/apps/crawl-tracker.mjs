@@ -66,10 +66,11 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     /** @override */
     _prePosition(pos = {}) {
+        const offset = game.settings.get("shadowdark-crawl-helper", "offset-tracker-ui");
         const middle = document.querySelector("#ui-middle").getBoundingClientRect();
         const thisApp = this.element.getBoundingClientRect();
         foundry.utils.mergeObject(pos, {
-            left: middle.right - 210,
+            left: middle.right - 210 - offset,
             top: middle.bottom - thisApp.height - 15
         });
     }
