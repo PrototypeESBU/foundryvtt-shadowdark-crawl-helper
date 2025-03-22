@@ -252,17 +252,11 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         }
     
         // --- New Spoiler-Free Logic ---
-        let displayName = combatant.name;
-        // Only hide non-player actor names if spoiler-free is enabled,
-        // the combatant is an NPC, and the current user is not GM.
         if (game.settings.get("shadowdark-crawl-helper", "spoiler-free") &&
-            combatant.system.type === "NPC" &&
-            !game.user.isGM) {
-            displayName = "? ? ? ?";
-            combatant.hideName = true;
-        } else {
-            combatant.hideName = false;
-        }
+        combatant.system.type === "NPC" &&
+        !game.user.isGM) {
+      combatant.name = "? ? ? ?";
+    }
         // --- End New Logic ---
     
         // Calculate health bar and other stats if actor is present
@@ -293,8 +287,6 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             ac,
             level,
             styleClass,
-            name: displayName,
-            hideName: combatant.hideName
         };
     }
    
