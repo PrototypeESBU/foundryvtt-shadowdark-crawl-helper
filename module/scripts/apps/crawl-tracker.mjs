@@ -118,6 +118,10 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             dangerSelect.addEventListener("change", event => this._onDangerChange(event));
         }
 
+        if (game.modules.get("lights-out-theme-shadowdark")?.active) {
+            this.classList.add("lights-out-tracker");
+        }
+
         this.bringToFront();
     }
 

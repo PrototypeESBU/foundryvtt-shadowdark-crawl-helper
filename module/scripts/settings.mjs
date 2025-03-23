@@ -95,6 +95,16 @@ export default function registerSettings() {
         requiresReload: true,
 	});
 
+    game.settings.register("shadowdark-crawl-helper", "spoiler-free", {
+        name: "Spoiler Free",
+        hint: "Non-player actor names are hidden in the tracker and displayed as '????' for PLAYERS ONLY - GM will still see names for usability.",
+        scope: "world",
+        config: true,
+        default: false,
+        type: Boolean,
+        requiresReload: true
+    });
+
     //Player Settings (client level)
 
     game.settings.register("shadowdark-crawl-helper", "sound-on-turn", {
