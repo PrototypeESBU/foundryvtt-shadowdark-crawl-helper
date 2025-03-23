@@ -48,19 +48,12 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     // sets the position of the app before rendering
     _prePosition(pos = {}) {
         const middle = document.querySelector("#ui-middle").getBoundingClientRect();
-        if (this.lightsOut) {
-            foundry.utils.mergeObject(pos, {
-                top: 0,
-                left: middle.left,
-                height: middle.height
-                });
-        } else {
-            foundry.utils.mergeObject(pos, {
-            top: 0,
+        foundry.utils.mergeObject(pos, {
+            top: middle.top,
             left: middle.left,
+            height: middle.height,
             width: middle.width
-            });
-        }
+        });
     }
 
     //Generates context for each UI part before rendering it

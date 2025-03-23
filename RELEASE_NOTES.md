@@ -4,5 +4,5 @@
 
 
 ## Fixes
-
+- [5] Fixed an issue with UI overlap when using the AV dock
 
