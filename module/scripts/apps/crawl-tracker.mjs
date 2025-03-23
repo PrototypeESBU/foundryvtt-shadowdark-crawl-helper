@@ -193,16 +193,11 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
           submit: async (result) => {
             if (isNaN(result) || result <= 0) {
               return ui.notifications.warn("Please enter a valid number of minutes greater than 0.");
-            }
-            
-            // Convert minutes to seconds and advance time.
+            }          
             const seconds = result * 60;
-            await game.time.advance(seconds);
-            
-            // Call our existing encounter-check function.
+            await game.time.advance(seconds);            
             await this._checkForEncounter(3);
             
-            // Build a chat message summarizing the time passage.
             const content = `
               <div class="shadowdark">
                 <h2 class="centered" style="font-family: 'Montserrat-Medium';">Time Passes</h2>
