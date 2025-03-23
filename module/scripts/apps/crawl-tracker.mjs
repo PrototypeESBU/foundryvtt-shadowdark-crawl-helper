@@ -172,10 +172,52 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
 
     static async timePasses(){
-        // TODO Clear all round based active effects from players
-        // TODO Game time / Torch timer runs down by minutes
-        this._checkForEncounter(3) // 50% change for random encounter
-    }
+        new foundry.applications.api.DialogV2({
+          window: { title: "Time Passes" },
+          content: `
+            <div style="padding: 10px;">
+              <label for="minutes" style="font-family: 'Montserrat'; font-size: 14px;">
+                Enter Minutes to Pass:
+              </label>
+              <input id="minutes" name="minutes" type="number" min="1" value="10" style="width: 100%; margin-top: 5px;">
+            </div>
+          `,
+          buttons: [{
+            action: "advance",
+            label: "Pass Time",
+            default: true,
+            callback: (event, button, dialog) => {
+              return button.form.elements.minutes.valueAsNumber;
+            }
+          }],
+          submit: async (result) => {
+            if (isNaN(result) || result <= 0) {
+              return ui.notifications.warn("Please enter a valid number of minutes greater than 0.");
+            }
+            
+            // Convert minutes to seconds and advance time.
+            const seconds = result * 60;
+            await game.time.advance(seconds);
+            
+            // Call our existing encounter-check function.
+            await this._checkForEncounter(3);
+            
+            // Build a chat message summarizing the time passage.
+            const content = `
+              <div class="shadowdark">
+                <h2 class="centered" style="font-family: 'Montserrat-Medium';">Time Passes</h2>
+                <p><strong>Minutes Passed:</strong> ${result}</p>
+                <p><strong>Reminder:</strong> Round based effects expire.</p>
+                <p><i>This is not automated</i></p>
+              </div>
+            `;
+            await ChatMessage.create({ content: content });
+            ui.notifications.info(`Time advanced by ${result} minute(s).`);
+          },
+          rejectClose: false,
+          modal: true
+        }).render({ force: true });
+      }
     
     static async moralCheck(mode="individual"){
         // TODO Roll moral checks for all targets as defined on pg 89
