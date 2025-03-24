@@ -198,25 +198,44 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             const seconds = result * 60;
             await game.time.advance(seconds);
             
+            const players = game.combat.combatants.filter(c => c.system.type === "Player");
+            let expiredEffectsList = [];
+            for (const combatant of players) {
+              const actor = game.actors.get(combatant.actorId);
+              if (!actor) continue;
+
+              const effectsToRemove = actor.items.filter(item => 
+                item.type === "Effect" &&
+                item.system.duration &&
+                item.system.duration.type === "rounds" &&
+                Number(item.system.duration.value) > 0
+              );
+              if (effectsToRemove.length > 0) {
+                const names = effectsToRemove.map(item => item.name);
+                const effectIds = effectsToRemove.map(item => item.id);
+                await actor.deleteEmbeddedDocuments("Item", effectIds);
+                expiredEffectsList.push(`<strong>${actor.name}</strong> - ${names.join(", ")}`);
+              }
+            }
+            const effectsExpiredText = expiredEffectsList.length > 0 ? expiredEffectsList.join("<br>") : "None";
+            
             const timePassesCard = `
-            <div class="shadowdark">
-              <h2 class="centered" style="font-family: 'Montserrat-Medium';">Time Passes</h2>
-              <p><strong>Minutes Passed:</strong> ${result}</p>
-              <p><strong>Reminder:</strong> Round based effects expire.</p>
-              <p><i>This is not automated</i></p>
-            </div>
-          `;
-          await ChatMessage.create({ content: timePassesCard });
-          ui.notifications.info(`Time advanced by ${result} minute(s).`);
+              <div class="shadowdark">
+                <h2 class="centered" style="font-family: 'Montserrat-Medium';">Time Passes</h2>
+                <p><strong>Minutes Passed:</strong> ${result}</p>
+                <p><strong>Effects Expired:</strong><br>${effectsExpiredText}</p>
+              </div>
+            `;
+            await ChatMessage.create({ content: timePassesCard });
+            ui.notifications.info(`Time advanced by ${result} minute(s).`);
             
             await this._checkForEncounter(3);
           },
           rejectClose: false,
           modal: true
         }).render({ force: true });
-      }     
+      }  
       
-    
     static async moralCheck(mode="individual"){
         // TODO Roll moral checks for all targets as defined on pg 89
         const npcs = game.combat.combatants.filter(c => c.system.type === "NPC"); 
