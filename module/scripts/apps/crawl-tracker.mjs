@@ -193,26 +193,29 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
           submit: async (result) => {
             if (isNaN(result) || result <= 0) {
               return ui.notifications.warn("Please enter a valid number of minutes greater than 0.");
-            }          
-            const seconds = result * 60;
-            await game.time.advance(seconds);            
-            await this._checkForEncounter(3);
+            }
             
-            const content = `
-              <div class="shadowdark">
-                <h2 class="centered" style="font-family: 'Montserrat-Medium';">Time Passes</h2>
-                <p><strong>Minutes Passed:</strong> ${result}</p>
-                <p><strong>Reminder:</strong> Round based effects expire.</p>
-                <p><i>This is not automated</i></p>
-              </div>
-            `;
-            await ChatMessage.create({ content: content });
-            ui.notifications.info(`Time advanced by ${result} minute(s).`);
+            const seconds = result * 60;
+            await game.time.advance(seconds);
+            
+            const timePassesCard = `
+            <div class="shadowdark">
+              <h2 class="centered" style="font-family: 'Montserrat-Medium';">Time Passes</h2>
+              <p><strong>Minutes Passed:</strong> ${result}</p>
+              <p><strong>Reminder:</strong> Round based effects expire.</p>
+              <p><i>This is not automated</i></p>
+            </div>
+          `;
+          await ChatMessage.create({ content: timePassesCard });
+          ui.notifications.info(`Time advanced by ${result} minute(s).`);
+            
+            await this._checkForEncounter(3);
           },
           rejectClose: false,
           modal: true
         }).render({ force: true });
-      }
+      }     
+      
     
     static async moralCheck(mode="individual"){
         // TODO Roll moral checks for all targets as defined on pg 89
