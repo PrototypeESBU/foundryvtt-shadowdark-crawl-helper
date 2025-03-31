@@ -309,7 +309,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         if (!game.combat.combatants.map(c => c.id).includes(game.combat.system.gmId)) {
             const gmImg = game.settings.get("shadowdark-crawl-helper", "gm-img");
             const gm = await game.combat.createEmbeddedDocuments("Combatant", [{
-                name: "Game Master", 
+                name: game.user.name, 
                 type: "shadowdark-crawl-helper.crawler",
                 system: {type:"GM"},
                 img: gmImg, 
