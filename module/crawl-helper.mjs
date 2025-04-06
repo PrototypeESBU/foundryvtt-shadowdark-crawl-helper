@@ -1,5 +1,6 @@
 import registerSettings from "./scripts/settings.mjs";
 import crawlTracker from "./scripts/apps/crawl-tracker.mjs";
+import utilitiesCH from "./scripts/utilities.mjs";
 import {crawlCombat, crawlCombatant} from "./scripts/models.mjs";
 
 // -----------------------------------------------
@@ -28,6 +29,7 @@ Hooks.on("init", () => {
     // Initialize persistent apps and variables
     game.crawlHelper = {
         tracker: new crawlTracker(),
+        utils: new utilitiesCH()
     };
     
 });

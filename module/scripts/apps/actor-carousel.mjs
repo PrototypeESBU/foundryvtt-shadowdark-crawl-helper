@@ -189,11 +189,12 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             this.close({animate: false});
         }
     }
+
     async controlToken(event) {
         const combatantId = event.currentTarget.dataset.combatantId;
         if (combatantId) {
             const combatant = game.combat.combatants.get(combatantId);
-            if (combatant.token?.object.control()) {
+            if (combatant.token?.object?.control()) {
                 const {x, y} = combatant.token.object.center;
                 await canvas.animatePan({x, y, scale: Math.max(canvas.stage.scale.x, 0.5)});
             }
@@ -201,14 +202,8 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     }
 
     async openSheet(event) {
-        let actor;
-        const combatant = game.combat.combatants.get(event.currentTarget.dataset.combatantId);
-        if (combatant.tokenId) {
-            actor = game.scenes.active.tokens.get(combatant.tokenId).actor;
-        }
-        else {
-            actor = game.actors.get(combatant.actorId);
-        }
+        const combatantId = event.currentTarget.dataset.combatantId;
+        let actor = game.crawlHelper.utils.getCombatantActor(combatantId);
         actor.sheet.render(true);
     }
 
@@ -217,7 +212,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     // -----------------------------------------------
 
     _enrichCombatant(combatant) {
-        const actor = this._getActor(combatant.id);
+        const actor = game.crawlHelper.utils.getCombatantActor(combatant.id);
     
         //Set actor stats
         let barPercent = 100;
@@ -226,7 +221,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         let level = null;
         let styleClass = "";
         const canView = (combatant.system.type === "Player" || game.user.isGM);
-        const isOwner = (combatant.actor?.permission === 3 || game.user.isGM);
+        const isOwner = (combatant?.actor?.permission === 3 || game.user.isGM);
         
         //Calculate overlays
         let overlay = "";
@@ -282,18 +277,6 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             styleClass,
         };
     }
-   
-        
-    //TODO make into a global untility
-    _getActor(combatantId) {
-        const combatant = game.combat.combatants.get(combatantId);
-        if (combatant.tokenId) {
-            return game.scenes.active.tokens.get(combatant.tokenId).actor;
-        }
-        else {
-            return game.actors.get(combatant.actorId);
-        }
-    }
 
     _getContextOptions() {
     	return [
@@ -341,15 +324,8 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
 
     _inputHP(event) {
         if (event.keyCode !== 13) return;
-
-        let actor;
-        const combatant = game.combat.combatants.get(event.currentTarget.dataset.combatantId);
-        if (combatant.tokenId) {
-            actor = game.scenes.active.tokens.get(combatant.tokenId).actor;
-        }
-        else {
-            actor = game.actors.get(combatant.actorId);
-        }
+        const combatantId = event.currentTarget.dataset.combatantId;
+        let actor = game.crawlHelper.utils.getCombatantActor(combatantId);
         if (!actor) return;
 
         const currentHP = actor.system.attributes.hp.value;
