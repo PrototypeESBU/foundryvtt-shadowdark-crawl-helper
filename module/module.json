@@ -33,6 +33,53 @@
             }
         ]
     },
+	"languages": [
+		{
+			"lang": "de",
+			"name": "Deutsch",
+			"path": "i18n/de.json"
+		},
+		{
+			"lang": "en",
+			"name": "English",
+			"path": "i18n/en.json"
+		},
+		{
+			"lang": "es",
+			"name": "Español",
+			"path": "i18n/es.json"
+		},
+		{
+			"lang": "fi",
+			"name": "suomi",
+			"path": "i18n/fi.json"
+		},
+		{
+			"lang": "fr",
+			"name": "Français",
+			"path": "i18n/fr.json"
+		},
+		{
+			"lang": "ko",
+			"name": "한국어",
+			"path": "i18n/ko.json"
+		},
+		{
+			"lang": "pt-BR",
+			"name": "Português (Brasil)",
+			"path": "i18n/pt_BR.json"
+		},
+		{
+			"lang": "ru",
+			"name": "Russian",
+			"path": "i18n/ru.json"
+		},
+		{
+			"lang": "sv",
+			"name": "Svenska",
+			"path": "i18n/sv.json"
+		}
+	],
     "authors": [
 		{
 			"name": "Prototype",

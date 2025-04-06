@@ -101,7 +101,9 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
                 context.isGM = game.user.isGM;
                 context.round = game.combat.round;
                 context.inCombat = game.combat.system.inCombat;
-                context.mode = game.combat.system.inCombat ? "Combat" : "Crawling"; //TODO needs i18n
+                context.mode = game.combat.system.inCombat ? 
+                    game.i18n.localize("CRAWLHELPER.combat") : //combat
+                    game.i18n.localize("CRAWLHELPER.crawling"); // Crawling
                 context.nextEncounter = game.combat.system.nextEncounter;
             }
         }
