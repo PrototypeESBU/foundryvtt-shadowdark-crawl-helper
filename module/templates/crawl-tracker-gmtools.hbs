@@ -20,17 +20,19 @@
             <a data-action="endCrawling" data-tooltip="CRAWLHELPER.gmtools.tooltip-end-tracker"><i class="fas fa-rectangle-xmark"></i></a>
         </div>
         <div class="danger">
-            <div class="section">
-                <label style="line-height: 2;">{{localize "CRAWLHELPER.danger.level"}}:</label>
+            <div>
+                <label style="line-height: 2;">{{localize "CRAWLHELPER.danger.level"}}:</label><br>
                 <select name="dangerLevel">
                     {{selectOptions dangerIndex selected=dangerLevel}}
                 </select>
             </div>
-            <div class="section">
-                <label>{{localize "CRAWLHELPER.gmtools.table"}}:</label> 
+            <div>
+                <label>{{localize "CRAWLHELPER.gmtools.table"}}:</label><br>
                 {{#if encounterTable}}
-                    <a data-action="clearRollTable" data-tooltip="CRAWLHELPER.gmtools.table-remove" style="text-align: right;"><i class="fa-solid fa-trash"></i></a>
-                    <a data-link data-uuid="{{encounterTable.uuid}}" style="grid-column: 1 / span 2;">{{encounterTable.name}}</a>
+                <div style="display:grid; grid-template-columns: 1fr 0fr;">
+                    <a data-link data-uuid="{{encounterTable.uuid}}">{{encounterTable.name}}</a>
+                    <a data-action="clearRollTable" data-tooltip="CRAWLHELPER.gmtools.table-remove"><i class="fa-solid fa-trash"></i></a>
+                </div>
                 {{else}}
                     <fieldset style="grid-column: 1 / span 2;">
                         <span>{{localize "CRAWLHELPER.gmtools.drop"}}</span>
