@@ -1,9 +1,9 @@
 {
-    "CRAWLHELPER.ac": "AC",
+    "CRAWLHELPER.ac": "CA",
     "CRAWLHELPER.carousel.end-turn": "End Turn",
-    "CRAWLHELPER.carousel.reset-init": "Reset All Initiatives",
-    "CRAWLHELPER.carousel.roll-all": "Roll Remaining Initiatives",
-    "CRAWLHELPER.carousel.roll-init": "Roll Initiative",
+    "CRAWLHELPER.carousel.reset-init": "Réinitialiser toutes les initiatives",
+    "CRAWLHELPER.carousel.roll-all": "Lancer les initiatives restantes",
+    "CRAWLHELPER.carousel.roll-init": "Jet d’initiative",
     "CRAWLHELPER.carousel.round.next": "Next Round",
     "CRAWLHELPER.carousel.round.previous": "Previous Round",
     "CRAWLHELPER.carousel.turn.next": "Next Turn",
