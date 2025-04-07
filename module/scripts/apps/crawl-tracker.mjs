@@ -1,5 +1,5 @@
 import actorCarousel from "./actor-carousel.mjs";
-import TimePasses from "/module/scripts/apps/functions/timepasses.mjs";
+import TimePasses from "./functions/timepasses.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
