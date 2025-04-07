@@ -12,12 +12,12 @@
             <i class="fas fa-swords {{#unless inCombat}}faded{{/unless}}"></i>
         </div>
         <div>
-            <h3>Round {{round}}</h3>
-            <h4>Next Encounter Check: {{#if inCombat}}-{{else}}{{nextEncounter}}{{/if}}</h4>
+            <h3>{{localize "CRAWLHELPER.round"}} {{round}}</h3>
+            <h4>{{localize "CRAWLHELPER.encounter.next-check"}}: {{#if inCombat}}-{{else}}{{nextEncounter}}{{/if}}</h4>
         </div>
     {{else}}
         <div class="stub">
-            <a data-action="startCrawling" data-tooltip="Start Crawling"><i class="fas fa-dungeon"></i></a>
+            <a data-action="startCrawling" data-tooltip="CRAWLHELPER.start-crawling"><i class="fas fa-dungeon"></i></a>
         </div>
     {{/if}}
 </div>

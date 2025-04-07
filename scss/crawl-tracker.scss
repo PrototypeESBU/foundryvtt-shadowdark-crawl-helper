@@ -76,7 +76,9 @@
             select {
                 color: white;
                 border: none;
-              
+                option {
+                    color:black;
+                }
             }
 
             a {

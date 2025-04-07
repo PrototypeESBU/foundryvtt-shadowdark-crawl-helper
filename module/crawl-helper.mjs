@@ -26,11 +26,7 @@ Hooks.on("init", () => {
         loadTemplates({combatant:"modules/shadowdark-crawl-helper/templates/combatant.hbs"});
     }
 
-    // Initialize persistent apps and variables
-    game.crawlHelper = {
-        tracker: new crawlTracker(),
-        utils: new utilitiesCH()
-    };
+
     
 });
 
@@ -38,6 +34,13 @@ Hooks.on("init", () => {
 // Triggers once the module is fully loaded
 // -----------------------------------------------
 Hooks.on("ready", async () => {
+
+    // Initialize persistent apps and variables
+    game.crawlHelper = {
+        tracker: new crawlTracker(),
+        utils: new utilitiesCH()
+    };
+
     //Setup a crawl
     await game.crawlHelper.tracker.initializeCrawl();
 
@@ -130,11 +133,11 @@ Hooks.on("renderTokenHUD", async function(app, html) {
     
     if (combatHub.classList.contains("active")){
         combatHub.innerHTML = '<i class="fa-solid fa-minus"></i>';
-        combatHub.setAttribute('data-tooltip', "Remove From Tracker");
+        combatHub.setAttribute('data-tooltip', "CRAWLHELPER.token-hud.remove");
     }
     else {
         combatHub.innerHTML = '<i class="fa-solid fa-plus"></i>';
-        combatHub.setAttribute('data-tooltip', "Add To Tracker");
+        combatHub.setAttribute('data-tooltip', "CRAWLHELPER.token-hud.add");
     }
 });
 
@@ -143,5 +146,5 @@ Hooks.on("renderTokenHUD", async function(app, html) {
 // -----------------------------------------------
 
 Hooks.on("canvasReady", async (canvas) => {
-    game.crawlHelper.tracker.onSceneChange(canvas);
+    game?.crawlHelper?.tracker.onSceneChange(canvas);
 });

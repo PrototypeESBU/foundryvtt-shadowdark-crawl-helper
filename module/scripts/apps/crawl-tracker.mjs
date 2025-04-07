@@ -11,9 +11,9 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             return new DragDrop(d);
         });
         this.dangerIndex = [
-            "Deadly",
-            "Risky",
-            "Unsafe"
+            game.i18n.localize("CRAWLHELPER.danger.deadly"),
+            game.i18n.localize("CRAWLHELPER.danger.risky"),
+            game.i18n.localize("CRAWLHELPER.danger.unsafe")
         ]
         if(game.settings.get("shadowdark-crawl-helper", "carousel")) {
             this.carousel = new actorCarousel();
@@ -31,7 +31,6 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         },
         dragDrop: [{ dragSelector: null, dropSelector: '[data-drop]' }],
         window: {
-            title: "Crawl Tracker",
             frame: false,
         },
         actions: {
@@ -461,7 +460,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
                 }, false)
             }
             if (notifyOnTurn)
-                ui.notifications.info("It's your turn!"); // TODO needs i18n
+                ui.notifications.info(game.i18n.localize("CRAWLHELPER.turn-notification"));
         }
 
         if (game.user.isGM){
@@ -482,6 +481,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
         let result = null;
         let encounter = true;
+        const rollEncounter = game.settings.get("shadowdark-crawl-helper", "roll-encounter");
 
         if (onOrUnder!=0){
             result = await this._roll("1d6", true);
@@ -489,20 +489,23 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         }
 
         //post message to chat
-        const content = await renderTemplate("modules/shadowdark-crawl-helper/templates/chats/encounter-check.hbs", {result, encounter});
+        const content = await renderTemplate("modules/shadowdark-crawl-helper/templates/chats/encounter-check.hbs", 
+            {result, encounter, rollEncounter}
+        );
+
         await ChatMessage.create( {
             content: content,
             whisper: [game.user],
         });
 
-        if (encounter) this._encounter();
+        if (encounter && rollEncounter) this._encounter();
  
         this._setEncounterCheck();
     }
 
     async _encounter(){
         const encounterTable = await fromUuid(game.combat.system.encounterTable);
-        if (encounterTable && game.settings.get("shadowdark-crawl-helper", "roll-encounter")) {
+        if (encounterTable) {
             const options = {displayChat:true, rollMode: CONST.DICE_ROLL_MODES.PRIVATE};
             const results = encounterTable.draw(options);
         }
