@@ -173,17 +173,71 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
 
     static async timePasses(){
-        // TODO Clear all round based active effects from players
-        // TODO Game time / Torch timer runs down by minutes
-        this._checkForEncounter(3) // 50% change for random encounter
-    }
+
+        const fields = foundry.applications.fields;
+        const textInput = fields.createNumberInput({name: 'minutes', value: '10'});
+        const textGroup = fields.createFormGroup({input: textInput, label: "Minutes:"}); //TODO localize
+
+        //open prompt for minutes
+        const result = await foundry.applications.api.DialogV2.wait({
+          window: { title: "Time Passes" }, //TODO localize
+          content: `${textGroup.outerHTML}`,
+          buttons: [{
+            action: "advance",
+            label: "Pass Time", //TODO localize
+            default: true,
+            callback: (event, button, dialog) => new FormDataExtended(button.form).object
+          }],
+          rejectClose: false,
+          modal: true
+        });
     
+        if (!result) return
+        if (!result?.minutes > 0) {
+            return ui.notifications.warn("Minutes must be greater than 0"); //TODO localize
+        }
+
+        //Advance Time
+        await game.time.advance(result.minutes * 60);
+
+        //Remove Effects
+        const players = game.combat.combatants.filter(c => c.system.type === "Player");
+        const expiredEffectsList = [];
+        for (const combatant of players) {
+            const actor = game.actors.get(combatant.actorId);
+            if (!actor) continue;
+
+            const effectsToRemove = actor.items.filter(item => 
+                item.type === "Effect" &&
+                item.system.duration &&
+                item.system.duration.type === "rounds" &&
+                Number(item.system.duration.value) > 0
+            );
+            if (effectsToRemove.length > 0) {
+                const names = effectsToRemove.map(item => item.name);
+                const effectIds = effectsToRemove.map(item => item.id);
+                await actor.deleteEmbeddedDocuments("Item", effectIds);
+                expiredEffectsList.push({actor: actor.name, effects: names.join(", ")});
+            }
+        }
+
+        //Post to chat
+        const cardContent = await renderTemplate("modules/shadowdark-crawl-helper/templates/chats/timepasses-card.hbs", {
+            minutes: result.minutes,
+            expiredEffectsList
+        });
+        await ChatMessage.create({ content: cardContent });
+
+        //Roll for encounter
+        await this._checkForEncounter(3);
+
+    }  
+      
     static async moralCheck(mode="individual"){
         // TODO Roll moral checks for all targets as defined on pg 89
         const npcs = game.combat.combatants.filter(c => c.system.type === "NPC"); 
 
     }
-
 
     static async openCombatTracker() {
         game.combats.directory.createPopout().render(true);
