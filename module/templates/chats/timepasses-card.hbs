@@ -1,0 +1,10 @@
+<div class="shadowdark" style="font-family:'Montserrat-Medium'">
+    <h2 class="centered">Time Passes</h2>
+    <h3>Minutes Passed:</h3> {{minutes}}<br>
+    {{#if expiredEffectsList}}
+        <h3>Effects Expired:</h3><br>
+        {{#each expiredEffectsList}}
+            <h3>{{actor}}</h3> - {{effects}}<br>
+        {{/each}}
+    {{/if}}
+</div>
