@@ -50,9 +50,9 @@
     "CRAWLHELPER.settings.sound-on-turn.hint": "Antaa pelaajille mahdollisuuden itse hallita ääntä joka soitetaan vuoron alkaessa.",
     "CRAWLHELPER.settings.sound-on-turn.name": "Soita äänimerkki vuoron alkaessa",
     "CRAWLHELPER.settings.sound-on-turn-path.hint": "Ääni, joka soitetaan pelaajan vuoron alkaessa.",
-    "CRAWLHELPER.settings.sound-on-turn-path.name": "Turn Start Sound File",
-    "CRAWLHELPER.start-crawling": "Start Crawling",
-    "CRAWLHELPER.turn-notification": "It's your turn!",
-    "CRAWLHELPER.token-hud.add": "Add To Tracker",
-    "CRAWLHELPER.token-hud.remove": "Remove From Tracker"
+    "CRAWLHELPER.settings.sound-on-turn-path.name": "Vuoron aloitusäänen tiedosto",
+    "CRAWLHELPER.start-crawling": "Aloita koluaminen",
+    "CRAWLHELPER.turn-notification": "Vuorosi on nyt!",
+    "CRAWLHELPER.token-hud.add": "Lisää seurantaan",
+    "CRAWLHELPER.token-hud.remove": "Poista seurannasta"
 }
