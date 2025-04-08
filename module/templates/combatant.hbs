@@ -13,7 +13,7 @@
                         <a 
                             data-action="rollInitiative" 
                             data-combatant-id="{{id}}"
-                            data-tooltip="Roll Initiative"
+                            data-tooltip="CRAWLHELPER.carousel.roll-init"
                         ><i class="fal fa-dice-d20"></i></a>
                     {{else}}
                         <i class="fal fa-dice-d20 faded"></i>
@@ -29,7 +29,7 @@
                     <a 
                         data-action="nextTurn" 
                         data-combatant-id="{{id}}"
-                        data-tooltip="End Turn"
+                        data-tooltip="CRAWLHELPER.carousel.end-turn"
                     ><i class="fas fa-angle-right"></i></a>
                 {{/unless}}
             </div>
@@ -52,8 +52,8 @@
                         <span>{{hp.max}}</span>
                     </div>
                 {{/if}}
-                {{#if ac}}<div style="font-size:10px">AC {{ac}}</div>{{/if}}
-                {{#if level}}<div style="font-size:10px">Level {{level}}</div>{{/if}}
+                {{#if ac}}<div style="font-size:10px">{{localize "CRAWLHELPER.ac"}} {{ac}}</div>{{/if}}
+                {{#if level}}<div style="font-size:10px">{{localize "CRAWLHELPER.level"}} {{level}}</div>{{/if}}
             </div>
         {{/if}}
     </div>

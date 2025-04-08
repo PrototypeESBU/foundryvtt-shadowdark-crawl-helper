@@ -10,7 +10,7 @@ export default function registerSettings() {
     //GM Settings (World level)
     game.settings.register("shadowdark-crawl-helper", "carousel", {
 		name: "Enabled Actor Carousel",
-        hint: "",
+        hint: "CRAWLHELPER.settings.carousel.hint",
         scope: "world",
         config: true,
 		default: true,
@@ -20,7 +20,7 @@ export default function registerSettings() {
 
     game.settings.register("shadowdark-crawl-helper", "add-gm", {
 		name: "Add GM When Crawl Starts",
-        hint: "",
+        hint: "CRAWLHELPER.settings.add-gm.hint",
         scope: "world",
         config: true,
 		default: true,
@@ -29,7 +29,7 @@ export default function registerSettings() {
 
     game.settings.register("shadowdark-crawl-helper", "gm-img", {
 		name: "GM Portrait Art",
-        hint: "",
+        hint: "CRAWLHELPER.settings.gm-img.hint",
         scope: "world",
         config: true,
 		default: "modules/shadowdark-crawl-helper/assets/dungeon-master.png",
@@ -39,7 +39,7 @@ export default function registerSettings() {
 
     game.settings.register("shadowdark-crawl-helper", "add-party", {
 		name: "Add Party When Crawl Starts",
-        hint: "",
+        hint: "CRAWLHELPER.settings.add-party.hint",
         scope: "world",
         config: true,
 		default: true,
@@ -47,8 +47,8 @@ export default function registerSettings() {
 	});
 
     game.settings.register("shadowdark-crawl-helper", "roll-encounter", {
-		name: "Automatically Roll Encounter Table",
-        hint: "",
+		name: "CRAWLHELPER.settings.roll-encounter.name",
+        hint:"CRAWLHELPER.settings.roll-encounter.hint",
         scope: "world",
         config: true,
 		default: true,
@@ -56,8 +56,8 @@ export default function registerSettings() {
 	});
 
     game.settings.register("shadowdark-crawl-helper", "notify-on-turn", {
-		name: "Turn Start Notifications",
-        hint: "",
+		name: "CRAWLHELPER.settings.notify-on-turn.name",
+        hint: "CRAWLHELPER.settings.notify-on-turn.hint",
         scope: "world",
         config: true,
 		default: true,
@@ -65,8 +65,8 @@ export default function registerSettings() {
 	});
 
     game.settings.register("shadowdark-crawl-helper", "sound-on-turn-path", {
-		name: "Turn Start Sound File",
-        hint: "",
+		name: "CRAWLHELPER.settings.sound-on-turn-path.name",
+        hint: "CRAWLHELPER.settings.sound-on-turn-path.hint",
         scope: "world",
         config: true,
 		default: "sounds/combat/epic-turn-1hit.ogg",
@@ -76,8 +76,8 @@ export default function registerSettings() {
     
 
     game.settings.register("shadowdark-crawl-helper", "hide-combat-sidebar", {
-		name: "Hide Combat Sidebar",
-        hint: "",
+		name: "CRAWLHELPER.settings.hide-combat-sidebar.name",
+        hint: "CRAWLHELPER.settings.hide-combat-sidebar.hint",
         scope: "world",
         config: true,
 		default: true,
@@ -86,8 +86,8 @@ export default function registerSettings() {
 	});
 
     game.settings.register("shadowdark-crawl-helper", "show-NPC-Health-Bars", {
-		name: "Show NPC Health Bars",
-        hint: "Allows players to see the health bar percentages of monsters in the carousel",
+		name: "CRAWLHELPER.settings.show-NPC-Health-Bars.name",
+        hint: "CRAWLHELPER.settings.show-NPC-Health-Bars.hint",
         scope: "world",
         config: true,
 		default: false,
@@ -108,8 +108,8 @@ export default function registerSettings() {
     //Player Settings (client level)
 
     game.settings.register("shadowdark-crawl-helper", "sound-on-turn", {
-		name: "Play Sound on Turn Start",
-        hint: "",
+		name: "CRAWLHELPER.settings.sound-on-turn.name",
+        hint: "CRAWLHELPER.settings.sound-on-turn.hint",
         scope: "Client",
         config: true,
 		default: true,

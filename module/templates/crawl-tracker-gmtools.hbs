@@ -2,38 +2,40 @@
     <div class="heading">
         <a data-action="collapseGmTools">
             <i class="fa-solid fa-book-open-reader"></i>
-            <span>GM Tools</span>
+            <span>{{localize "CRAWLHELPER.gmtools.title"}}</span>
             <i id="arrow" class="players-mode fas fa-angle-down"></i>
         </a>
     </div>
     <div class="content" data-drop="true">
         <div class="tools">
-            <a data-action="toggleParty" data-tooltip="Add party to tracker"><i class="fas fa-people-group"></i></a>
-            <a data-action="toggleGameMaster" data-tooltip="Add GM to tracker"><i class="fas fa-hat-wizard"></i></a>
-            <a data-action="triggerEncounterCheck" data-tooltip="Encounter check"><i class="fa-solid fa-dice"></i></a>
-            <a data-action="triggerEncounter" data-tooltip="Instant encounter"><i class="fa-solid fa-bolt-lightning"></i></a>
-            <a data-action="moralCheck" data-tooltip="Todo: Monster Moral Check" style="color: grey; cursor: not-allowed"><i class="fa-solid fa-person-running"></i></a>
-            <a data-action="timePasses" data-tooltip="Todo: Time Passes"><i class="fa-solid fa-hourglass-half"></i></a>
-            <a data-action="openCombatTracker" data-tooltip="Open Default Combat Tracker"><i class="fa-solid fa-swords"></i></a>
-            <a data-action="openSettingsMenu" data-tooltip="Open Crawl Helper Settings"><i class="fa-solid fa-gears"></i></a>
+            <a data-action="toggleParty" data-tooltip="CRAWLHELPER.gmtools.tooltip-add-party"><i class="fas fa-people-group"></i></a>
+            <a data-action="toggleGameMaster" data-tooltip="CRAWLHELPER.gmtools.tooltip-add-gm"><i class="fas fa-hat-wizard"></i></a>
+            <a data-action="triggerEncounterCheck" data-tooltip="CRAWLHELPER.gmtools.tooltip-encounter-check"><i class="fa-solid fa-dice"></i></a>
+            <a data-action="triggerEncounter" data-tooltip="CRAWLHELPER.gmtools.tooltip-encounter"><i class="fa-solid fa-bolt-lightning"></i></a>
+            <a data-action="moralCheck" data-tooltip="CRAWLHELPER.gmtools.tooltip-moral-check" style="color: grey; cursor: not-allowed"><i class="fa-solid fa-person-running"></i></a>
+            <a data-action="timePasses" data-tooltip="CRAWLHELPER.gmtools.tooltip-time-passes"><i class="fa-solid fa-hourglass-half"></i></a>
+            <a data-action="openCombatTracker" data-tooltip="CRAWLHELPER.gmtools.tooltip-open-combat"><i class="fa-solid fa-swords"></i></a>
+            <a data-action="openSettingsMenu" data-tooltip="CRAWLHELPER.gmtools.tooltip-open-settings"><i class="fa-solid fa-gears"></i></a>
             <span></span>
-            <a data-action="endCrawling" data-tooltip="End Current Tracker"><i class="fas fa-rectangle-xmark"></i></a>
+            <a data-action="endCrawling" data-tooltip="CRAWLHELPER.gmtools.tooltip-end-tracker"><i class="fas fa-rectangle-xmark"></i></a>
         </div>
         <div class="danger">
-            <div class="section">
-                <label style="line-height: 2;">Danger level:</label>
+            <div>
+                <label style="line-height: 2;">{{localize "CRAWLHELPER.danger.level"}}:</label><br>
                 <select name="dangerLevel">
                     {{selectOptions dangerIndex selected=dangerLevel}}
                 </select>
             </div>
-            <div class="section">
-                <label>Encounter Table:</label> 
+            <div>
+                <label>{{localize "CRAWLHELPER.gmtools.table"}}:</label><br>
                 {{#if encounterTable}}
-                    <a data-action="clearRollTable" data-tooltip="Remove Encounter Table" style="text-align: right;"><i class="fa-solid fa-trash"></i></a>
-                    <a data-link data-uuid="{{encounterTable.uuid}}" style="grid-column: 1 / span 2;">{{encounterTable.name}}</a>
+                <div style="display:grid; grid-template-columns: 1fr 0fr;">
+                    <a data-link data-uuid="{{encounterTable.uuid}}">{{encounterTable.name}}</a>
+                    <a data-action="clearRollTable" data-tooltip="CRAWLHELPER.gmtools.table-remove"><i class="fa-solid fa-trash"></i></a>
+                </div>
                 {{else}}
                     <fieldset style="grid-column: 1 / span 2;">
-                        <span>Drop Table Here</span>
+                        <span>{{localize "CRAWLHELPER.gmtools.drop"}}</span>
                     </fieldset>
                 {{/if}}
             </div>
