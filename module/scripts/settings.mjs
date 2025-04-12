@@ -46,6 +46,15 @@ export default function registerSettings() {
         type: Boolean,
     });
 
+    game.settings.register("shadowdark-crawl-helper", "save-crawl-initiative", {
+	    name: "CRAWLHELPER.settings.save-crawl-initiative.name",
+        hint: "CRAWLHELPER.settings.save-crawl-initiative.hint",
+        scope: "world",
+        config: true,
+		default: false,
+		type: Boolean,
+	});
+
     game.settings.register("shadowdark-crawl-helper", "roll-encounter", {
         name: "CRAWLHELPER.settings.roll-encounter.name",
         hint:"CRAWLHELPER.settings.roll-encounter.hint",
