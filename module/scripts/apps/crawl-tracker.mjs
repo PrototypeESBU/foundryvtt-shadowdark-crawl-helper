@@ -442,18 +442,19 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     async _stopCombat() {
             //Remove NPCs from tracker
-            // TODO should this be done only based on a setting of auto remove Monsters or something like that?
             const npcs = game.combat.combatants
                 .filter(c => c.system.type === "NPC")
                 .map(c => c.id);
             await game.combat.deleteEmbeddedDocuments("Combatant", npcs);
 
-            // restore saved crawling Initiative
-            for (const combatant of game.combat.combatants) {
-                await game.combat.setInitiative(combatant.id, combatant.system.crawlingInit);
-            }
-            //
             await game.combat.update({"system.inCombat": false});
+
+            // restore saved crawling Initiative based on setting
+            if(game.settings.get("shadowdark-crawl-helper", "save-crawl-initiative")) {
+                for (const combatant of game.combat.combatants) {
+                    await game.combat.setInitiative(combatant.id, combatant.system.crawlingInit);
+                }
+            }
 
             // Set next encounter
             await this._setEncounterCheck()

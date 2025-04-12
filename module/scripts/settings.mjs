@@ -2,8 +2,8 @@
 export default function registerSettings() {
     //Settings not shown in the menu
     game.settings.register("shadowdark-crawl-helper", "lastVersion", {
-		name: "shadowdark-crawl-helper.lastVersion",
-		default: "",
+        name: "shadowdark-crawl-helper.lastVersion",
+        default: "",
 		type: String,
 	});
 
@@ -43,6 +43,15 @@ export default function registerSettings() {
         scope: "world",
         config: true,
 		default: true,
+		type: Boolean,
+	});
+
+    game.settings.register("shadowdark-crawl-helper", "save-crawl-initiative", {
+	    name: "CRAWLHELPER.settings.save-crawl-initiative.name",
+        hint: "CRAWLHELPER.settings.save-crawl-initiative.hint",
+        scope: "world",
+        config: true,
+		default: false,
 		type: Boolean,
 	});
 
