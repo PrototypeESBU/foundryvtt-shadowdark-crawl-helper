@@ -1,4 +1,4 @@
-import actorCarousel from "./actorCarousel.mjs";
+import actorCarousel from "./actor-carousel.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
