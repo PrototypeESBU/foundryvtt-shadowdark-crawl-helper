@@ -45,6 +45,8 @@
     "CRAWLHELPER.settings.notify-on-turn.name": "Vuoron alkamisilmoitus",
     "CRAWLHELPER.settings.roll-encounter.hint": "Tekee kohtaamisheitot automaattisesti kohtaamistaulukosta.",
     "CRAWLHELPER.settings.roll-encounter.name": "Tee kohtaamisheitot automaattisesti",
+    "CRAWLHELPER.settings.save-crawl-initiative.hint": "Restores the party's previous crawl initiative when combat ends.",
+    "CRAWLHELPER.settings.save-crawl-initiative.name": "Save Crawl Initiative",
     "CRAWLHELPER.settings.show-NPC-Health-Bars.hint": "Näyttää pelaajille hirviöiden osumapisteprosentit karusellissa.",
     "CRAWLHELPER.settings.show-NPC-Health-Bars.name": "Näytä NPC-hahmojen osumapistepalkki",
     "CRAWLHELPER.settings.sound-on-turn.hint": "Antaa pelaajille mahdollisuuden itse hallita ääntä joka soitetaan vuoron alkaessa.",
