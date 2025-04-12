@@ -2,7 +2,7 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 export default class actorCarousel extends HandlebarsApplicationMixin(ApplicationV2) {
     constructor() {
-		super();
+        super();
         this.combatants = [];
         if (game.modules.get("lights-out-theme-shadowdark")?.active){
             this.lightsOut = true;
@@ -279,48 +279,48 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     }
 
     _getContextOptions() {
-    	return [
-			{
-				name: "",
-				icon: '<i class="fas fa-eye-slash"></i>',
-				condition: game.user.isGM,
-				callback: element => {
+        return [
+            {
+                name: "",
+                icon: '<i class="fas fa-eye-slash"></i>',
+                condition: game.user.isGM,
+                callback: element => {
                     const combatant = game.combat.combatants.get(element.data("combatant-id"));
                     combatant.update({hidden: !combatant.hidden});
-				}
-			},
+                }
+            },
             {
-				name: "",
-				icon: '<i class="fas fa-skull"></i>',
-				condition: game.user.isGM,
-				callback: element => {
+                name: "",
+                icon: '<i class="fas fa-skull"></i>',
+                condition: game.user.isGM,
+                callback: element => {
                     const combatant = game.combat.combatants.get(element.data("combatant-id"));
                     const isDefeated = !combatant.isDefeated;
                     combatant.update({defeated: isDefeated});
                     const defeatedId = CONFIG.specialStatusEffects.DEFEATED;
                     combatant.actor?.toggleStatusEffect(defeatedId, {overlay: true, active: isDefeated});
-				}
-			},
+                }
+            },
             {
-				name: "",
-				icon: '<i class="fas fa-edit"></i>',
-				condition: game.user.isGM,
-				callback: element => {
+                name: "",
+                icon: '<i class="fas fa-edit"></i>',
+                condition: game.user.isGM,
+                callback: element => {
                     const combatant = game.combat.combatants.get(element.data("combatant-id"));
                     return new CombatantConfig(combatant).render(true);
-				}
-			},
+                }
+            },
             {
-				name: "",
-				icon: '<i class="fas fa-trash"></i>',
-				condition: game.user.isGM,
-				callback: element => {
+                name: "",
+                icon: '<i class="fas fa-trash"></i>',
+                condition: game.user.isGM,
+                callback: element => {
                     const combatant = game.combat.combatants.get(element.data("combatant-id"));
                     combatant.delete();
-				}
-			}
-		];
-	}
+                }
+            }
+        ];
+    }
 
     _inputHP(event) {
         if (event.keyCode !== 13) return;
