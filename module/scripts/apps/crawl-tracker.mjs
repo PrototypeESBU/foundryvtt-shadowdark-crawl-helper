@@ -1,11 +1,11 @@
-import actorCarousel from "./actor-carousel.mjs";
+import actorCarousel from "./actorCarousel.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 export default class crawlTracker extends HandlebarsApplicationMixin(ApplicationV2) {
 
     constructor() {
-		super();
+        super();
         this._dragDrop = this.options.dragDrop.map(d => {
             d.callbacks = {drop: this._onDrop.bind(this)};
             return new DragDrop(d);
@@ -477,17 +477,17 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     async _onDrop(event) {
         // get table that was dropped based on event
-		const eventData = TextEditor.getDragEventData(event);
+        const eventData = TextEditor.getDragEventData(event);
         if(eventData.type === "RollTable") {
             await game.combat.update({"system.encounterTable": eventData.uuid});
         }
     }
 
     async _roll(formula, sound=false) {
-		let roll = await new Roll(formula).evaluate();
+        let roll = await new Roll(formula).evaluate();
         if(sound) shadowdark.utils.diceSound()
-		return roll._total;
-	}
+        return roll._total;
+    }
 
     async _updateRound() {
         // Do a GM turn in case it was skipped.
