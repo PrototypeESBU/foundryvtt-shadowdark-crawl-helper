@@ -45,6 +45,8 @@
     "CRAWLHELPER.settings.notify-on-turn.name": "Turn Start Notifications",
     "CRAWLHELPER.settings.roll-encounter.hint": "Automatically checks for encounters and rolls results from encounter table.",
     "CRAWLHELPER.settings.roll-encounter.name": "Automatically Roll Encounter Checks",
+    "CRAWLHELPER.settings.save-crawl-initiative.hint": "Restores the party's previous crawl initiative when combat ends.",
+    "CRAWLHELPER.settings.save-crawl-initiative.name": "Save Crawl Initiative",
     "CRAWLHELPER.settings.show-NPC-Health-Bars.hint": "Allows players to see the health bar percentages of monsters in the carousel.",
     "CRAWLHELPER.settings.show-NPC-Health-Bars.name": "Show NPC Health Bars",
     "CRAWLHELPER.settings.sound-on-turn.hint": "Allows players to individually control player turn sound.",
