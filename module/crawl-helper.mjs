@@ -66,7 +66,7 @@ Hooks.on('deleteCombat', async (document, changed, options, userId) => {
 // -----------------------------------------------
 Hooks.on("preCreateCombatant", async (combatant, data, options, userId) => 
     {
-        if (combatant.type === "base") {
+        if (combatant?.type === "base") {
             //switch type to crawler
             const updateData = {type: "shadowdark-crawl-helper.crawler"};
             if (combatant.actorId && (game.actors.get(combatant.actorId).type === "Player")) {
@@ -100,13 +100,13 @@ Hooks.on('updateActor', async (actor, updates) => {
 // UI Triggers
 // -----------------------------------------------
 Hooks.on("collapseSidebar", async (sidebar, collapsed) => {
-    game.crawlHelper.tracker.onSideBarChange();
+    game.crawlHelper.tracker.onUIChange();
 });
 
 Hooks.on("rtcSettingsChanged", async (settings, changes) => {
     if (changes.client) {
         if ("hideDock" in changes.client || "dockPosition" in changes.client) 
-            game.crawlHelper.tracker.onSideBarChange();
+            game.crawlHelper.tracker.onUIChange();
     }
 });
 
@@ -116,7 +116,7 @@ Hooks.on("applyTokenStatusEffect",  async (token, statusId, active) => {
 
 Hooks.on("renderPlayerList", async function(app, html) {
     if(game.modules.get("lights-out-theme-shadowdark")?.active) {
-        game?.crawlHelper?.tracker.onSideBarChange();
+        game?.crawlHelper?.tracker.onUIChange();
     }
 });
 
