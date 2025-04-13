@@ -114,6 +114,12 @@ Hooks.on("applyTokenStatusEffect",  async (token, statusId, active) => {
     game.crawlHelper.tracker.onStatusEffect(statusId);
 });
 
+Hooks.on("renderPlayerList", async function(app, html) {
+    if(game.modules.get("lights-out-theme-shadowdark")?.active) {
+        game?.crawlHelper?.tracker.onSideBarChange();
+    }
+});
+
 Hooks.on('renderSceneNavigation', async (application, html, data) => { 
     if(game.settings.get("shadowdark-crawl-helper", "carousel")
     && !game.modules.get("lights-out-theme-shadowdark")?.active){

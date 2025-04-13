@@ -48,10 +48,28 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     // sets the position of the app before rendering
     _prePosition(pos = {}) {
         const middle = document.querySelector("#ui-middle").getBoundingClientRect();
+        let top = middle.top
+        let height = middle.height
+
+        //calculate lights out position
+        if (this.lightsOut) {
+            const hotbar = document.querySelector("#hotbar").getBoundingClientRect();
+            const nav = document.querySelector("#navigation").getBoundingClientRect();
+            const players = document.querySelector("#players").getBoundingClientRect();
+            if (nav.height > 0)
+                top = nav.bottom;
+            else if(hotbar.width > 0) {
+                top = hotbar.bottom;
+            }
+            if (players.height > 0) {
+                height = players.top - top;
+            }
+        }
+
         foundry.utils.mergeObject(pos, {
-            top: middle.top,
+            top: top,
             left: middle.left,
-            height: middle.height,
+            height: height,
             width: middle.width
         });
     }
