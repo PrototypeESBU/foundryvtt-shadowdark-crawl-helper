@@ -1,3 +1,11 @@
+# v1.0
+
+## Changes
+- [#23] Crawling initiative will no longer reset by default after combat
+
+## Fixes
+- [#25] Fixed an issue with player list UI overlaping the Lights Out actor carousel
+
 # v0.9
 
 ## Changes

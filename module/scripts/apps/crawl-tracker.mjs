@@ -286,10 +286,10 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             this._connectSceneTokens();
     }
     
-    async onSideBarChange() {
+    async onUIChange() {
         if(this.carousel) 
-            this.carousel.render(true);
-        this.render();
+            this.carousel.setPosition();
+        this.setPosition();
     }
 
     //Combatants
