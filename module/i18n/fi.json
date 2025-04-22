@@ -45,14 +45,16 @@
     "CRAWLHELPER.settings.notify-on-turn.name": "Vuoron alkamisilmoitus",
     "CRAWLHELPER.settings.roll-encounter.hint": "Tekee kohtaamisheitot automaattisesti kohtaamistaulukosta.",
     "CRAWLHELPER.settings.roll-encounter.name": "Tee kohtaamisheitot automaattisesti",
+    "CRAWLHELPER.settings.save-crawl-initiative.hint": "Palauttaa ryhmän aikaisemmat aloiteheitot kun taistelu päättyy.",
+    "CRAWLHELPER.settings.save-crawl-initiative.name": "Tallenna koluamisen aloiteheitot",
     "CRAWLHELPER.settings.show-NPC-Health-Bars.hint": "Näyttää pelaajille hirviöiden osumapisteprosentit karusellissa.",
     "CRAWLHELPER.settings.show-NPC-Health-Bars.name": "Näytä NPC-hahmojen osumapistepalkki",
     "CRAWLHELPER.settings.sound-on-turn.hint": "Antaa pelaajille mahdollisuuden itse hallita ääntä joka soitetaan vuoron alkaessa.",
     "CRAWLHELPER.settings.sound-on-turn.name": "Soita äänimerkki vuoron alkaessa",
     "CRAWLHELPER.settings.sound-on-turn-path.hint": "Ääni, joka soitetaan pelaajan vuoron alkaessa.",
-    "CRAWLHELPER.settings.sound-on-turn-path.name": "Turn Start Sound File",
-    "CRAWLHELPER.start-crawling": "Start Crawling",
-    "CRAWLHELPER.turn-notification": "It's your turn!",
-    "CRAWLHELPER.token-hud.add": "Add To Tracker",
-    "CRAWLHELPER.token-hud.remove": "Remove From Tracker"
+    "CRAWLHELPER.settings.sound-on-turn-path.name": "Vuoron aloitusäänen tiedosto",
+    "CRAWLHELPER.start-crawling": "Aloita koluaminen",
+    "CRAWLHELPER.turn-notification": "Vuorosi on nyt!",
+    "CRAWLHELPER.token-hud.add": "Lisää seurantaan",
+    "CRAWLHELPER.token-hud.remove": "Poista seurannasta"
 }
