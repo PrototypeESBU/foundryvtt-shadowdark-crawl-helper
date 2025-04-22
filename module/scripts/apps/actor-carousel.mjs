@@ -82,6 +82,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             context.crawlStarted = game.combat.started;
             context.isGM = game.user.isGM;
             context.combatants = this.combatants;
+            context.unrolledInit = this.combatants.some(c => (c.initiative === null && c.isOwner));
             if (this.lightsOut) {
                 context.containerStyle = `height:${(this.combatants.length*64)-8}px`;
             } else {
@@ -157,7 +158,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
 
     static async rollAllInit(event, target) {
         await game.combat.rollAll();
-        await game.combat.update({turn: 0});
+        if (game.user.isGM) await game.combat.update({turn: 0});
     };
 
     static async resetInit(event, target) {

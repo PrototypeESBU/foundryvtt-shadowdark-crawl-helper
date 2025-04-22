@@ -1,4 +1,4 @@
-# v1.0
+# v0.9.1
 
 ## Changes
 - [#23] Crawling initiative will no longer reset by default after combat

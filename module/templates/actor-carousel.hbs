@@ -31,21 +31,23 @@
         {{/each}}
     </div>
 
-    {{#if isGM}}
-        <div class="side-buttons">
-            <ol>
-                <li class="small" data-action="rollAllInit" data-tooltip="CRAWLHELPER.carousel.roll-all">
-                    <i class="fas fa-dice-d20"></i>
-                </li>
-                <li class="small" data-action="nextRound" data-tooltip="CRAWLHELPER.carousel.round.next">
-                    <i class="fas fa-angles-right"></i>
-                </li>
-                <li data-action="nextTurn" data-tooltip="CRAWLHELPER.carousel.turn.next">
-                    <i class="fas fa-angle-right"></i>
-                </li>
-            </ol>
-        </div>
-    {{/if}}
+
+    <div class="side-buttons">
+        <ol>
+            <li class="small" data-action="rollAllInit" data-tooltip="CRAWLHELPER.carousel.roll-all" {{#unless unrolledInit}}style="color: #444"{{/unless}}>
+                <i class="fas fa-dice-d20"></i>
+            </li>
+            {{#if isGM}}
+            <li class="small" data-action="nextRound" data-tooltip="CRAWLHELPER.carousel.round.next">
+                <i class="fas fa-angles-right"></i>
+            </li>
+            <li data-action="nextTurn" data-tooltip="CRAWLHELPER.carousel.turn.next">
+                <i class="fas fa-angle-right"></i>
+            </li>
+            {{/if}}
+        </ol>
+    </div>
+
 
 {{/if}}
 </div>
