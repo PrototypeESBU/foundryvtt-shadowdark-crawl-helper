@@ -1,19 +1,4 @@
 @use "crawl-tracker";
 @use "actor-carousel";
+@use "gm-tools";
 @use "lights-out-carousel";
-
-#navigation.verticle {
-    max-width: 220px;
-    #scene-list {
-        min-width: 210px;
-        .scene {
-            float:none;
-            white-space: nowrap;
-            width: min-content;
-        }
-    }
-}
-
-.hide-combat-sidebar #sidebar-tabs a[data-tab="combat"] {
-    display: none !important;
-}

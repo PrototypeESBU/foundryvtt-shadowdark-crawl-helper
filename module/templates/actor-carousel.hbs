@@ -1,21 +1,27 @@
 <div class="main-part">
 {{#if crawlStarted}}
 
-    {{#if isGM}}
-        <div class="side-buttons">
-            <ol>
-                <li class="small" data-action="resetInit" data-tooltip="CRAWLHELPER.carousel.reset-init">
-                    <i class="fas fa-eraser"></i>
-                </li>
-                <li class="small" data-action="previousRound" data-tooltip="CRAWLHELPER.carousel.round.previous">
-                    <i class="fas fa-angles-left"></i>
-                </li>
-                <li data-action="previousTurn" data-tooltip="CRAWLHELPER.carousel.turn.previous">
-                    <i class="fas fa-angle-left"></i>
-                </li>
-            </ol>
-        </div>
-    {{/if}}
+    <div class="side-buttons faded-ui" style="align-items:end">
+        <button 
+            class="ui-control icon fas fa-dice-d20 {{#unless unrolledInit}}unavailable{{/unless}}"
+            id="rollAllInit"
+            data-action="rollAllInit" 
+            data-tooltip="CRAWLHELPER.carousel.roll-all">
+        </button>
+        {{#if isGM}}
+            <button 
+                class="ui-control icon fas fa-angles-right" 
+                data-action="nextRound"
+                data-tooltip="CRAWLHELPER.carousel.round.next">
+            </button>
+        {{/if}}
+        <button 
+            class="ui-control icon fas fa-angle-right {{#unless isGM}}unavailable{{/unless}}"
+            id="nextTurn" 
+            data-action="nextTurn"
+            data-tooltip="CRAWLHELPER.carousel.turn.next">
+        </button>
+    </div>
 
     <div class="combatant-container shadowdark" style="{{containerStyle}}">
         {{#each combatants}}
@@ -31,22 +37,13 @@
         {{/each}}
     </div>
 
-
-    <div class="side-buttons">
-        <ol>
-            <li class="small" data-action="rollAllInit" data-tooltip="CRAWLHELPER.carousel.roll-all" {{#unless unrolledInit}}style="color: #444"{{/unless}}>
-                <i class="fas fa-dice-d20"></i>
-            </li>
-            {{#if isGM}}
-            <li class="small" data-action="nextRound" data-tooltip="CRAWLHELPER.carousel.round.next">
-                <i class="fas fa-angles-right"></i>
-            </li>
-            <li data-action="nextTurn" data-tooltip="CRAWLHELPER.carousel.turn.next">
-                <i class="fas fa-angle-right"></i>
-            </li>
-            {{/if}}
-        </ol>
-    </div>
+    {{#if isGM}}
+        <div class="side-buttons faded-ui" >
+            <button class="ui-control icon fas fa-eraser" data-action="resetInit" data-tooltip="CRAWLHELPER.carousel.reset-init"></button>
+            <button class="ui-control icon fas fas fa-angles-left" data-action="previousRound" data-tooltip="CRAWLHELPER.carousel.round.previous"></button>
+            <button class="ui-control icon fas fas fa-angle-left" data-action="previousTurn" data-tooltip="CRAWLHELPER.carousel.turn.previous"></button>
+        </div>
+    {{/if}}
 
 
 {{/if}}

@@ -3,35 +3,30 @@
         <div class="name">{{name}}</div>
         <div class="portrait">
             <img src="{{img}}" data-actor-id="{{actorId}}" data-combatant-id="{{id}}">
-            {{#if initiativeSet}}
-                <div class="initiative">{{initiative}}</div>
-            {{/if}}
-            
+                    
             <div class="overlay {{#unless overlay}}hidden{{/unless}}">
-                {{#ifEq overlay "initiative"}}
-                    {{#if isOwner}}
-                        <a 
-                            data-action="rollInitiative" 
-                            data-combatant-id="{{id}}"
-                            data-tooltip="CRAWLHELPER.carousel.roll-init"
-                        ><i class="fal fa-dice-d20"></i></a>
-                    {{else}}
-                        <i class="fal fa-dice-d20 faded"></i>
-                    {{/if}}
-                {{/ifEq}}
                 {{#ifEq overlay "hidden"}}
                     <i class="fas fa-eye-slash faded"></i>
                 {{/ifEq}}
                 {{#ifEq overlay "defeated"}}
                     <i class="fas fa-skull faded"></i>
                 {{/ifEq}}
-                {{#unless overlay}}
-                    <a 
-                        data-action="nextTurn" 
-                        data-combatant-id="{{id}}"
-                        data-tooltip="CRAWLHELPER.carousel.end-turn"
-                    ><i class="fas fa-angle-right"></i></a>
-                {{/unless}}
+            </div>
+
+            <div class="initiative">
+                {{#if initiativeSet}}
+                    <span>{{initiative}}</span>
+                {{else if isOwner}}
+                        <a 
+                            data-action="rollInitiative"
+                            data-combatant-id="{{id}}"
+                            data-tooltip="CRAWLHELPER.carousel.roll-init"
+                        >
+                            <i class="fal fa-dice-d20"></i>
+                        </a>
+                {{else}}
+                    <i class="fal fa-dice-d20 faded"></i>
+                {{/if}}
             </div>
 
         </div>

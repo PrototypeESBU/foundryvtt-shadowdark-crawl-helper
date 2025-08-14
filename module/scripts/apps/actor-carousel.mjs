@@ -9,6 +9,28 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         } else {
             this.lightsOut = false;
         }
+
+        Hooks.on('deleteCombat', this._onDeleteCombat.bind(this));
+        Hooks.on('updateCombat', this._onUpdateCombat.bind(this));
+        Hooks.on('createCombatant', this._onCreateCombatant.bind(this));
+        Hooks.on('deleteCombatant', this._onDeleteCombatant.bind(this));
+        Hooks.on('updateCombatant', this._onUpdateCombatant.bind(this));
+        Hooks.on('updateActor', this._onUpdateActor.bind(this));
+        Hooks.on('applyTokenStatusEffect', this._onApplyTokenStatusEffect.bind(this));
+
+        Hooks.on('collapseSidebar', this._onCollapseSidebar.bind(this));
+
+        Hooks.on("rtcSettingsChanged", async (settings, changes) => {
+            if (changes.client && ("hideDock" in changes.client || "dockPosition" in changes.client)) 
+                this.setPosition();
+        });
+
+        Hooks.on("renderPlayerList", async function(app, html) {
+            if(game.modules.get("lights-out-theme-shadowdark")?.active) {
+                this.setPosition();
+            }
+        });
+
     };
 
     static DEFAULT_OPTIONS = {
@@ -47,9 +69,8 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
 
     // sets the position of the app before rendering
     _prePosition(pos = {}) {
-        const middle = document.querySelector("#ui-middle").getBoundingClientRect();
-        let top = middle.top
-        let height = middle.height
+        const uiLeft = document.querySelector("#ui-left-column-2").getBoundingClientRect();
+        const sidebar = document.querySelector("#sidebar").getBoundingClientRect();
 
         //calculate lights out position
         if (this.lightsOut) {
@@ -67,10 +88,9 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         }
 
         foundry.utils.mergeObject(pos, {
-            top: top,
-            left: middle.left,
-            height: height,
-            width: middle.width
+            top: 0,
+            left: uiLeft.right,
+            width: sidebar.right - uiLeft.right,
         });
     }
 
@@ -111,8 +131,8 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         //shows player the next turn overlay
         if (this.combatants.length > 1) {
             const currentCombatant = this.combatants[game.combat.turn];
-            if(currentCombatant.overlay === "" && currentCombatant.isOwner && !game.user.isGM) {
-                this.element.querySelector(".first .overlay").classList.remove("hidden");
+            if(currentCombatant.isOwner || game.user.isGM) {
+                this.element.querySelector("#nextTurn").classList.remove("unavailable");
             }
         }
 
@@ -131,6 +151,57 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             input.addEventListener("keyup", this._inputHP);
         }
 
+    }
+    // -----------------------------------------------
+    // Hook Callbacks
+    // -----------------------------------------------
+
+    async _onCollapseSidebar(sidebar, collapsed) {
+        const padding = collapsed? "54px" : "354px";
+        this.element.style.paddingRight = padding;
+    }
+
+    async _onDeleteCombat(document, changed, options, userId) {
+        this.close();
+    };
+
+    async _onUpdateCombat(document, changed, options, userId) {
+        if(game.combat.combatants.size > 0 && game.combat.started) {
+            let renderNeeded = true; 
+            if ("turn" in changed ) {
+                this._updateTurn(options.direction);
+                renderNeeded = false;
+            }
+            if ("round" in changed) {
+                this._updateRound();
+                renderNeeded = false;
+            }
+            if (renderNeeded) this.render();
+        }
+        else {
+            this.close({animate: false});
+        }
+    }
+
+    async _onCreateCombatant(combatant, updates) {
+        this.render();
+    };
+
+    async _onDeleteCombatant(combatant, updates){ 
+        this.render();
+    };
+
+    async _onUpdateCombatant(combatant, updates) {
+        this.render();
+    };
+
+    // Actors & Tokens
+    async _onUpdateActor(actor, updates) {
+        this.render();
+    };
+
+    async _onApplyTokenStatusEffect(statusId) {
+        if(statusId === "dead") this.render(true);
     }
 
     // -----------------------------------------------
@@ -162,7 +233,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     };
 
     static async resetInit(event, target) {
-        game.combat.resetAll();
+        game.combat.resetAll({updateTurn: false});
     };
 
     static async toggleVisibility(event, target) {
@@ -191,23 +262,6 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     // -----------------------------------------------
     // Public functions
     // -----------------------------------------------
-    async onUpdateCombat(changes, options) {
-        if(game.combat.combatants.size > 0 && game.combat.started) {
-            if ("combatants" in changes || game.combat.previous.round === 0) {
-                await this.render(true);
-            } else {
-                if ("turn" in changes ) {
-                    this._updateTurn(options.direction);
-                }
-                if ("round" in changes) {
-                    this._updateRound();
-                }
-            }
-        }
-        else {
-            this.close({animate: false});
-        }
-    }
 
     async controlToken(event) {
         const combatantId = event.currentTarget.dataset.combatantId;
@@ -222,7 +276,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
 
     async openSheet(event) {
         const combatantId = event.currentTarget.dataset.combatantId;
-        let actor = game.crawlHelper.utils.getCombatantActor(combatantId);
+        const actor = game.combat.combatants.get(combatantId).actor;
         actor.sheet.render(true);
     }
 
@@ -231,7 +285,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     // -----------------------------------------------
 
     _enrichCombatant(combatant) {
-        const actor = game.crawlHelper.utils.getCombatantActor(combatant.id);
+        const actor = combatant.actor;
     
         //Set actor stats
         let barPercent = 100;
@@ -344,7 +398,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     _inputHP(event) {
         if (event.keyCode !== 13) return;
         const combatantId = event.currentTarget.dataset.combatantId;
-        let actor = game.crawlHelper.utils.getCombatantActor(combatantId);
+        const actor = game.combat.combatants.get(combatantId).actor;
         if (!actor) return;
 
         const currentHP = actor.system.attributes.hp.value;
@@ -449,11 +503,11 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         currentElement.classList.add("first");
 
         //add or remove nextTurn overlay
-        if(previousCombatant.overlay === "") {
-            previousElement.querySelector(".overlay").classList.add("hidden");
+        if(currentCombatant.isOwner || game.user.isGM) {
+            this.element.querySelector("#nextTurn").classList.remove("unavailable");
         }
-        if(currentCombatant.overlay === "" && currentCombatant.isOwner && !game.user.isGM) {
-            currentElement.querySelector(".overlay").classList.remove("hidden");
+        else {
+            this.element.querySelector("#nextTurn").classList.add("unavailable");
         }
 
         //wait for CSS transitions

@@ -1,6 +1,7 @@
 .actor-carousel {
     position:absolute;
-    padding: 0px 150px;
+    padding: 0px 55px 0px 8px;
+    transition: padding 150ms;
     pointer-events: none;
     
     .main-part {
@@ -10,37 +11,13 @@
 
     .side-buttons {
         width:40px;
-
-        ol {
-            margin: 0px;
-            padding: 0px;
-            pointer-events: none;
-
-            li {
-                flex: none;
-                width: 36px;
-                height: 36px;
-                margin: 8px 0 0 0;
-                box-sizing: content-box;
-                font-size: 24px;
-                line-height: 36px;
-                background: rgba(0, 0, 0, 0.5);
-                box-shadow: 0 0 10px var(--color-shadow-dark);
-                color: var(--color-text-light-heading);
-                text-align: center;
-                border: 1px solid var(--color-border-dark);
-                border-radius: 5px;
-                cursor: pointer;
-                pointer-events: all;
-                display: inline-grid;
-                place-content: center;
-                
-                &.small {
-                    height: 20px;
-                    font-size: 14px;
-                }
-            }
-
+        margin-top: 8px;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        gap: 8px;
+        button.unavailable {
+            visibility: hidden;
         }
     }
 
@@ -95,12 +72,25 @@
 
                 .initiative {
                     position: absolute;
-                    bottom: 0px;
+                    left: 2px;
+                    bottom: 2px;
+                    width: 20px;
+                    height: 20px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    flex-direction: column;
                     color: white;
                     background: rgba(0, 0, 0, 0.5);
-                    padding: 4px;
-                    font-size: 12px;
-                    line-height: 1;
+                    span {
+                        font-size: 12px;
+                        font-family: "Montserrat-Medium";
+                    }
+                    a {
+                        line-height: 1;
+                        font-size: 16px;
+                    }
+                    
                 }
                 
                 .overlay {
@@ -111,6 +101,7 @@
                     right: 2px;
                     background: rgb(0, 0, 0, 0.3);
                     text-shadow: 0 0 10px black;
+                    pointer-events: none;
 
                     i {
                         position: relative;
@@ -202,7 +193,6 @@
                     align-items: center;
                     input {
                         color: white;
-                        width: auto;
                         border: none;
                         outline: none;
                         box-shadow: none;
@@ -253,6 +243,7 @@
             font-weight: bold;
             font-size: 18px;
             text-shadow: 0 0 8px #ffffff;
+            color: white;
             transition: opacity 0.6s ease-in-out;
             &.fadeout {
                 opacity: 0;

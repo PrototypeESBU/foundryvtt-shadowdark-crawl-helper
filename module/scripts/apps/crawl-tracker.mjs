@@ -1,4 +1,3 @@
-import actorCarousel from "./actor-carousel.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -6,54 +5,32 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     constructor() {
         super();
-        this._dragDrop = this.options.dragDrop.map(d => {
-            d.callbacks = {drop: this._onDrop.bind(this)};
-            return new DragDrop(d);
-        });
-        this.dangerIndex = [
-            game.i18n.localize("CRAWLHELPER.danger.deadly"),
-            game.i18n.localize("CRAWLHELPER.danger.risky"),
-            game.i18n.localize("CRAWLHELPER.danger.unsafe")
-        ]
-        if(game.settings.get("shadowdark-crawl-helper", "carousel")) {
-            this.carousel = new actorCarousel();
-        } else {
-            this.carousel = null
-        }   
+
+        Hooks.on('deleteCombat', this._onDeleteCombat.bind(this));
+        Hooks.on('updateCombat', this._onUpdateCombat.bind(this));
+        Hooks.on('deleteCombatant', this._onDeleteCombatant.bind(this));
+        Hooks.on('updateCombatant', this._onUpdateCombat.bind(this));
+        Hooks.on("canvasReady", this._onSceneChange.bind(this));
+
     }
 
     static DEFAULT_OPTIONS = {
         id: "crawlTracker",
-        classes: ["crawl-tracker", "collapsed"],
+        classes: ["crawl-tracker", "application", "faded-ui"],
         position: {
             width: 200,
             height: "auto",
         },
-        dragDrop: [{ dragSelector: null, dropSelector: '[data-drop]' }],
         window: {
             frame: false,
         },
         actions: {
             startCrawling: this.startCrawling,
-            endCrawling: this.endCrawling,
             toggleCombat: this.toggleCombat,
-            toggleParty: this.toggleParty,
-            toggleGameMaster: this.toggleGameMaster,
-            triggerEncounterCheck: this.triggerEncounterCheck,
-            triggerEncounter: this.triggerEncounter,
-            moralCheck: this.moralCheck,
-            timePasses: this.timePasses,
-            openCombatTracker: this.openCombatTracker,
-            collapseGmTools: this.collapseGmTools,
-            openSettingsMenu: this.openSettingsMenu,
-            clearRollTable: this.clearRollTable,
         }
     };
 
     static PARTS = {
-        gmtools: {
-            template: "./modules/shadowdark-crawl-helper/templates/crawl-tracker-gmtools.hbs"
-        },
         main: {
           template: "./modules/shadowdark-crawl-helper/templates/crawl-tracker.hbs"
         }
@@ -63,26 +40,23 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     //  Parent Override Functions
     // -----------------------------------------------
 
+    async _preFirstRender(context, options) {
+        const uiLeft = document.getElementById("ui-left-column-1");
+        uiLeft.insertAdjacentHTML("beforeend", `<template id="crawlTracker"></template>`);
+    }
     /** @override */
     _prePosition(pos = {}) {
-        const middle = document.querySelector("#ui-middle").getBoundingClientRect();
-        const thisApp = this.element.getBoundingClientRect();
         foundry.utils.mergeObject(pos, {
-            left: middle.right - 210,
-            top: middle.bottom - thisApp.height - 15
+            left: 0,
+            top: 0
         });
     }
 
     _configureRenderOptions(options) {
         super._configureRenderOptions(options);
-
-        if (game.user.isGM) {
-            options.parts = ['gmtools','main']
-        }
-        else {
-            options.parts = ['main']
-        }
+        options.parts = ['main']
     }
+
     async _prepareContext(context, options) {
         if(game.combat?.started) context.started = true;
         return context;
@@ -90,13 +64,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
     async _preparePartContext(partId, context, options) {
         if(game.combat) {
-            if (partId === "gmtools") {
-                context.dangerLevel = game.combat.system.dangerLevel;
-                context.encounterTable = game.combat.system.encounterTable ? 
-                    fromUuidSync(game.combat.system.encounterTable) : "";
-                context.dangerIndex = this.dangerIndex
-            }
-            else if (partId === "main") {
+            if (partId === "main") {
                 context.isGM = game.user.isGM;
                 context.round = game.combat.round;
                 context.inCombat = game.combat.system.inCombat;
@@ -110,158 +78,71 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
 
     _onRender(context, options) {
-        if(game.user.isGM){
-            //add dragdrop event lisners
-            this._dragDrop.forEach((d) => d.bind(this.element));
-
-            //Add event handler for danger selection
-            const dangerSelect = this.element.querySelector('select[name="dangerLevel"]');
-            dangerSelect.addEventListener("change", event => this._onDangerChange(event));
-        }
 
         if (game.modules.get("lights-out-theme-shadowdark")?.active) {
             this.classList.add("lights-out-tracker");
         }
+    }
+    // -----------------------------------------------
+    // Hook Callbacks
+    // -----------------------------------------------
 
-        this.bringToFront();
+    //Combatants
+    async _onDeleteCombatant(combatant, updates){ 
+        if(combatant.id === game.combat.system.gmId && game.user.isGM){
+            await game.combat.update({"system.gmId": null})
+        }
+    };
+
+    async _onUpdateCombatant(combatant, updates) {
+        // TODO check for < 50% defeated and call moral check
+    }
+
+    //Combat
+
+    async _onDeleteCombat(document, changed, options, userId) { 
+        if (game.user.isGM) {
+            await this.initializeCrawl();
+            this.render(true);
+        }
+        else {
+            this.close({animate:false});
+        }
+    }
+
+    async _onUpdateCombat(document, changed, options, userId) {
+        if (game?.combat?.started) { 
+            if (("round" in changed)||("turn" in changed))  {
+                await this._updateTurn(options.direction);
+            }
+            this.render();
+        }
+    }
+
+    // other
+    async _onSceneChange(canvas) {
+        if (game.combat && game.user.isGM) 
+            this.connectSceneTokens();
     }
 
     // -----------------------------------------------
     // Action Functions
     // -----------------------------------------------
 
-    static async startCrawling(event, target) {
-        await this._setEncounterCheck();
-        if (game.settings.get("shadowdark-crawl-helper", "add-gm"))
-            await this._addGameMaster(); 
-        if (game.settings.get("shadowdark-crawl-helper", "add-party"))
-            await this._addParty();
-        await game.combat.startCombat(); 
-    
-    }
-    static async endCrawling(event, target) {
-        await game.combat.endCombat();
-    }
-
-    static async triggerEncounter(event, target) {
-        this._checkForEncounter(0);
-    }
-
-    static async triggerEncounterCheck(event, target) {
-        this._checkForEncounter(1);
-    }
-
     static async toggleCombat(event, target) {
         //turn off combat
         if (game.combat.system.inCombat) {
-           await this._stopCombat();
+           await game.crawlHelper.gmtools.stopCombat();
         }
         //turn on combat
         else {
-           await this._startCombat();
+           await await game.crawlHelper.gmtools.startCombat();
         }
-    }
-
-    static async toggleGameMaster() {
-        // TODO make this it a toggle
-        this._addGameMaster();
-    }
-
-    static async toggleParty() {
-        // TODO make this it a toggle
-        this._addParty();
-    }
-
-    static async timePasses(){
-
-        const fields = foundry.applications.fields;
-        const textInput = fields.createNumberInput({name: 'minutes', value: '10'});
-        const textGroup = fields.createFormGroup({input: textInput, label: "Minutes:"}); //TODO localize
-
-        //open prompt for minutes
-        const result = await foundry.applications.api.DialogV2.wait({
-          window: { title: "Time Passes" }, //TODO localize
-          content: `${textGroup.outerHTML}`,
-          buttons: [{
-            action: "advance",
-            label: "Pass Time", //TODO localize
-            default: true,
-            callback: (event, button, dialog) => new FormDataExtended(button.form).object
-          }],
-          rejectClose: false,
-          modal: true
-        });
-    
-        if (!result) return
-        if (!result?.minutes > 0) {
-            return ui.notifications.warn("Minutes must be greater than 0"); //TODO localize
-        }
-
-        //Advance Time
-        await game.time.advance(result.minutes * 60);
-
-        //Remove Effects
-        const players = game.combat.combatants.filter(c => c.system.type === "Player");
-        const expiredEffectsList = [];
-        for (const combatant of players) {
-            const actor = game.actors.get(combatant.actorId);
-            if (!actor) continue;
-
-            const effectsToRemove = actor.items.filter(item => 
-                item.type === "Effect" &&
-                item.system.duration &&
-                item.system.duration.type === "rounds" &&
-                Number(item.system.duration.value) > 0
-            );
-            if (effectsToRemove.length > 0) {
-                const names = effectsToRemove.map(item => item.name);
-                const effectIds = effectsToRemove.map(item => item.id);
-                await actor.deleteEmbeddedDocuments("Item", effectIds);
-                expiredEffectsList.push({actor: actor.name, effects: names.join(", ")});
-            }
-        }
-
-        //Post to chat
-        const cardContent = await renderTemplate("modules/shadowdark-crawl-helper/templates/chats/timepasses-card.hbs", {
-            minutes: result.minutes,
-            expiredEffectsList
-        });
-        await ChatMessage.create({ content: cardContent });
-
-        //Roll for encounter
-        await this._checkForEncounter(3);
-
-    }  
-      
-    static async moralCheck(mode="individual"){
-        // TODO Roll moral checks for all targets as defined on pg 89
-        const npcs = game.combat.combatants.filter(c => c.system.type === "NPC"); 
-
-    }
-
-    static async openCombatTracker() {
-        game.combats.directory.createPopout().render(true);
-    }
-
-    static async collapseGmTools(){
-        this.element.classList.toggle("collapsed");
-        this.render();
-    }
-    static async openSettingsMenu(){
-        Hooks.once("renderSettingsConfig", (app, html, data) => {
-            html[0].querySelector('a[data-tab="shadowdark-crawl-helper"]').click();
-        });
-        game.settings.sheet.render(true)
-    }
-
-    static async clearRollTable() {
-        game.combat.update({"system.encounterTable": ""})
     }
 
     // -----------------------------------------------
     // Public functions
     // -----------------------------------------------
-    
     async initializeCrawl() { // loads tracking data from an exiting combat on initialization
 
         if (game.user.isGM) {
@@ -275,131 +156,11 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
         if(game?.combat?.started || game.user.isGM){
             this.render(true);
-
-            if(this.carousel) 
-                this.carousel.render(true);
+            game.crawlHelper?.carousel?.render(true); //TODO is this even needed?
         }
     }
 
-    async onSceneChange(canvas) {
-        if (game.combat && game.user.isGM) 
-            this._connectSceneTokens();
-    }
-    
-    async onUIChange() {
-        if(this.carousel) 
-            this.carousel.setPosition();
-        this.setPosition();
-    }
-
-    //Combatants
-
-    async onCreateCombatant(combatant, updates){
-        if(this.carousel) 
-            this.carousel.render(true);
-    }
-
-    async onDeleteCombatant(combatant, updates){
-        if(combatant.id === game.combat.system.gmId && game.user.isGM){
-            await game.combat.update({"system.gmId": null})
-        }
-        if(this.carousel) 
-            this.carousel.render(true);
-    }
-
-    async onUpdateCombatant(combatant, updates) {
-        if(this.carousel) 
-            this.carousel.render(true);
-        // TODO check for < 50% defeated and call moral check
-    }
-
-    //Combat
-
-    async onUpdateCombat(changes, options) {
-        if(this.carousel) 
-            this.carousel.onUpdateCombat(changes, options)
-
-        if (game?.combat?.started) { 
-            if ("round" in changes) {
-                await this._updateRound();
-                await this._updateTurn(options.direction);
-            } 
-            else if ("turn" in changes) {
-                await this._updateTurn(options.direction);
-            }
-            this.render();
-
-        } else if ( game.user.isGM) {
-            this.render();
-        } 
-    }
-
-    async onDeleteCombat() { 
-        if (game.user.isGM) {
-            await this.initializeCrawl();
-            this.render(true);
-        }
-        else {
-            this.close({animate:false});
-        }
-        this.carousel.close();
-    }
-
-    // Actors & Tokens
-    async onUpdateActor(actor, updates) {
-        if(this.carousel) 
-            this.carousel.render(true);
-    }
-
-    async onStatusEffect(statusId) {
-        if(this.carousel && statusId === "dead") 
-            this.carousel.render(true);
-    }
-
-    // -----------------------------------------------
-    // Private functions
-    // -----------------------------------------------
-
-    async _addGameMaster() {
-        if (!game.combat.combatants.map(c => c.id).includes(game.combat.system.gmId)) {
-            const gmImg = game.settings.get("shadowdark-crawl-helper", "gm-img");
-            const gm = await game.combat.createEmbeddedDocuments("Combatant", [{
-                name: game.user.name, 
-                type: "shadowdark-crawl-helper.crawler",
-                system: {type:"GM"},
-                img: gmImg, 
-                hidden: false
-            }]);
-            await game.combat.update({"system.gmId": gm[0].id})
-        }
-    }
-
-    async _addParty() {
-        //get all party members
-        const partyActors = game.users
-        .filter(user => user.active && user.character)
-        .map(user => user.character);
-
-        //get exiting combatants
-        const combatantActorsIDs = game.combat.combatants
-        .map(combatant => combatant.actorId);
-
-        //create placeholder combatants if not already added
-        for (const actor of partyActors) {
-            //add any missing actors to combants
-            if (!combatantActorsIDs.includes(actor.id)) {
-                await game.combat.createEmbeddedDocuments("Combatant", [{
-                    actorId: actor.id,
-                    name: actor.name, 
-                    img: actor.img, 
-                    hidden: false
-                }]);
-            }
-        }
-        this._connectSceneTokens();
-    }
-
-    async _connectSceneTokens() { //connects scene tokens to player placeholders in crawl
+    async connectSceneTokens() { //connects scene tokens to player placeholders in crawl
         const partyActors = game.users
         .filter(user => user.active && user.character)
         .map(user => user.character);
@@ -421,82 +182,9 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         }
     }
 
-    async _onDangerChange(event) {
-        await game.combat.update({"system.dangerLevel": parseInt(event.currentTarget.value)})
-        this._setEncounterCheck();
-    }
-
-    async _startCombat() {
-        // save crawling Initiative
-        for (const combatant of game.combat.combatants) {
-            await combatant.update({"system.crawlingInit": combatant.initiative});
-        }
-        //reset Initiative
-        game.combat.resetAll();
-        await game.combat.update({"system.inCombat": true})
-
-        //add selected tokens to combat
-        const tokens = game.canvas.tokens.controlled.map(t => t.document);
-        TokenDocument.implementation.createCombatants(tokens);
-    }
-
-    async _stopCombat() {
-            //Remove NPCs from tracker
-            const npcs = game.combat.combatants
-                .filter(c => c.system.type === "NPC")
-                .map(c => c.id);
-            await game.combat.deleteEmbeddedDocuments("Combatant", npcs);
-
-            await game.combat.update({"system.inCombat": false});
-
-            // restore saved crawling Initiative based on setting
-            if(game.settings.get("shadowdark-crawl-helper", "save-crawl-initiative")) {
-                for (const combatant of game.combat.combatants) {
-                    await game.combat.setInitiative(combatant.id, combatant.system.crawlingInit);
-                }
-            }
-
-            // Set next encounter
-            await this._setEncounterCheck()
-
-            // start a fresh round
-            await game.combat.nextRound();
-    }
-
-    async _gmTurn(round) { 
-        //test for encounters
-        if ((game.combat.system.nextEncounter <= round) && !game.combat.system.inCombat) {
-            await this._checkForEncounter(1);
-
-            //set new encounter check
-            await game.combat.update({"system": {
-                "nextEncounter": round + game.combat.system.dangerLevel + 1
-            }})
-        }
-
-    }
-
-    async _onDrop(event) {
-        // get table that was dropped based on event
-        const eventData = TextEditor.getDragEventData(event);
-        if(eventData.type === "RollTable") {
-            await game.combat.update({"system.encounterTable": eventData.uuid});
-        }
-    }
-
-    async _roll(formula, sound=false) {
-        let roll = await new Roll(formula).evaluate();
-        if(sound) shadowdark.utils.diceSound()
-        return roll._total;
-    }
-
-    async _updateRound() {
-        // Do a GM turn in case it was skipped.
-        if (game.user.isGM){
-            await this._gmTurn(game.combat.round-1);
-        }
-
-    }
+    // -----------------------------------------------
+    // Private functions
+    // -----------------------------------------------
 
     async _updateTurn(direction) {
 
@@ -518,52 +206,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
                 ui.notifications.info(game.i18n.localize("CRAWLHELPER.turn-notification"));
         }
 
-        if (game.user.isGM){
-            //test for GM's turn
-            if ((game.combat.combatant.id === game.combat.system.gmId) && (direction > 0)) {
-                await this._gmTurn(game.combat.round);
-            }
-        }
     }
 
-    async _setEncounterCheck() {
-        await game.combat.update({"system": {
-            "nextEncounter": game.combat.round + game.combat.system.dangerLevel + 1
-        }})
-    }
-
-    async _checkForEncounter(onOrUnder=1){
-
-        let result = null;
-        let encounter = true;
-        const rollEncounter = game.settings.get("shadowdark-crawl-helper", "roll-encounter");
-
-        if (onOrUnder!=0){
-            result = await this._roll("1d6", true);
-            encounter = result <= onOrUnder;
-        }
-
-        //post message to chat
-        const content = await renderTemplate("modules/shadowdark-crawl-helper/templates/chats/encounter-check.hbs", 
-            {result, encounter, rollEncounter}
-        );
-
-        await ChatMessage.create( {
-            content: content,
-            whisper: [game.user],
-        });
-
-        if (encounter && rollEncounter) this._encounter();
- 
-        this._setEncounterCheck();
-    }
-
-    async _encounter(){
-        const encounterTable = await fromUuid(game.combat.system.encounterTable);
-        if (encounterTable) {
-            const options = {displayChat:true, rollMode: CONST.DICE_ROLL_MODES.PRIVATE};
-            const results = encounterTable.draw(options);
-        }
-    }
 
 }

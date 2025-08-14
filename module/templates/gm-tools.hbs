@@ -1,0 +1,27 @@
+<div class="main-part faded-ui">
+        <div class="danger">
+            <label style="line-height: 2;">{{localize "CRAWLHELPER.danger.level"}}:</label>
+            <select name="dangerLevel">
+                {{selectOptions dangerIndex selected=dangerLevel}}
+            </select>
+        </div>
+
+        <div class="button-bar">
+            <button class="ui-control icon fas fa-people-group" data-action="toggleParty" data-tooltip="CRAWLHELPER.gmtools.tooltip-add-party"></button>
+            <button class="ui-control icon fas fa-hat-wizard" data-action="toggleGameMaster" data-tooltip="CRAWLHELPER.gmtools.tooltip-add-gm"></button>
+            <button class="ui-control icon fa-solid fa-dice" data-action="triggerEncounterCheck" data-tooltip="CRAWLHELPER.gmtools.tooltip-encounter-check"></button>
+            <button class="ui-control icon fa-solid fa-bolt-lightning" data-action="triggerEncounter" data-tooltip="CRAWLHELPER.gmtools.tooltip-encounter"></button>
+            <button class="ui-control icon fa-solid fa-hourglass-half" data-action="timePasses" data-tooltip="CRAWLHELPER.gmtools.tooltip-time-passes"></button>
+            <button class="ui-control icon fas fa-rectangle-xmark" data-action="endCrawling" data-tooltip="CRAWLHELPER.gmtools.tooltip-end-tracker"></button>
+        
+        </div>
+
+        <div class="encounter-table" data-drop="true">
+            {{#if encounterTable}}
+                <a data-link data-uuid="{{encounterTable.uuid}}">{{encounterTable.name}}</a>
+                <a data-action="clearRollTable" data-tooltip="CRAWLHELPER.gmtools.table-remove"><i class="fa-solid fa-trash"></i></a>
+            {{else}}
+                <span>{{localize "CRAWLHELPER.gmtools.drop"}}</span>
+            {{/if}}
+        </div>
+</div>

@@ -1,0 +1,45 @@
+.gm-tools {
+    color: rgb(239, 230, 216);
+    --offset: 0;
+    transform: translateX(var(--offset));
+    transition: transform 250ms ease;
+
+    .main-part {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* Responsive columns */
+        margin-bottom: 14px;
+        align-items: center;
+
+        .button-bar, .danger, .encounter-table {
+            pointer-events: all;
+            font-size: 16px;
+        }
+        
+        .danger {
+            select {
+                height: 24px;
+                width: min-content;
+                background-color: transparent;
+            }
+        }
+
+        .button-bar{
+            display: flex;
+            column-gap: 8px;
+            justify-content: center;
+
+            button {
+                min-height: 24px;
+                height: 24px;
+                width: 24px;
+            }
+        }
+
+        .encounter-table {
+            text-align: right;
+        }
+    }
+
+
+}

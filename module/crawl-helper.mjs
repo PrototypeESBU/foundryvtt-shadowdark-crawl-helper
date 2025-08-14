@@ -1,6 +1,7 @@
 import registerSettings from "./scripts/settings.mjs";
+import actorCarousel from "./scripts/apps/actor-carousel.mjs";
 import crawlTracker from "./scripts/apps/crawl-tracker.mjs";
-import utilitiesCH from "./scripts/utilities.mjs";
+import gmTools from "./scripts/apps/gm-tools.mjs";
 import {crawlCombat, crawlCombatant} from "./scripts/models.mjs";
 
 // -----------------------------------------------
@@ -38,28 +39,22 @@ Hooks.on("ready", async () => {
     // Initialize persistent apps and variables
     game.crawlHelper = {
         tracker: new crawlTracker(),
-        utils: new utilitiesCH()
     };
+
+    if(game.settings.get("shadowdark-crawl-helper", "carousel")) {
+        game.crawlHelper.carousel = new actorCarousel();
+    }  
+
+    if(game.user.isGM) {
+        game.crawlHelper.gmtools = new gmTools();
+        game.crawlHelper.gmtools.render(true);
+    }
 
     //Setup a crawl
     await game.crawlHelper.tracker.initializeCrawl();
 
-    //collaspe nav bar 
-    await ui.nav.collapse();
-    await ui.nav.render();
 });
 
-// -----------------------------------------------
-// Combat Triggers
-// -----------------------------------------------
-
-Hooks.on('updateCombat', async (document, changed, options, userId) => {
-    game.crawlHelper.tracker.onUpdateCombat(changed,options);
-});
-
-Hooks.on('deleteCombat', async (document, changed, options, userId) => {
-    game.crawlHelper.tracker.onDeleteCombat(document); 
-});
 
 // -----------------------------------------------
 // Combatant Triggers
@@ -69,73 +64,23 @@ Hooks.on("preCreateCombatant", async (combatant, data, options, userId) =>
         if (combatant?.type === "base") {
             //switch type to crawler
             const updateData = {type: "shadowdark-crawl-helper.crawler"};
+            // TODO use a better way of detecting player types post v4.0.0 rollout
             if (combatant.actorId && (game.actors.get(combatant.actorId).type === "Player")) {
                 updateData.system = {"type": "Player"};
+            } else {
+                updateData.system = {"type": "NPC"};
             }
-            await combatant.updateSource(updateData);
+            await combatant.updateSource(updateData, {recursive: false});
         }
 });
 
-Hooks.on('createCombatant', async (combatant, updates) => {
-    game.crawlHelper.tracker.onCreateCombatant(combatant, updates);
-});
-
-Hooks.on('deleteCombatant', async (combatant, updates) => {
-    game.crawlHelper.tracker.onDeleteCombatant(combatant, updates);
-});
-
-Hooks.on('updateCombatant', async (combatant, updates) => {
-    game.crawlHelper.tracker.onUpdateCombatant(combatant, updates);
-});
-
-Hooks.on('updateActor', async (actor, updates) => {
-    game.crawlHelper.tracker.onUpdateActor(actor, updates);
-});
-
-//Hooks.on('updateToken', async (token, updates) => {
-    //game.crawlHelper.tracker.onUpdateToken(token, updates);
-//});
 
 // -----------------------------------------------
 // UI Triggers
 // -----------------------------------------------
-Hooks.on("collapseSidebar", async (sidebar, collapsed) => {
-    game.crawlHelper.tracker.onUIChange();
-});
-
-Hooks.on("rtcSettingsChanged", async (settings, changes) => {
-    if (changes.client) {
-        if ("hideDock" in changes.client || "dockPosition" in changes.client) 
-            game.crawlHelper.tracker.onUIChange();
-    }
-});
-
-Hooks.on("applyTokenStatusEffect",  async (token, statusId, active) => {
-    game.crawlHelper.tracker.onStatusEffect(statusId);
-});
-
-Hooks.on("renderPlayerList", async function(app, html) {
-    if(game.modules.get("lights-out-theme-shadowdark")?.active) {
-        game?.crawlHelper?.tracker.onUIChange();
-    }
-});
-
-Hooks.on('renderSceneNavigation', async (application, html, data) => { 
-    if(game.settings.get("shadowdark-crawl-helper", "carousel")
-    && !game.modules.get("lights-out-theme-shadowdark")?.active){
-        ui.nav.element.addClass("verticle");
-    }
-});
-
-Hooks.on("renderSidebar", async function(app, html) {
-    //hide combat tracker from sidebar
-    if(game.settings.get("shadowdark-crawl-helper", "hide-combat-sidebar")) {
-        document.querySelector("#sidebar").classList.add(`hide-combat-sidebar`);
-    }
-});
 
 Hooks.on("renderTokenHUD", async function(app, html) {
-    const combatHub = html[0].querySelector("[data-action=combat]");
+    const combatHub = html.querySelector("[data-action=combat]");
     
     if (combatHub.classList.contains("active")){
         combatHub.innerHTML = '<i class="fa-solid fa-minus"></i>';
@@ -147,10 +92,3 @@ Hooks.on("renderTokenHUD", async function(app, html) {
     }
 });
 
-// -----------------------------------------------
-// Other triggers
-// -----------------------------------------------
-
-Hooks.on("canvasReady", async (canvas) => {
-    game?.crawlHelper?.tracker.onSceneChange(canvas);
-});
