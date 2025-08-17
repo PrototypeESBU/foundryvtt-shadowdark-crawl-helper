@@ -26,8 +26,6 @@ Hooks.on("init", () => {
     else{
         loadTemplates({combatant:"modules/shadowdark-crawl-helper/templates/combatant.hbs"});
     }
-
-
     
 });
 
@@ -36,22 +34,33 @@ Hooks.on("init", () => {
 // -----------------------------------------------
 Hooks.on("ready", async () => {
 
-    // Initialize persistent apps and variables
+    if (game.user.isGM){
+        //Check if there are non crawl or non active combats and delete
+        game.combats.forEach(c => {
+            if(c.type !== "shadowdark-crawl-helper.crawl" || !c.active) {
+                c.delete();
+            }
+        })
+    }
+
+    // Persistent apps placeholder
     game.crawlHelper = {
-        tracker: new crawlTracker(),
+        tracker: new crawlTracker()
     };
 
-    if(game.settings.get("shadowdark-crawl-helper", "carousel")) {
-        game.crawlHelper.carousel = new actorCarousel();
-    }  
+    if(game?.combat?.started || game.user.isGM) {
+        game.crawlHelper.tracker.render(true);
+    }
 
     if(game.user.isGM) {
         game.crawlHelper.gmtools = new gmTools();
         game.crawlHelper.gmtools.render(true);
     }
 
-    //Setup a crawl
-    await game.crawlHelper.tracker.initializeCrawl();
+    if(game.settings.get("shadowdark-crawl-helper", "carousel")) {
+        game.crawlHelper.carousel = new actorCarousel();
+        if(game?.combat?.started) game.crawlHelper.carousel.render(true);
+    } 
 
 });
 
@@ -61,6 +70,7 @@ Hooks.on("ready", async () => {
 // -----------------------------------------------
 Hooks.on("preCreateCombatant", async (combatant, data, options, userId) => 
     {
+         //Enforce crawler combatant type
         if (combatant?.type === "base") {
             //switch type to crawler
             const updateData = {type: "shadowdark-crawl-helper.crawler"};
@@ -74,6 +84,23 @@ Hooks.on("preCreateCombatant", async (combatant, data, options, userId) =>
         }
 });
 
+Hooks.on("preCreateCombat", async (combat, data, options, userId) => 
+{
+    //Enforce crawl combat type
+    if (combat?.type !== "shadowdark-crawl-helper.crawl") {
+        const updateData = {type: "shadowdark-crawl-helper.crawl", system: {}};
+         await combat.updateSource(updateData, {recursive: false});
+    }
+});
+
+Hooks.on("createCombat", async (combat, data, options, userId) => 
+{
+    //prevent more then one combat at a time
+    if (game.combats.size > 1) {
+        await game.combats.combats[0].activate();
+        combat.delete();
+    }
+});
 
 // -----------------------------------------------
 // UI Triggers

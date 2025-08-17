@@ -8,9 +8,6 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
 
         Hooks.on('deleteCombat', this._onDeleteCombat.bind(this));
         Hooks.on('updateCombat', this._onUpdateCombat.bind(this));
-        Hooks.on('deleteCombatant', this._onDeleteCombatant.bind(this));
-        Hooks.on('updateCombatant', this._onUpdateCombat.bind(this));
-        Hooks.on("canvasReady", this._onSceneChange.bind(this));
 
     }
 
@@ -58,14 +55,14 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
 
     async _prepareContext(context, options) {
-        if(game.combat?.started) context.started = true;
+        context.started = game?.combat?.started;
         return context;
     }
 
     async _preparePartContext(partId, context, options) {
-        if(game.combat) {
-            if (partId === "main") {
-                context.isGM = game.user.isGM;
+        if (partId === "main") {
+            context.isGM = game.user.isGM;
+            if(game.combat) { 
                 context.round = game.combat.round;
                 context.inCombat = game.combat.system.inCombat;
                 context.mode = game.combat.system.inCombat ? 
@@ -78,7 +75,6 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     }
 
     _onRender(context, options) {
-
         if (game.modules.get("lights-out-theme-shadowdark")?.active) {
             this.classList.add("lights-out-tracker");
         }
@@ -87,22 +83,8 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     // Hook Callbacks
     // -----------------------------------------------
 
-    //Combatants
-    async _onDeleteCombatant(combatant, updates){ 
-        if(combatant.id === game.combat.system.gmId && game.user.isGM){
-            await game.combat.update({"system.gmId": null})
-        }
-    };
-
-    async _onUpdateCombatant(combatant, updates) {
-        // TODO check for < 50% defeated and call moral check
-    }
-
-    //Combat
-
     async _onDeleteCombat(document, changed, options, userId) { 
         if (game.user.isGM) {
-            await this.initializeCrawl();
             this.render(true);
         }
         else {
@@ -115,16 +97,9 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
             if (("round" in changed)||("turn" in changed))  {
                 await this._updateTurn(options.direction);
             }
-            this.render();
         }
+        this.render(true);
     }
-
-    // other
-    async _onSceneChange(canvas) {
-        if (game.combat && game.user.isGM) 
-            this.connectSceneTokens();
-    }
-
     // -----------------------------------------------
     // Action Functions
     // -----------------------------------------------
@@ -140,46 +115,8 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         }
     }
 
-    // -----------------------------------------------
-    // Public functions
-    // -----------------------------------------------
-    async initializeCrawl() { // loads tracking data from an exiting combat on initialization
-
-        if (game.user.isGM) {
-            //Check if there is a crawl loaded already
-            if (game?.combat?.type !== "shadowdark-crawl-helper.crawl") {
-                await Combat.create({type:"shadowdark-crawl-helper.crawl"});
-            }
-
-            if (game.combat._source.scene) game.combat.toggleSceneLink();  
-        } 
-
-        if(game?.combat?.started || game.user.isGM){
-            this.render(true);
-            game.crawlHelper?.carousel?.render(true); //TODO is this even needed?
-        }
-    }
-
-    async connectSceneTokens() { //connects scene tokens to player placeholders in crawl
-        const partyActors = game.users
-        .filter(user => user.active && user.character)
-        .map(user => user.character);
-
-        for (const actor of partyActors) {
-            //gets first combatant and token and matches them 
-            const combatant = game.combat.combatants.find(c => c.actorId === actor.id); 
-            const token = game.scenes.active.tokens.find(t => t.actorId === actor.id);
-            if (combatant && token) {
-                game.combat.updateEmbeddedDocuments("Combatant", [{
-                    "_id": combatant.id,
-                    tokenId: token.id,
-                    sceneId: game.scenes.active.id,
-                    actorId: actor.id,
-                    name: actor.name, 
-                    img: actor.img, 
-                }]);
-            }
-        }
+    static async startCrawling(event, target) {
+        if (game.user.isGM) game.crawlHelper.gmtools.startCrawling();
     }
 
     // -----------------------------------------------
@@ -189,7 +126,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     async _updateTurn(direction) {
 
         //if current player's turn
-        if (game.combat.combatant.actorId === game.user.character?.id){
+        if ((game.user.character?.id) && (game.combat?.combatant?.actorId === game.user.character?.id)){
 
             const notifyOnTurn = game.settings.get("shadowdark-crawl-helper", "notify-on-turn");
             const soundOnTurn = game.settings.get("shadowdark-crawl-helper", "sound-on-turn");

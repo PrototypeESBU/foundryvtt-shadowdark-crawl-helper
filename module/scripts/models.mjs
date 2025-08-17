@@ -3,11 +3,11 @@ const fields = foundry.data.fields;
 export class crawlCombat extends foundry.abstract.TypeDataModel {
     static defineSchema() {
         return {
-            inCombat: new fields.BooleanField({required: true, initial: false}),
+            inCombat: new fields.BooleanField({ initial: false }),
             nextEncounter: new fields.NumberField({ integer: true, min: 0, initial: 3 }),
             dangerLevel: new fields.NumberField({ integer: true, min: 0, initial: 2 }),
-            encounterTable: new fields.DocumentUUIDField({ required: false, initial: null}),
-            gmId: new fields.DocumentIdField({ required: false, initial: null}),
+            encounterTable: new fields.DocumentUUIDField({ initial: null }),
+            gmId: new fields.DocumentIdField({ initial: null }),
         };
     }
 }

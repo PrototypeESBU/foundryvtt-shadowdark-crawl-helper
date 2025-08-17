@@ -17,18 +17,12 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         Hooks.on('updateCombatant', this._onUpdateCombatant.bind(this));
         Hooks.on('updateActor', this._onUpdateActor.bind(this));
         Hooks.on('applyTokenStatusEffect', this._onApplyTokenStatusEffect.bind(this));
-
         Hooks.on('collapseSidebar', this._onCollapseSidebar.bind(this));
 
+        // Considerations for AV dock postion
         Hooks.on("rtcSettingsChanged", async (settings, changes) => {
             if (changes.client && ("hideDock" in changes.client || "dockPosition" in changes.client)) 
                 this.setPosition();
-        });
-
-        Hooks.on("renderPlayerList", async function(app, html) {
-            if(game.modules.get("lights-out-theme-shadowdark")?.active) {
-                this.setPosition();
-            }
         });
 
     };
@@ -156,52 +150,55 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     // Hook Callbacks
     // -----------------------------------------------
 
-    async _onCollapseSidebar(sidebar, collapsed) {
-        const padding = collapsed? "54px" : "354px";
-        this.element.style.paddingRight = padding;
-    }
+    //combat
 
     async _onDeleteCombat(document, changed, options, userId) {
-        this.close();
+        this.close({animate: false});
     };
 
     async _onUpdateCombat(document, changed, options, userId) {
-        if(game.combat.combatants.size > 0 && game.combat.started) {
-            let renderNeeded = true; 
-            if ("turn" in changed ) {
-                this._updateTurn(options.direction);
-                renderNeeded = false;
+        if(game?.combat?.combatants.size > 0 && game?.combat?.started) {
+            if (this.state === 2){
+                const isTurn = "turn" in changed;
+                const isRound = "round" in changed;
+                if (isTurn) this._updateTurn(options.direction);
+                if (isRound) this._updateRound();
+                if (!isTurn && !isRound) this.render();
             }
-            if ("round" in changed) {
-                this._updateRound();
-                renderNeeded = false;
+            else {
+                this.render(true);
             }
-            if (renderNeeded) this.render();
-        }
-        else {
-            this.close({animate: false});
         }
     }
 
+    //combatant
     async _onCreateCombatant(combatant, updates) {
-        this.render();
+        this.rerender()
     };
 
     async _onDeleteCombatant(combatant, updates){ 
-        this.render();
+        this.rerender()
     };
 
     async _onUpdateCombatant(combatant, updates) {
-        this.render();
+       this.rerender()
     };
 
-    // Actors & Tokens
+    //Actors & Tokens
     async _onUpdateActor(actor, updates) {
-        this.render();
+        this.rerender()
     };
 
     async _onApplyTokenStatusEffect(statusId) {
-        if(statusId === "dead") this.render(true);
+        if(statusId === "dead") this.rerender();
+    }
+
+    //UI
+    async _onCollapseSidebar(sidebar, collapsed) {
+        if (this.rendered) {
+            const padding = collapsed? "54px" : "354px";
+            this.element.style.paddingRight = padding;
+        }
     }
 
     // -----------------------------------------------
@@ -278,6 +275,10 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         const combatantId = event.currentTarget.dataset.combatantId;
         const actor = game.combat.combatants.get(combatantId).actor;
         actor.sheet.render(true);
+    }
+
+    async rerender() {
+        if (game?.combat?.started) this.render();
     }
 
     // -----------------------------------------------

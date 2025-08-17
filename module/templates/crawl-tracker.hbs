@@ -15,7 +15,7 @@
             <h3>{{localize "CRAWLHELPER.round"}} {{round}}</h3>
             <span>{{localize "CRAWLHELPER.encounter.next-check"}}: {{#if inCombat}}-{{else}}{{nextEncounter}}{{/if}}</span>
         </div>
-    {{else}}
+    {{else if isGM}}
         <div class="stub">
             <a data-action="startCrawling" data-tooltip="CRAWLHELPER.start-crawling"><i class="fas fa-dungeon"></i></a>
         </div>

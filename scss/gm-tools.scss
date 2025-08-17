@@ -1,5 +1,4 @@
 .gm-tools {
-    color: rgb(239, 230, 216);
     --offset: 0;
     transform: translateX(var(--offset));
     transition: transform 250ms ease;
@@ -17,10 +16,15 @@
         }
         
         .danger {
+            color:white;
             select {
                 height: 24px;
                 width: min-content;
+                color:white;
                 background-color: transparent;
+                option {
+                    background-color: black;
+                }
             }
         }
 
@@ -28,6 +32,7 @@
             display: flex;
             column-gap: 8px;
             justify-content: center;
+            color: rgb(239, 230, 216);
 
             button {
                 min-height: 24px;
@@ -37,6 +42,7 @@
         }
 
         .encounter-table {
+            color: white;
             text-align: right;
         }
     }
