@@ -1,7 +1,11 @@
 <div class="main-part">
     {{#if started}}
         <div class="heading">
-            <i class="fas fa-dungeon {{#if inCombat}}faded{{/if}}"></i>
+            {{#if inCombat}}
+                <i class="fas fa-swords"></i>
+            {{else}}
+                <i class="fas fa-dungeon"></i>
+            {{/if}}
             <h2>
                 {{#if isGM}}
                     <a data-action="toggleCombat">{{mode}}</a>
@@ -9,7 +13,6 @@
                     {{mode}}
                 {{/if}}
             </h2>
-            <i class="fas fa-swords {{#unless inCombat}}faded{{/unless}}"></i>
         </div>
         <div class="content">
             <span style="float:left"><h3>{{localize "CRAWLHELPER.round"}} {{round}}</h3></span>
