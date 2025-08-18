@@ -17,13 +17,6 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         Hooks.on('updateCombatant', this._onUpdateCombatant.bind(this));
         Hooks.on('updateActor', this._onUpdateActor.bind(this));
         Hooks.on('applyTokenStatusEffect', this._onApplyTokenStatusEffect.bind(this));
-        Hooks.on('collapseSidebar', this._onCollapseSidebar.bind(this));
-
-        // Considerations for AV dock postion
-        Hooks.on("rtcSettingsChanged", async (settings, changes) => {
-            if (changes.client && ("hideDock" in changes.client || "dockPosition" in changes.client)) 
-                this.setPosition();
-        });
 
     };
 
@@ -61,31 +54,9 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     //  Parent Override Functions
     // -----------------------------------------------
 
-    // sets the position of the app before rendering
-    _prePosition(pos = {}) {
-        const uiLeft = document.querySelector("#ui-left-column-2").getBoundingClientRect();
-        const sidebar = document.querySelector("#sidebar").getBoundingClientRect();
-
-        //calculate lights out position
-        if (this.lightsOut) {
-            const hotbar = document.querySelector("#hotbar").getBoundingClientRect();
-            const nav = document.querySelector("#navigation").getBoundingClientRect();
-            const players = document.querySelector("#players").getBoundingClientRect();
-            if (nav.height > 0)
-                top = nav.bottom;
-            else if(hotbar.width > 0) {
-                top = hotbar.bottom;
-            }
-            if (players.height > 0) {
-                height = players.top - top;
-            }
-        }
-
-        foundry.utils.mergeObject(pos, {
-            top: 0,
-            left: uiLeft.right,
-            width: sidebar.right - uiLeft.right,
-        });
+    async _preFirstRender(context, options) {
+        const uiMiddle = document.getElementById("ui-middle");
+        uiMiddle.insertAdjacentHTML("afterbegin", `<template id="actorCarousel"></template>`);
     }
 
     //Generates context for each UI part before rendering it
@@ -108,8 +79,12 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
 
     _onFirstRender(context, options) {
         //register context menu handler
-        new ContextMenu(this.element, ".combatant", this._getContextOptions());
-        
+        new foundry.applications.ux.ContextMenu.implementation(
+            this.element, 
+            ".combatant", 
+            this._getContextOptions(),
+            {jQuery:false}
+        );
     }
 
 
@@ -191,14 +166,6 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
 
     async _onApplyTokenStatusEffect(statusId) {
         if(statusId === "dead") this.rerender();
-    }
-
-    //UI
-    async _onCollapseSidebar(sidebar, collapsed) {
-        if (this.rendered) {
-            const padding = collapsed? "54px" : "354px";
-            this.element.style.paddingRight = padding;
-        }
     }
 
     // -----------------------------------------------

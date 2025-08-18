@@ -16,6 +16,8 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
         ]
 
         Hooks.on("canvasReady", this._onCanvasReady.bind(this));
+        Hooks.on('combatStart', this._onCombatStart.bind(this));
+        Hooks.on('deleteCombat', this._onDeleteCombat.bind(this));
         Hooks.on('updateCombat', this._onUpdateCombat.bind(this));
         Hooks.on('deleteCombatant', this._onDeleteCombatant.bind(this));
         Hooks.on('updateCombatant', this._onUpdateCombatant.bind(this));
@@ -83,7 +85,8 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
 
     async _preparePartContext(partId, context, options) {
         if (partId === "main") {
-            context.dangerIndex = this.dangerIndex
+            context.dangerIndex = this.dangerIndex;
+            context.started = game?.combat?.started;
             if(game.combat) {
                 context.dangerLevel = game.combat.system.dangerLevel;
                 context.encounterTable = game.combat.system.encounterTable ? 
@@ -117,8 +120,22 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
     // -----------------------------------------------
     
     //combat
+    async _onCombatStart(combat, updateData) {
+        //do required setup 
+        await this._setEncounterCheck();
+        if (game.settings.get("shadowdark-crawl-helper", "add-gm"))
+            await this._addGameMaster(); 
+        if (game.settings.get("shadowdark-crawl-helper", "add-party"))
+            await this._addParty();
+    }
+
+    async _onDeleteCombat(document, changed, options, userId) { 
+        this.render(true);
+    }
+
     async _onUpdateCombat(changed, options) {
-         if (game?.combat?.started) { 
+        this.render();
+        if (game?.combat?.started) { 
             if ("round" in changed) {
                 await this._updateRound();
             } 
@@ -150,7 +167,7 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
     // -----------------------------------------------
 
     static async endCrawling(event, target) {
-        await game.combat.endCombat();
+        await game.combat.delete();
     }
 
     static async triggerEncounter(event, target) {
@@ -270,13 +287,6 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
         if (game?.combat?.type !== "shadowdark-crawl-helper.crawl") {
             await Combat.create({type:"shadowdark-crawl-helper.crawl"});
         }
-
-        //do required setup 
-        await this._setEncounterCheck();
-        if (game.settings.get("shadowdark-crawl-helper", "add-gm"))
-            await this._addGameMaster(); 
-        if (game.settings.get("shadowdark-crawl-helper", "add-party"))
-            await this._addParty();
 
         //start the crawl
         await game.combat.startCombat(); 

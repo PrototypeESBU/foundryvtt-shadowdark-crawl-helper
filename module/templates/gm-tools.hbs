@@ -7,13 +7,36 @@
         </div>
 
         <div class="button-bar">
-            <button class="ui-control icon fas fa-people-group" data-action="toggleParty" data-tooltip="CRAWLHELPER.gmtools.tooltip-add-party"></button>
-            <button class="ui-control icon fas fa-hat-wizard" data-action="toggleGameMaster" data-tooltip="CRAWLHELPER.gmtools.tooltip-add-gm"></button>
-            <button class="ui-control icon fa-solid fa-dice" data-action="triggerEncounterCheck" data-tooltip="CRAWLHELPER.gmtools.tooltip-encounter-check"></button>
-            <button class="ui-control icon fa-solid fa-bolt-lightning" data-action="triggerEncounter" data-tooltip="CRAWLHELPER.gmtools.tooltip-encounter"></button>
-            <button class="ui-control icon fa-solid fa-hourglass-half" data-action="timePasses" data-tooltip="CRAWLHELPER.gmtools.tooltip-time-passes"></button>
-            <button class="ui-control icon fas fa-rectangle-xmark" data-action="endCrawling" data-tooltip="CRAWLHELPER.gmtools.tooltip-end-tracker"></button>
-        
+            <button 
+                class="ui-control icon fas fa-people-group {{#unless started}}disabled{{/unless}}" 
+                {{#if started}}data-action="toggleParty"{{/if}}
+                data-tooltip="CRAWLHELPER.gmtools.tooltip-add-party">
+            </button>
+            <button 
+                class="ui-control icon fas fa-hat-wizard {{#unless started}}disabled{{/unless}}" 
+                {{#if started}}data-action="toggleGameMaster"{{/if}}
+                data-tooltip="CRAWLHELPER.gmtools.tooltip-add-gm">
+                </button>
+            <button 
+                class="ui-control icon fa-solid fa-dice" 
+                data-action="triggerEncounterCheck" 
+                data-tooltip="CRAWLHELPER.gmtools.tooltip-encounter-check">
+                </button>
+            <button 
+                class="ui-control icon fa-solid fa-bolt-lightning" 
+                ata-action="triggerEncounter" 
+                data-tooltip="CRAWLHELPER.gmtools.tooltip-encounter">
+                </button>
+            <button 
+                class="ui-control icon fa-solid fa-hourglass-half" 
+                data-action="timePasses" 
+                data-tooltip="CRAWLHELPER.gmtools.tooltip-time-passes">
+                </button>
+            <button 
+                class="ui-control icon fas fa-rectangle-xmark {{#unless started}}disabled{{/unless}}" 
+               {{#if started}}data-action="endCrawling"{{/if}} 
+                data-tooltip="CRAWLHELPER.gmtools.tooltip-end-tracker">
+            </button>
         </div>
 
         <div class="encounter-table" data-drop="true">

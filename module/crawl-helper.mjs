@@ -36,8 +36,8 @@ Hooks.on("ready", async () => {
 
     if (game.user.isGM){
         //Check if there are non crawl or non active combats and delete
-        game.combats.forEach(c => {
-            if(c.type !== "shadowdark-crawl-helper.crawl" || !c.active) {
+        game.combats.combats.forEach(c => {
+            if(c.type !== "shadowdark-crawl-helper.crawl" || c.id != game.combat.id) {
                 c.delete();
             }
         })
