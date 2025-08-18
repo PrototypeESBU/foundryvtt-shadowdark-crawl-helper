@@ -11,9 +11,14 @@
             </h2>
             <i class="fas fa-swords {{#unless inCombat}}faded{{/unless}}"></i>
         </div>
-        <div>
-            <h3>{{localize "CRAWLHELPER.round"}} {{round}}</h3>
-            <span>{{localize "CRAWLHELPER.encounter.next-check"}}: {{#if inCombat}}-{{else}}{{nextEncounter}}{{/if}}</span>
+        <div class="content">
+            <span style="float:left"><h3>{{localize "CRAWLHELPER.round"}} {{round}}</h3></span>
+            <span style="float:right">
+                {{#unless inCombat}}
+                    <i class="fas fa-dice" data-tooltip="CRAWLHELPER.gmtools.tooltip-encounter-check"></i> 
+                    {{nextEncounter}}
+                {{/unless}}
+            </span>
         </div>
     {{else if isGM}}
         <div class="stub">

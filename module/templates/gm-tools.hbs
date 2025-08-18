@@ -18,17 +18,17 @@
                 data-tooltip="CRAWLHELPER.gmtools.tooltip-add-gm">
                 </button>
             <button 
-                class="ui-control icon fa-solid fa-dice" 
+                class="ui-control icon fas fa-dice" 
                 data-action="triggerEncounterCheck" 
                 data-tooltip="CRAWLHELPER.gmtools.tooltip-encounter-check">
                 </button>
             <button 
-                class="ui-control icon fa-solid fa-bolt-lightning" 
+                class="ui-control icon fas fa-bolt-lightning" 
                 ata-action="triggerEncounter" 
                 data-tooltip="CRAWLHELPER.gmtools.tooltip-encounter">
                 </button>
             <button 
-                class="ui-control icon fa-solid fa-hourglass-half" 
+                class="ui-control icon fas fa-hourglass-half" 
                 data-action="timePasses" 
                 data-tooltip="CRAWLHELPER.gmtools.tooltip-time-passes">
                 </button>
@@ -41,8 +41,8 @@
 
         <div class="encounter-table" data-drop="true">
             {{#if encounterTable}}
-                <a data-link data-uuid="{{encounterTable.uuid}}">{{encounterTable.name}}</a>
-                <a data-action="clearRollTable" data-tooltip="CRAWLHELPER.gmtools.table-remove"><i class="fa-solid fa-trash"></i></a>
+                <a style="flex:0;" data-action="clearRollTable" data-tooltip="CRAWLHELPER.gmtools.table-remove"><i class="fas fa-trash"></i></a>
+                <label><a data-link data-uuid="{{encounterTable.uuid}}">{{encounterTable.name}}</a></label>
             {{else}}
                 <span>{{localize "CRAWLHELPER.gmtools.drop"}}</span>
             {{/if}}
