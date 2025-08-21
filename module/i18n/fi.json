@@ -9,6 +9,8 @@
     "CRAWLHELPER.carousel.turn.next": "Seuraava vuoro",
     "CRAWLHELPER.carousel.turn.previous": "Edellinen vuoro",
     "CRAWLHELPER.combat": "Taistelu",
+    "CRAWLHELPER.combat-end": "End Combat",
+    "CRAWLHELPER.combat-start": "Start Combat",
     "CRAWLHELPER.crawltracker": "Luola-apuri",
     "CRAWLHELPER.crawling": "Koluaminen",
     "CRAWLHELPER.danger.deadly": "Tappava",
