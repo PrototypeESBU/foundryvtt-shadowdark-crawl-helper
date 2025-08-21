@@ -7,7 +7,7 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
 
         this._dragDrop = this.options.dragDrop.map(d => {
             d.callbacks = {drop: this._onDrop.bind(this)};
-            return new DragDrop(d);
+            return new foundry.applications.ux.DragDrop.implementation(d);
         }); 
         this.dangerIndex = [
             game.i18n.localize("CRAWLHELPER.danger.deadly"),
@@ -89,7 +89,7 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
         if (partId === "main") {
             context.dangerIndex = this.dangerIndex;
             context.started = game?.combat?.started;
-            context.inCombat = game.combat.system.inCombat;
+            context.inCombat = game?.combat?.system?.inCombat;
             context.dangerLevel = this._getDangerLevel();
             const encounterTableUuid = this._getEncounterTable();
             context.encounterTable = encounterTableUuid ? fromUuidSync(encounterTableUuid) : "";
@@ -429,7 +429,7 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
 
     async _onDrop(event) {
         // get table that was dropped based on event
-        const eventData = TextEditor.getDragEventData(event);
+        const eventData = foundry.applications.ux.TextEditor.implementation.getDragEventData(event);
         if(eventData.type === "RollTable") {
             await this._setEncounterTable(eventData.uuid);
             this.render();
