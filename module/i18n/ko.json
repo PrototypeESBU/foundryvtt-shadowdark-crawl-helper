@@ -9,6 +9,8 @@
     "CRAWLHELPER.carousel.turn.next": "Next Turn",
     "CRAWLHELPER.carousel.turn.previous": "Previous Turn",
     "CRAWLHELPER.combat": "전투",
+    "CRAWLHELPER.combat-end": "End Combat",
+    "CRAWLHELPER.combat-start": "Start Combat",
     "CRAWLHELPER.crawltracker": "Crawl Tracker",
     "CRAWLHELPER.crawling": "Crawling",
     "CRAWLHELPER.danger.deadly": "Deadly",
