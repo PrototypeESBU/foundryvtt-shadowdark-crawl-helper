@@ -9,6 +9,8 @@
     "CRAWLHELPER.carousel.turn.next": "Tour suivant",
     "CRAWLHELPER.carousel.turn.previous": "Tour précédent",
     "CRAWLHELPER.combat": "Combat",
+    "CRAWLHELPER.combat-end": "End Combat",
+    "CRAWLHELPER.combat-start": "Start Combat",
     "CRAWLHELPER.crawltracker": "Traqueur d'exploration",
     "CRAWLHELPER.crawling": "Exploration",
     "CRAWLHELPER.danger.deadly": "Meurtrier",
