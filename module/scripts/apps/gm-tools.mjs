@@ -36,7 +36,9 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
             frame: false,
         },
         actions: {
-            endCrawling: this.endCrawling,
+            startCrawling: this.startCrawlingAction,
+            endCrawling: this.endCrawlingAction,
+            toggleCombat: this.toggleCombat,
             toggleParty: this.toggleParty,
             toggleGameMaster: this.toggleGameMaster,
             triggerEncounterCheck: this.triggerEncounterCheck,
@@ -87,15 +89,10 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
         if (partId === "main") {
             context.dangerIndex = this.dangerIndex;
             context.started = game?.combat?.started;
-            if(game.combat) {
-                context.dangerLevel = game.combat.system.dangerLevel;
-                context.encounterTable = game.combat.system.encounterTable ? 
-                    fromUuidSync(game.combat.system.encounterTable) : "";
-            }
-            else {
-                context.dangerLevel = 0;
-                context.encounterTable = null;
-            }
+            context.inCombat = game.combat.system.inCombat;
+            context.dangerLevel = this._getDangerLevel();
+            const encounterTableUuid = this._getEncounterTable();
+            context.encounterTable = encounterTableUuid ? fromUuidSync(encounterTableUuid) : "";
         }
         return context;
     }
@@ -119,6 +116,8 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
     // Hook Callbacks
     // -----------------------------------------------
     
+
+
     //combat
     async _onCombatStart(combat, updateData) {
         //do required setup 
@@ -160,13 +159,19 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
     async _onCanvasReady(canvas) {
         // detect scene changes and attempt to link scene tokens to combatants
         if (game.combat) this._connectSceneTokens();
+        this.render();
     }
 
     // -----------------------------------------------
     // Action Functions
     // -----------------------------------------------
 
-    static async endCrawling(event, target) {
+    static async startCrawlingAction(event, target) {
+        this.startCrawling();
+    }
+
+    static async endCrawlingAction(event, target) {
+        // TODO add prompt
         await game.combat.delete();
     }
 
@@ -274,7 +279,7 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     static async clearRollTable() {
-        game.combat.update({"system.encounterTable": ""})
+        await this._setEncounterTable(null)
         this.render();
     }
 
@@ -287,6 +292,7 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
         if (game?.combat?.type !== "shadowdark-crawl-helper.crawl") {
             await Combat.create({type:"shadowdark-crawl-helper.crawl"});
         }
+        await game.combat.activate();
 
         //start the crawl
         await game.combat.startCombat(); 
@@ -402,7 +408,7 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
 
             //set new encounter check
             await game.combat.update({"system": {
-                "nextEncounter": round + game.combat.system.dangerLevel + 1
+                "nextEncounter": round + this._getDangerLevel(true) + 1
             }})
         }
 
@@ -417,15 +423,15 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     async _onDangerChange(event) {
-        await game.combat.update({"system.dangerLevel": parseInt(event.currentTarget.value)})
-        game.crawlHelper.tracker._setEncounterCheck();
+        await this._setDangerLevel(parseInt(event.currentTarget.value));
+        this._setEncounterCheck();
     }
 
     async _onDrop(event) {
         // get table that was dropped based on event
         const eventData = TextEditor.getDragEventData(event);
         if(eventData.type === "RollTable") {
-            await game.combat.update({"system.encounterTable": eventData.uuid});
+            await this._setEncounterTable(eventData.uuid);
             this.render();
         }
     }
@@ -449,9 +455,11 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     async _setEncounterCheck() {
-        await game.combat.update({"system": {
-            "nextEncounter": game.combat.round + game.combat.system.dangerLevel + 1
-        }})
+        if (game.combat) {
+            await game.combat.update({"system": {
+                "nextEncounter": game.combat.round + this._getDangerLevel(true) + 1
+            }})
+        }
     }
 
     async _checkForEncounter(onOrUnder=1){
@@ -481,11 +489,40 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     async _encounter(){
-        const encounterTable = await fromUuid(game.combat.system.encounterTable);
+        const encounterTable = await fromUuid(this._getEncounterTable(true));
         if (encounterTable) {
             const options = {displayChat:true, rollMode: CONST.DICE_ROLL_MODES.PRIVATE};
             const results = encounterTable.draw(options);
         }
+    }
+
+    _getDangerLevel(activeScene=false) {
+        const scene = activeScene? game.scenes.active : game.scenes.viewed;
+        const dangerLevel = scene.getFlag('shadowdark-crawl-helper', 'dangerLevel');
+        if (dangerLevel >= 0 && dangerLevel <= 2 && Number.isInteger(dangerLevel)) {
+            return dangerLevel;
+        }
+        else {
+            this._setDangerLevel(2);
+            return 2
+        }
+    }
+
+    _getEncounterTable(activeScene=false) {
+        const scene = activeScene? game.scenes.active : game.scenes.viewed;
+        return scene.getFlag('shadowdark-crawl-helper', 'encounterTable') ?? null;
+    }
+
+    async _setDangerLevel(dangerLevel) {
+        const scene = game.scenes.viewed;
+        if (dangerLevel >= 0 && dangerLevel <= 2 && Number.isInteger(dangerLevel)) {
+            return await scene.setFlag('shadowdark-crawl-helper', 'dangerLevel', dangerLevel);
+        }
+    }
+
+    async _setEncounterTable(encounterTableUuid) {
+        const scene = game.scenes.viewed;
+        return await scene.setFlag('shadowdark-crawl-helper', 'encounterTable', encounterTableUuid);
     }
 
 }

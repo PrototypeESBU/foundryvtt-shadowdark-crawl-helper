@@ -18,14 +18,9 @@
             <span style="float:left"><h3>{{localize "CRAWLHELPER.round"}} {{round}}</h3></span>
             <span style="float:right">
                 {{#unless inCombat}}
-                    <i class="fas fa-dice" data-tooltip="CRAWLHELPER.gmtools.tooltip-encounter-check"></i> 
-                    {{nextEncounter}}
+                    <h3 style="color:grey">{{nextEncounter}}</h3>
                 {{/unless}}
             </span>
-        </div>
-    {{else if isGM}}
-        <div class="stub">
-            <a data-action="startCrawling" data-tooltip="CRAWLHELPER.start-crawling"><i class="fas fa-dungeon"></i></a>
         </div>
     {{/if}}
 </div>

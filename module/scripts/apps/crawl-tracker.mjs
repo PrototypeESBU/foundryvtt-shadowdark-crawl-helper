@@ -84,12 +84,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     // -----------------------------------------------
 
     async _onDeleteCombat(document, changed, options, userId) { 
-        if (game.user.isGM) {
-            this.render(true);
-        }
-        else {
-            this.close({animate:false});
-        }
+        this.close({animate:false});
     }
 
     async _onUpdateCombat(document, changed, options, userId) {

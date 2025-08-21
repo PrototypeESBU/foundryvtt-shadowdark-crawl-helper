@@ -48,7 +48,7 @@ Hooks.on("ready", async () => {
         tracker: new crawlTracker()
     };
 
-    if(game?.combat?.started || game.user.isGM) {
+    if(game?.combat?.started) {
         game.crawlHelper.tracker.render(true);
     }
 
