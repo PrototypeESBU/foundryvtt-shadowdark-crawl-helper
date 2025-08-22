@@ -32,22 +32,21 @@
 
         .content {
             line-height: 16px;
+            h3 {
+                text-align: center;
+                font-family: "Montserrat-Bold";
+                font-size: 16px;
+            }
+            i {
+                font-size: 15px;
+            }
         }
 
         .faded {
             opacity: 0;
         }
 
-        h3 {
-            text-align: center;
-            font-family: "Montserrat-Bold";
-            font-size: 16px;
-        }
 
-        span {
-            font-size: 12px;
-            text-align: center;
-        }
 
     }
 }

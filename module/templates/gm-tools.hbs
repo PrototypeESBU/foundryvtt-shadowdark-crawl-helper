@@ -13,13 +13,13 @@
                     <button 
                         class="ui-control icon fas fa-dungeon" 
                         data-action="toggleCombat"
-                        data-tooltip="CRAWLHELPER.combat-end">
+                        data-tooltip="CRAWLHELPER.crawling-resume">
                     </button>
                 {{else}}
                     <button 
                         class="ui-control icon fas fa-swords" 
                         data-action="toggleCombat"
-                        data-tooltip="CRAWLHELPER.combat-start">
+                        data-tooltip="CRAWLHELPER.combat-enter">
                     </button>
                 {{/if}}
 
@@ -29,18 +29,18 @@
                     data-tooltip="CRAWLHELPER.gmtools.tooltip-add-party">
                 </button>
                 <button 
-                    class="ui-control icon fas fa-hat-wizard" 
+                    class="ui-control icon fas fa-book-open-reader" 
                     data-action="toggleGameMaster"
                     data-tooltip="CRAWLHELPER.gmtools.tooltip-add-gm">
                 </button>
                 <button 
-                    class="ui-control icon fas fa-dice" 
+                    class="ui-control icon fas fa-burst" 
                     data-action="triggerEncounterCheck" 
                     data-tooltip="CRAWLHELPER.gmtools.tooltip-encounter-check">
                 </button>
                 <button 
-                    class="ui-control icon fas fa-bolt-lightning" 
-                    ata-action="triggerEncounter" 
+                    class="ui-control icon fas fa-person-falling-burst" 
+                    data-action="triggerEncounter" 
                     data-tooltip="CRAWLHELPER.gmtools.tooltip-encounter">
                 </button>
                 <button 
