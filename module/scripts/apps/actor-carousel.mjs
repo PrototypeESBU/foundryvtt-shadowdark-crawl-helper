@@ -147,20 +147,20 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     }
 
     //combatant
-    async _onCreateCombatant(combatant, updates) {
+    async _onCreateCombatant(document, changed, options, userId) {
         this.rerender()
     };
 
-    async _onDeleteCombatant(combatant, updates){ 
+    async _onDeleteCombatant(document, changed, options, userId){ 
         this.rerender()
     };
 
-    async _onUpdateCombatant(combatant, updates) {
+    async _onUpdateCombatant(document, changed, options, userId) {
        this.rerender()
     };
 
     //Actors & Tokens
-    async _onUpdateActor(actor, updates) {
+    async _onUpdateActor(document, changed, options, userId) {
         this.rerender()
     };
 
@@ -326,7 +326,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                 icon: '<i class="fas fa-eye-slash"></i>',
                 condition: game.user.isGM,
                 callback: element => {
-                    const combatant = game.combat.combatants.get(element.data("combatant-id"));
+                    const combatant = game.combat.combatants.get(element.dataset.combatantId);
                     combatant.update({hidden: !combatant.hidden});
                 }
             },
@@ -335,7 +335,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                 icon: '<i class="fas fa-skull"></i>',
                 condition: game.user.isGM,
                 callback: element => {
-                    const combatant = game.combat.combatants.get(element.data("combatant-id"));
+                    const combatant = game.combat.combatants.get(element.dataset.combatantId);
                     const isDefeated = !combatant.isDefeated;
                     combatant.update({defeated: isDefeated});
                     const defeatedId = CONFIG.specialStatusEffects.DEFEATED;
@@ -347,7 +347,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                 icon: '<i class="fas fa-edit"></i>',
                 condition: game.user.isGM,
                 callback: element => {
-                    const combatant = game.combat.combatants.get(element.data("combatant-id"));
+                    const combatant = game.combat.combatants.get(element.dataset.combatantId);
                     return new CombatantConfig(combatant).render(true);
                 }
             },
@@ -356,7 +356,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                 icon: '<i class="fas fa-trash"></i>',
                 condition: game.user.isGM,
                 callback: element => {
-                    const combatant = game.combat.combatants.get(element.data("combatant-id"));
+                    const combatant = game.combat.combatants.get(element.dataset.combatantId);
                     combatant.delete();
                 }
             }
