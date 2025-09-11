@@ -104,14 +104,23 @@ export default function registerSettings() {
         requiresReload: true,
     });
 
-    game.settings.register("shadowdark-crawl-helper", "spoiler-free", {
-        name: "Spoiler Free",
-        hint: "Non-player actor names are hidden in the tracker and displayed as '????' for PLAYERS ONLY - GM will still see names for usability.",
+    game.settings.register("shadowdark-crawl-helper", "show-hidden-portraits", {
+        name: "Show Hidden Portraits",
+        hint: " Playsers can see the portrait picture of hidden monsters / NPCs",
         scope: "world",
         config: true,
         default: false,
         type: Boolean,
         requiresReload: true
+    });
+
+    game.settings.register("shadowdark-crawl-helper", "death-timer", {
+        name: "Automate Death Timer",
+        hint: "Automatically prompt for and track death timer rolls.",
+        scope: "world",
+        config: true,
+        default: true,
+        type: Boolean,
     });
 
     //Player Settings (client level)

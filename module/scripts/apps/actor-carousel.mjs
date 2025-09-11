@@ -261,32 +261,23 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         let ac = null;
         let level = null;
         let styleClass = "";
+        let img = actor? actor.img : combatant.img;
         const canView = (combatant.system.type === "Player" || game.user.isGM);
         const isOwner = (combatant?.actor?.permission === 3 || game.user.isGM);
         
         //Calculate overlays
-        let overlay = "";
-        if (combatant.initiative === null) {
-            overlay = "initiative";
-        }
-        else if (combatant.hidden) {
-            overlay = "hidden";
-            if(!game.user.isGM) {
-                styleClass = "unknown";
-                combatant.name = "unknown";
+        let overlay = false;
+        if (combatant.isDefeated || combatant.hidden) overlay = true;
+        if (!game.user.isGM && combatant.hidden) {
+            combatant.name = "?";
+            styleClass = "hidden";
+            if (game.settings.get("shadowdark-crawl-helper", "show-hidden-protraits")) {
+                overlay = false
+            }
+            else {
+                img = null;
             }
         }
-        else if (combatant.isDefeated) {
-            overlay = "defeated";
-        }
-    
-        // --- New Spoiler-Free Logic ---
-        if (game.settings.get("shadowdark-crawl-helper", "spoiler-free") &&
-        combatant.system.type === "NPC" &&
-        !game.user.isGM) {
-      combatant.name = "? ? ? ?";
-    }
-        // --- End New Logic ---
     
         // Calculate health bar and other stats if actor is present
         if (actor){
@@ -310,7 +301,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             isOwner,
             canView,
             overlay,
-            img: actor? actor.img : combatant.img,
+            img,
             barPercent,
             hp,
             ac,
@@ -321,6 +312,15 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
 
     _getContextOptions() {
         return [
+            {
+                name: "",
+                icon: '<i class="fas fa-mask"></i>',
+                condition: game.user.isGM,
+                callback: element => {
+                    const combatant = game.combat.combatants.get(element.dataset.combatantId);
+                    combatant.update({hidden: !combatant.hidden});
+                }
+            },
             {
                 name: "",
                 icon: '<i class="fas fa-eye-slash"></i>',

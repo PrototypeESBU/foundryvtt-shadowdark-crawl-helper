@@ -20,7 +20,7 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
         Hooks.on('deleteCombat', this._onDeleteCombat.bind(this));
         Hooks.on('updateCombat', this._onUpdateCombat.bind(this));
         Hooks.on('deleteCombatant', this._onDeleteCombatant.bind(this));
-        Hooks.on('updateCombatant', this._onUpdateCombatant.bind(this));
+        Hooks.on('updateActor', this._onUpdateActor.bind(this));
         Hooks.on("renderChatInput", () => {this.render()});
     }
 
@@ -132,7 +132,7 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
         this.render(true);
     }
 
-    async _onUpdateCombat(changed, options) {
+    async _onUpdateCombat(document, changed, options, userId) {
         this.render();
         if (game?.combat?.started) { 
             if ("round" in changed) {
@@ -145,13 +145,29 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
     }
     
     //Combatants
-    async _onDeleteCombatant(combatant, updates){ 
+    async _onDeleteCombatant(document, changed, options, userId){ 
         if(combatant.id === game.combat.system.gmId){
             await game.combat.update({"system.gmId": null})
         }
     };
 
-    async _onUpdateCombatant(combatant, updates) {
+    async _onUpdateActor(document, changed, options, userId) {
+        console.error(changed);
+        const hpChange = foundry.utils.getProperty(changed, "system.attributes.hp.value");
+        
+        if (hpChange === 0) {
+            if (document.getFlag("shadowdark-crawl-helper", "dying")) {
+                // TODO kill character
+            }
+            else {
+                ui.notifications.info("We got a dead one here");
+                document.setFlag("shadowdark-crawl-helper", "dying", true)
+                this._startDeathTimer();
+                // TODO add condition
+            }
+        }
+        
+
         // TODO check for < 50% defeated and call moral check
     }
 
@@ -441,6 +457,47 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
         if(sound) shadowdark.utils.diceSound()
         return roll._total;
     }
+
+    async _startDeathTimer(actor) {
+        if (!actor) return
+
+        const formula = "d4 +" + actor.system.abilities.con.mod;
+        const roll = await new Roll(formula).evaluate();
+        const userId = game.users.find(u => u.character?.id === actor.id)?.id ?? game.user.id;
+        const chatdata = {
+            user: userId,
+            speaker: {actor},
+            rolls: [roll]
+        }
+        console.error(chatdata);
+        ChatMessage.create(chatdata);
+
+
+        const rounds = roll._total;
+        const img = "icons/skills/wounds/injury-body-pain-gray.webp";
+        const effect = {
+            name: "Dying",
+            type: "Effect",
+            img,
+            category: "Condition",
+            system: {
+                duration: {
+                type: "rounds",
+                value: rounds
+                }
+            }
+        };
+        const effects = await actor.createEmbeddedDocuments("Item",[effect]);
+        if (effects) {
+            const activeEffect = {name: "Dying", img, duration: {rounds}};
+            effects[0].createEmbeddedDocuments("ActiveEffect",[activeEffect]);
+        }
+    }
+
+    _rollRecovery() {
+        // TODO Roll a d20 for recovery
+    }
+
 
     async _updateRound() {
         // Do a GM turn in case it was skipped.
