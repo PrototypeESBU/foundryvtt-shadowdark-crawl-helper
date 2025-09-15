@@ -69,19 +69,23 @@ Hooks.on("ready", async () => {
 // Combatant Triggers
 // -----------------------------------------------
 Hooks.on("preCreateCombatant", async (combatant, data, options, userId) => 
-    {
-         //Enforce crawler combatant type
-        if (combatant?.type === "base") {
-            //switch type to crawler
-            const updateData = {type: "shadowdark-crawl-helper.crawler"};
-            // TODO use a better way of detecting player types post v4.0.0 rollout
-            if (combatant.actorId && (game.actors.get(combatant.actorId).type === "Player")) {
-                updateData.system = {"type": "Player"};
-            } else {
-                updateData.system = {"type": "NPC"};
-            }
-            await combatant.updateSource(updateData, {recursive: false});
+{
+    //Enforce crawler combatant type
+    if (combatant?.type === "base") {
+        //switch type to crawler
+        const updateData = {type: "shadowdark-crawl-helper.crawler"};
+        // TODO use a better way of detecting player types post v4.0.0 rollout
+        if (combatant.actorId && (game.actors.get(combatant.actorId).type === "Player")) {
+            updateData.system = {"type": "Player"};
+        } else {
+            const masked = game.settings.get("shadowdark-crawl-helper", "npc-default-masked") ?? false;
+            updateData.system = {
+                "type": "NPC",
+                "isMasked": masked,
+            };
         }
+        await combatant.updateSource(updateData, {recursive: false});
+    }
 });
 
 Hooks.on("preCreateCombat", async (combat, data, options, userId) => 

@@ -5,14 +5,14 @@
             <img src="{{img}}" data-actor-id="{{actorId}}" data-combatant-id="{{id}}">
                     
             <div class="overlay {{#unless overlay}}hidden{{/unless}}">
+                {{#if masked}}
+                    <i class="fas fa-mask"></i>
+                {{/if}}
                 {{#if hidden}}
                     <i class="fas fa-eye-slash"></i>
                 {{/if}}
                 {{#if defeated}}
                     <i class="fas fa-skull"></i>
-                {{/if}}
-                {{#if dying}}
-                    <i class="fas person-falling"></i>
                 {{/if}}
             </div>
 
@@ -32,10 +32,16 @@
                 {{/if}}
             </div>
             
-            {{#if deathTimer}}
+            {{#if system.isDying}}
                 <div class="death-timer">
                     <i class="fa-solid fa-skull"></i>
-                    <span>{{deathTimer}}</span>
+                    <span>
+                        {{#if system.dyingRounds}}
+                            {{system.dyingRounds}}
+                        {{else}}
+                            <i class="fa-solid fa-dice-d20" style="font-size:14px"></i>
+                        {{/if}}
+                    </span>
                     <i class="fa-solid fa-hourglass-half"></i>
                 </div>
             {{/if}}

@@ -104,19 +104,19 @@ export default function registerSettings() {
         requiresReload: true,
     });
 
-    game.settings.register("shadowdark-crawl-helper", "show-hidden-portraits", {
-        name: "Show Hidden Portraits",
-        hint: " Playsers can see the portrait picture of hidden monsters / NPCs",
+    game.settings.register("shadowdark-crawl-helper", "npc-default-masked", {
+        name: "CRAWLHELPER.settings.npc-default-masked.name",
+        hint: "CRAWLHELPER.settings.npc-default-masked.hint",
         scope: "world",
         config: true,
         default: false,
         type: Boolean,
-        requiresReload: true
+        requiresReload: false
     });
 
     game.settings.register("shadowdark-crawl-helper", "death-timer", {
-        name: "Automate Death Timer",
-        hint: "Automatically prompt for and track death timer rolls.",
+        name: "CRAWLHELPER.death-timer.name",
+        hint: "CRAWLHELPER.death-timer.hint",
         scope: "world",
         config: true,
         default: true,

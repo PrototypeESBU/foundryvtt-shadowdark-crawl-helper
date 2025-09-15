@@ -37,10 +37,6 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             rollInitiative: this.rollInitiative,
             rollAllInit: this.rollAllInit,
             resetInit: this.resetInit,
-            toggleVisibility: this.toggleVisibility,
-            toggleDefeated: this.toggleDefeated,
-            editCombatant: this.editCombatant,
-            deleteCombatant: this.deleteCombatant
         }
     };
 
@@ -147,20 +143,21 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     }
 
     //combatant
-    async _onCreateCombatant(document, changed, options, userId) {
+    async _onCreateCombatant(document, options, userId) {
         this.rerender()
     };
 
-    async _onDeleteCombatant(document, changed, options, userId){ 
+    async _onDeleteCombatant(document, options, userId){ 
         this.rerender()
     };
 
     async _onUpdateCombatant(document, changed, options, userId) {
-       this.rerender()
+        this.rerender()
     };
 
     //Actors & Tokens
     async _onUpdateActor(document, changed, options, userId) {
+        //TODO detect and set visibility
         this.rerender()
     };
 
@@ -200,29 +197,6 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         game.combat.resetAll({updateTurn: false});
     };
 
-    static async toggleVisibility(event, target) {
-        const combatant = game.combat.combatants.get(target.dataset.combatantId);
-        await combatant.update({hidden: !combatant.hidden});
-    };
-
-    static async toggleDefeated(event, target) {
-        const combatant = game.combat.combatants.get(target.dataset.combatantId);
-        const isDefeated = !combatant.isDefeated;
-        await combatant.update({defeated: isDefeated});
-        const defeatedId = CONFIG.specialStatusEffects.DEFEATED;
-        await combatant.actor?.toggleStatusEffect(defeatedId, {overlay: true, active: isDefeated});
-    };
-
-    static async editCombatant(event, target) {
-        const combatant = game.combat.combatants.get(target.dataset.combatantId);
-        new CombatantConfig(combatant).render(true);
-    };
-
-    static async deleteCombatant(event, target) {
-        const combatant = game.combat.combatants.get(target.dataset.combatantId);
-        combatant.delete();
-    };
-
     // -----------------------------------------------
     // Public functions
     // -----------------------------------------------
@@ -248,6 +222,36 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         if (game?.combat?.started) this.render();
     }
 
+    async toggleMasked(combatantId) {
+        const combatant = game.combat.combatants.get(combatantId);
+        combatant.update({"system.isMasked": !combatant.system.isMasked});
+    }
+
+    async toggleVisibility(combatantId) {
+        const combatant = game.combat.combatants.get(combatantId);
+        combatant?.token.update({hidden: !combatant.hidden});
+        combatant.update({hidden: !combatant.hidden});
+        
+    };
+
+    async toggleDefeated(combatantId) {
+        const combatant = game.combat.combatants.get(combatantId);
+        const isDefeated = !combatant.isDefeated;
+        await combatant.update({defeated: isDefeated});
+        const defeatedId = CONFIG.specialStatusEffects.DEFEATED;
+        await combatant.actor?.toggleStatusEffect(defeatedId, {overlay: true, active: isDefeated});
+    };
+
+    async editCombatant(combatantId) {
+        const combatant = game.combat.combatants.get(combatantId);
+        new CombatantConfig(combatant).render(true);
+    };
+
+    async deleteCombatant(combatantId) {
+        const combatant = game.combat.combatants.get(combatantId);
+        combatant.delete();
+    };
+
     // -----------------------------------------------
     // Private functions
     // -----------------------------------------------
@@ -265,20 +269,22 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         const canView = (combatant.system.type === "Player" || game.user.isGM);
         const isOwner = (combatant?.actor?.permission === 3 || game.user.isGM);
         
-        //Calculate overlays
+        //Calculate overlays and special statuses
         let overlay = false;
-        if (combatant.isDefeated || combatant.hidden) overlay = true;
-        if (!game.user.isGM && combatant.hidden) {
-            combatant.name = "?";
-            styleClass = "hidden";
-            if (game.settings.get("shadowdark-crawl-helper", "show-hidden-protraits")) {
-                overlay = false
-            }
-            else {
-                img = null;
-            }
+        if (combatant.system.isMasked) {
+            if (!game.user.isGM) combatant.name = "?";
+            else overlay = true;
+        } 
+
+        if(combatant.hidden) {
+            if (!game.user.isGM) styleClass = "hidden"
+            else overlay = true;
         }
-    
+
+        if (combatant.isDefeated) {
+            overlay = true;
+        }
+
         // Calculate health bar and other stats if actor is present
         if (actor){
             const showNPCHealthBars = game.settings.get("shadowdark-crawl-helper", "show-NPC-Health-Bars");
@@ -298,6 +304,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             ...combatant,
             id: combatant.id,
             initiativeSet: (combatant.initiative != null),
+            masked: combatant.system.isMasked && game.user.isGM,
             isOwner,
             canView,
             overlay,
@@ -316,9 +323,9 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                 name: "",
                 icon: '<i class="fas fa-mask"></i>',
                 condition: game.user.isGM,
-                callback: element => {
+                callback: element => { 
                     const combatant = game.combat.combatants.get(element.dataset.combatantId);
-                    combatant.update({hidden: !combatant.hidden});
+                    combatant?.system.toggleMasked();
                 }
             },
             {
@@ -327,7 +334,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                 condition: game.user.isGM,
                 callback: element => {
                     const combatant = game.combat.combatants.get(element.dataset.combatantId);
-                    combatant.update({hidden: !combatant.hidden});
+                    combatant?.system.toggleVisibility();
                 }
             },
             {
@@ -336,10 +343,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                 condition: game.user.isGM,
                 callback: element => {
                     const combatant = game.combat.combatants.get(element.dataset.combatantId);
-                    const isDefeated = !combatant.isDefeated;
-                    combatant.update({defeated: isDefeated});
-                    const defeatedId = CONFIG.specialStatusEffects.DEFEATED;
-                    combatant.actor?.toggleStatusEffect(defeatedId, {overlay: true, active: isDefeated});
+                    combatant?.system.toggleDefeated();
                 }
             },
             {
@@ -348,7 +352,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                 condition: game.user.isGM,
                 callback: element => {
                     const combatant = game.combat.combatants.get(element.dataset.combatantId);
-                    return new CombatantConfig(combatant).render(true);
+                    new CombatantConfig(combatant).render(true);
                 }
             },
             {

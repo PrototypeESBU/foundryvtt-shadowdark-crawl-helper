@@ -139,34 +139,32 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
                 await this._updateRound();
             } 
             else if ("turn" in changed) {
-                await this._updateTurn(options.direction);
+                //wait for any animations to finish
+                setTimeout(this._updateTurn, 300, options.direction);
             }
         }
     }
     
     //Combatants
     async _onDeleteCombatant(document, changed, options, userId){ 
-        if(combatant.id === game.combat.system.gmId){
+        if(document.id === game.combat.system.gmId){
             await game.combat.update({"system.gmId": null})
         }
     };
 
     async _onUpdateActor(document, changed, options, userId) {
-        console.error(changed);
-        const hpChange = foundry.utils.getProperty(changed, "system.attributes.hp.value");
-        
-        if (hpChange === 0) {
-            if (document.getFlag("shadowdark-crawl-helper", "dying")) {
-                // TODO kill character
-            }
-            else {
+        if (document.type === "Player") {
+            const hpChange = foundry.utils.getProperty(changed, "system.attributes.hp.value");
+            
+            if (hpChange === 0) {
                 ui.notifications.info("We got a dead one here");
                 document.setFlag("shadowdark-crawl-helper", "dying", true)
-                this._startDeathTimer();
-                // TODO add condition
+            }
+            else if (hpChange > 0) {
+                document.unsetFlag("shadowdark-crawl-helper", "dying");
+                //TODO reset dying rounds on combatant
             }
         }
-        
 
         // TODO check for < 50% defeated and call moral check
     }
@@ -458,56 +456,51 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
         return roll._total;
     }
 
-    async _startDeathTimer(actor) {
-        if (!actor) return
-
-        const formula = "d4 +" + actor.system.abilities.con.mod;
-        const roll = await new Roll(formula).evaluate();
-        const userId = game.users.find(u => u.character?.id === actor.id)?.id ?? game.user.id;
-        const chatdata = {
-            user: userId,
-            speaker: {actor},
-            rolls: [roll]
-        }
-        console.error(chatdata);
-        ChatMessage.create(chatdata);
-
-
-        const rounds = roll._total;
-        const img = "icons/skills/wounds/injury-body-pain-gray.webp";
-        const effect = {
-            name: "Dying",
-            type: "Effect",
-            img,
-            category: "Condition",
-            system: {
-                duration: {
-                type: "rounds",
-                value: rounds
-                }
-            }
-        };
-        const effects = await actor.createEmbeddedDocuments("Item",[effect]);
-        if (effects) {
-            const activeEffect = {name: "Dying", img, duration: {rounds}};
-            effects[0].createEmbeddedDocuments("ActiveEffect",[activeEffect]);
-        }
-    }
-
-    _rollRecovery() {
-        // TODO Roll a d20 for recovery
-    }
-
-
     async _updateRound() {
         // Do a GM turn in case it was skipped.
         await this._gmTurn(game.combat.round-1);
     }
 
     async _updateTurn(direction) {
-        //test for GM's turn
-        if ((game.combat.combatant.id === game.combat.system.gmId) && (direction > 0)) {
-            await this._gmTurn(game.combat.round);
+        if ((direction > 0)) {
+            const combatant = game.combat?.combatant;
+            const deathTimer = game.settings.get("shadowdark-crawl-helper", "death-timer");
+            //test for GM's turn
+            if (combatant.id === game.combat.system.gmId) {
+                await this._gmTurn(game.combat.round);
+            }
+            //test for dying
+            else if (combatant.system.isDying && deathTimer) {
+                const dyingRounds = combatant.system.dyingRounds
+                if (dyingRounds === null) {
+                    //roll initial death timer
+                    await combatant.system.rollDeathTimer();
+                }
+                else {
+                    //test for recovery
+                    if (await combatant.system.rollRecovery()) {
+                        await combatant.update({"system.dyingRounds": null});
+                        await combatant.actor.unsetFlag("shadowdark-crawl-helper", "dying");
+                        await combatant.actor.update({"system.attributes.hp.value": 1});
+                        await ChatMessage.create({
+                            content: `<div class="shadowdark"><h2 class="centered">${combatant.actor.name} Recovers!</h2></div>`,
+                        });
+                    }
+                    //decrement dying rounds left
+                    else if (dyingRounds > 1) {
+                        await combatant.system.updateDeathTimer();
+                    }
+                    //kill combatant
+                    else if (dyingRounds <= 1) {
+                        await combatant.update({"system.dyingRounds": null});
+                        await combatant.system.toggleDefeated();
+                        await combatant.actor.unsetFlag("shadowdark-crawl-helper", "dying");
+                        await ChatMessage.create({
+                            content: `<div class="shadowdark"><h2 class="centered">${combatant.actor.name} Dies</h2></div>`,
+                        });
+                    }
+                }
+            }
         }
     }
 

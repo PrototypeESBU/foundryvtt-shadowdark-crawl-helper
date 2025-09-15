@@ -106,7 +106,7 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
         }
         //turn on combat
         else {
-           await await game.crawlHelper.gmtools.startCombat();
+           await game.crawlHelper.gmtools.startCombat();
         }
     }
 
@@ -121,7 +121,8 @@ export default class crawlTracker extends HandlebarsApplicationMixin(Application
     async _updateTurn(direction) {
 
         //if current player's turn
-        if ((game.user.character?.id) && (game.combat?.combatant?.actorId === game.user.character?.id)){
+        const combatant = game.combat?.combatant;
+        if ((game.user.character?.id) && (combatant?.actorId === game.user.character?.id)){
 
             const notifyOnTurn = game.settings.get("shadowdark-crawl-helper", "notify-on-turn");
             const soundOnTurn = game.settings.get("shadowdark-crawl-helper", "sound-on-turn");
