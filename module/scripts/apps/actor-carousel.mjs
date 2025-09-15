@@ -16,6 +16,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         Hooks.on('deleteCombatant', this._onDeleteCombatant.bind(this));
         Hooks.on('updateCombatant', this._onUpdateCombatant.bind(this));
         Hooks.on('updateActor', this._onUpdateActor.bind(this));
+        Hooks.on('updateToken', this._onUpdateToken.bind(this));
         Hooks.on('applyTokenStatusEffect', this._onApplyTokenStatusEffect.bind(this));
 
     };
@@ -157,8 +158,15 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
 
     //Actors & Tokens
     async _onUpdateActor(document, changed, options, userId) {
-        //TODO detect and set visibility
         this.rerender()
+    };
+
+    async _onUpdateToken(document, changed, options, userId) {
+        if ("hidden" in changed) {
+            const combatant = game?.combat?.combatants.find(c => c.tokenId === changed._id)
+            if (combatant) combatant.update({"hidden": changed.hidden});
+            this.rerender();
+        }
     };
 
     async _onApplyTokenStatusEffect(statusId) {
