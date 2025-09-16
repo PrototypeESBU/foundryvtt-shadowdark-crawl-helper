@@ -88,20 +88,41 @@ export class crawlCombatant extends foundry.abstract.TypeDataModel {
     }
 
     async rollRecovery() {
-        const roll = await new Roll("d20").evaluate();
+        
         const actor = this.parent.actor;
+        const user = game.users.find(u => u.character?.id === actor.id)?? game.users.activeGM;
+
+        //create dialog prompt
+        const fields = foundry.applications.fields;
+        const textInput = fields.createTextInput({name: 'formula', value: 'd20'});
+        const textGroup = fields.createFormGroup({input: textInput, label: "Roll:"}); //TODO localize
+
+        //show roll prompt to user
+        const response = await user.query("dialog",{
+            config:{
+                window: { title: "Roll for Recovery" }, //TODO localize
+                content: `${textGroup.outerHTML}`,
+                modal: true
+            },
+            type: "input"
+        });
+
+         //create chat message for user's roll
+        const formula = Roll.validate(response?.formula)? response.formula : "d20";
+        const roll = await new Roll(formula).evaluate();
         const msg = await ChatMessage.create({
-            content: `<div class="shadowdark"><h3>Dying Recovery Roll</h3><br>${await roll.render()}</div>`,
+            content: `<div class="shadowdark"><h3>Dying Recovery Roll</h3><br>${await roll.render()}</div>`, //TODO localize
             speaker: {actor: actor.id},
-            user: game.users.find(u => u.character?.id === actor.id),
+            user: user,
             rolls: [roll.toJSON()]
         });
         if (game.dice3d) await game.dice3d.waitFor3DAnimationByMessageID(msg.id);
-        return roll.total === 20 ?? false;
+        return roll.total >= 20 ?? false;
     }
 
     get isDying() {
-        return this.parent?.actor?.getFlag("shadowdark-crawl-helper", "dying")? true : false;
+        return this.parent?.actor?.getFlag("shadowdark-crawl-helper", "dying") 
+            && game.settings.get("shadowdark-crawl-helper", "death-timer");
     }
 
 

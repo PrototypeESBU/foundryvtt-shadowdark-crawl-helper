@@ -20,8 +20,10 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
         Hooks.on('deleteCombat', this._onDeleteCombat.bind(this));
         Hooks.on('updateCombat', this._onUpdateCombat.bind(this));
         Hooks.on('deleteCombatant', this._onDeleteCombatant.bind(this));
+        Hooks.on('updateCombatant', this._onUpdateCombatant.bind(this));
         Hooks.on('updateActor', this._onUpdateActor.bind(this));
         Hooks.on("renderChatInput", () => {this.render()});
+        Hooks.on('updateToken', this._onUpdateToken.bind(this));
     }
 
     static DEFAULT_OPTIONS = {
@@ -139,8 +141,9 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
                 await this._updateRound();
             } 
             else if ("turn" in changed) {
-                //wait for any animations to finish
-                setTimeout(this._updateTurn, 300, options.direction);
+                //wait for animation to finish
+                this._wait(300);
+                this._updateTurn(options.direction);
             }
         }
     }
@@ -152,17 +155,25 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
         }
     };
 
+    async _onUpdateCombatant(document, changed, options, userId){ 
+        if ("hidden" in changed) {
+            if (document?.token && document?.token.hidden !== changed.hidden)
+                document.token.update({hidden: changed.hidden});
+        }
+    };
+
     async _onUpdateActor(document, changed, options, userId) {
         if (document.type === "Player") {
             const hpChange = foundry.utils.getProperty(changed, "system.attributes.hp.value");
             
             if (hpChange === 0) {
-                ui.notifications.info("We got a dead one here");
+                //set dying
                 document.setFlag("shadowdark-crawl-helper", "dying", true)
             }
             else if (hpChange > 0) {
                 document.unsetFlag("shadowdark-crawl-helper", "dying");
-                //TODO reset dying rounds on combatant
+                const combatant = game.combat?.combatants.find(c => c.actorId === document.id);
+                if (combatant) await combatant.update({"system.dyingRounds": null})
             }
         }
 
@@ -170,6 +181,15 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     //other
+
+    async _onUpdateToken(document, changed, options, userId) {
+        if ("hidden" in changed) {
+            const combatant = game?.combat?.combatants.find(c => c.tokenId === changed._id)
+            if (combatant && combatant?.hidden !== changed.hidden) 
+                combatant.update({hidden: changed.hidden});
+        }
+    };
+
     async _onCanvasReady(canvas) {
         // detect scene changes and attempt to link scene tokens to combatants
         if (game.combat) this._connectSceneTokens();
@@ -502,6 +522,10 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
                 }
             }
         }
+    }
+
+    async _wait(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     async _setEncounterCheck() {

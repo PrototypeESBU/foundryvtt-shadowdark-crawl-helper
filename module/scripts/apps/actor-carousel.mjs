@@ -16,8 +16,8 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         Hooks.on('deleteCombatant', this._onDeleteCombatant.bind(this));
         Hooks.on('updateCombatant', this._onUpdateCombatant.bind(this));
         Hooks.on('updateActor', this._onUpdateActor.bind(this));
-        Hooks.on('updateToken', this._onUpdateToken.bind(this));
         Hooks.on('applyTokenStatusEffect', this._onApplyTokenStatusEffect.bind(this));
+        Hooks.on("renderChatMessageHTML", this._onRenderChatMessageHTML.bind(this));
 
     };
 
@@ -122,6 +122,19 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     // Hook Callbacks
     // -----------------------------------------------
 
+    //chat
+
+    async _onRenderChatMessageHTML(document, html, context) {
+        const combantant = game.combat?.combatants.find(c => c.actorId === document.speaker.actor);
+        if (combantant && combantant?.system?.isMasked) {
+            if(game.user.isGM) {
+                html.innerHTML = html.innerHTML.replaceAll(combantant.actor.name, "<i class='fas fa-mask'></i> " + combantant.actor.name);
+            } else{
+                html.innerHTML = html.innerHTML.replaceAll(combantant.actor.name, "?");
+            }
+        }
+    }
+
     //combat
 
     async _onDeleteCombat(document, changed, options, userId) {
@@ -159,14 +172,6 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     //Actors & Tokens
     async _onUpdateActor(document, changed, options, userId) {
         this.rerender()
-    };
-
-    async _onUpdateToken(document, changed, options, userId) {
-        if ("hidden" in changed) {
-            const combatant = game?.combat?.combatants.find(c => c.tokenId === changed._id)
-            if (combatant) combatant.update({"hidden": changed.hidden});
-            this.rerender();
-        }
     };
 
     async _onApplyTokenStatusEffect(statusId) {
@@ -280,7 +285,9 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         //Calculate overlays and special statuses
         let overlay = false;
         if (combatant.system.isMasked) {
-            if (!game.user.isGM) combatant.name = "?";
+            if (!game.user.isGM) {
+                combatant.name = "?";
+            }
             else overlay = true;
         } 
 
