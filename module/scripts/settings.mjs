@@ -104,14 +104,23 @@ export default function registerSettings() {
         requiresReload: true,
     });
 
-    game.settings.register("shadowdark-crawl-helper", "spoiler-free", {
-        name: "Spoiler Free",
-        hint: "Non-player actor names are hidden in the tracker and displayed as '????' for PLAYERS ONLY - GM will still see names for usability.",
+    game.settings.register("shadowdark-crawl-helper", "npc-default-masked", {
+        name: "CRAWLHELPER.settings.npc-default-masked.name",
+        hint: "CRAWLHELPER.settings.npc-default-masked.hint",
         scope: "world",
         config: true,
         default: false,
         type: Boolean,
-        requiresReload: true
+        requiresReload: false
+    });
+
+    game.settings.register("shadowdark-crawl-helper", "death-timer", {
+        name: "CRAWLHELPER.death-timer.name",
+        hint: "CRAWLHELPER.death-timer.hint",
+        scope: "world",
+        config: true,
+        default: true,
+        type: Boolean,
     });
 
     //Player Settings (client level)

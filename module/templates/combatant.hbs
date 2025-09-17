@@ -5,12 +5,15 @@
             <img src="{{img}}" data-actor-id="{{actorId}}" data-combatant-id="{{id}}">
                     
             <div class="overlay {{#unless overlay}}hidden{{/unless}}">
-                {{#ifEq overlay "hidden"}}
-                    <i class="fas fa-eye-slash faded"></i>
-                {{/ifEq}}
-                {{#ifEq overlay "defeated"}}
-                    <i class="fas fa-skull faded"></i>
-                {{/ifEq}}
+                {{#if masked}}
+                    <i class="fas fa-mask"></i>
+                {{/if}}
+                {{#if hidden}}
+                    <i class="fas fa-eye-slash"></i>
+                {{/if}}
+                {{#if defeated}}
+                    <i class="fas fa-skull"></i>
+                {{/if}}
             </div>
 
             <div class="initiative">
@@ -28,6 +31,20 @@
                     <i class="fal fa-dice-d20 faded"></i>
                 {{/if}}
             </div>
+            
+            {{#if system.isDying}}
+                <div class="death-timer">
+                    <i class="fa-solid fa-skull"></i>
+                    <span>
+                        {{#if system.dyingRounds}}
+                            {{system.dyingRounds}}
+                        {{else}}
+                            <i class="fa-solid fa-dice-d20" style="font-size:14px"></i>
+                        {{/if}}
+                    </span>
+                    <i class="fa-solid fa-hourglass-half"></i>
+                </div>
+            {{/if}}
 
         </div>
         <div class="health-bar">

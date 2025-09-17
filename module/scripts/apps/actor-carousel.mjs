@@ -17,6 +17,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         Hooks.on('updateCombatant', this._onUpdateCombatant.bind(this));
         Hooks.on('updateActor', this._onUpdateActor.bind(this));
         Hooks.on('applyTokenStatusEffect', this._onApplyTokenStatusEffect.bind(this));
+        Hooks.on("renderChatMessageHTML", this._onRenderChatMessageHTML.bind(this));
 
     };
 
@@ -37,10 +38,6 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             rollInitiative: this.rollInitiative,
             rollAllInit: this.rollAllInit,
             resetInit: this.resetInit,
-            toggleVisibility: this.toggleVisibility,
-            toggleDefeated: this.toggleDefeated,
-            editCombatant: this.editCombatant,
-            deleteCombatant: this.deleteCombatant
         }
     };
 
@@ -125,6 +122,19 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     // Hook Callbacks
     // -----------------------------------------------
 
+    //chat
+
+    async _onRenderChatMessageHTML(document, html, context) {
+        const combantant = game.combat?.combatants.find(c => c.actorId === document.speaker.actor);
+        if (combantant && combantant?.system?.isMasked) {
+            if(game.user.isGM) {
+                html.innerHTML = html.innerHTML.replaceAll(combantant.actor.name, "<i class='fas fa-mask'></i> " + combantant.actor.name);
+            } else{
+                html.innerHTML = html.innerHTML.replaceAll(combantant.actor.name, "?");
+            }
+        }
+    }
+
     //combat
 
     async _onDeleteCombat(document, changed, options, userId) {
@@ -147,16 +157,16 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     }
 
     //combatant
-    async _onCreateCombatant(document, changed, options, userId) {
+    async _onCreateCombatant(document, options, userId) {
         this.rerender()
     };
 
-    async _onDeleteCombatant(document, changed, options, userId){ 
+    async _onDeleteCombatant(document, options, userId){ 
         this.rerender()
     };
 
     async _onUpdateCombatant(document, changed, options, userId) {
-       this.rerender()
+        this.rerender()
     };
 
     //Actors & Tokens
@@ -200,29 +210,6 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         game.combat.resetAll({updateTurn: false});
     };
 
-    static async toggleVisibility(event, target) {
-        const combatant = game.combat.combatants.get(target.dataset.combatantId);
-        await combatant.update({hidden: !combatant.hidden});
-    };
-
-    static async toggleDefeated(event, target) {
-        const combatant = game.combat.combatants.get(target.dataset.combatantId);
-        const isDefeated = !combatant.isDefeated;
-        await combatant.update({defeated: isDefeated});
-        const defeatedId = CONFIG.specialStatusEffects.DEFEATED;
-        await combatant.actor?.toggleStatusEffect(defeatedId, {overlay: true, active: isDefeated});
-    };
-
-    static async editCombatant(event, target) {
-        const combatant = game.combat.combatants.get(target.dataset.combatantId);
-        new CombatantConfig(combatant).render(true);
-    };
-
-    static async deleteCombatant(event, target) {
-        const combatant = game.combat.combatants.get(target.dataset.combatantId);
-        combatant.delete();
-    };
-
     // -----------------------------------------------
     // Public functions
     // -----------------------------------------------
@@ -248,6 +235,16 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         if (game?.combat?.started) this.render();
     }
 
+    async editCombatant(combatantId) {
+        const combatant = game.combat.combatants.get(combatantId);
+        new CombatantConfig(combatant).render(true);
+    };
+
+    async deleteCombatant(combatantId) {
+        const combatant = game.combat.combatants.get(combatantId);
+        combatant.delete();
+    };
+
     // -----------------------------------------------
     // Private functions
     // -----------------------------------------------
@@ -261,33 +258,28 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         let ac = null;
         let level = null;
         let styleClass = "";
+        let img = actor? actor.img : combatant.img;
         const canView = (combatant.system.type === "Player" || game.user.isGM);
         const isOwner = (combatant?.actor?.permission === 3 || game.user.isGM);
         
-        //Calculate overlays
-        let overlay = "";
-        if (combatant.initiative === null) {
-            overlay = "initiative";
-        }
-        else if (combatant.hidden) {
-            overlay = "hidden";
-            if(!game.user.isGM) {
-                styleClass = "unknown";
-                combatant.name = "unknown";
+        //Calculate overlays and special statuses
+        let overlay = false;
+        if (combatant.system.isMasked) {
+            if (!game.user.isGM) {
+                combatant.name = "?";
             }
+            else overlay = true;
+        } 
+
+        if(combatant.hidden) {
+            if (!game.user.isGM) styleClass = "hidden"
+            else overlay = true;
         }
-        else if (combatant.isDefeated) {
-            overlay = "defeated";
+
+        if (combatant.isDefeated) {
+            overlay = true;
         }
-    
-        // --- New Spoiler-Free Logic ---
-        if (game.settings.get("shadowdark-crawl-helper", "spoiler-free") &&
-        combatant.system.type === "NPC" &&
-        !game.user.isGM) {
-      combatant.name = "? ? ? ?";
-    }
-        // --- End New Logic ---
-    
+
         // Calculate health bar and other stats if actor is present
         if (actor){
             const showNPCHealthBars = game.settings.get("shadowdark-crawl-helper", "show-NPC-Health-Bars");
@@ -307,10 +299,11 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             ...combatant,
             id: combatant.id,
             initiativeSet: (combatant.initiative != null),
+            masked: combatant.system.isMasked && game.user.isGM,
             isOwner,
             canView,
             overlay,
-            img: actor? actor.img : combatant.img,
+            img,
             barPercent,
             hp,
             ac,
@@ -323,11 +316,20 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         return [
             {
                 name: "",
+                icon: '<i class="fas fa-mask"></i>',
+                condition: game.user.isGM,
+                callback: element => { 
+                    const combatant = game.combat.combatants.get(element.dataset.combatantId);
+                    combatant?.system.toggleMasked();
+                }
+            },
+            {
+                name: "",
                 icon: '<i class="fas fa-eye-slash"></i>',
                 condition: game.user.isGM,
                 callback: element => {
                     const combatant = game.combat.combatants.get(element.dataset.combatantId);
-                    combatant.update({hidden: !combatant.hidden});
+                    combatant?.system.toggleVisibility();
                 }
             },
             {
@@ -336,10 +338,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                 condition: game.user.isGM,
                 callback: element => {
                     const combatant = game.combat.combatants.get(element.dataset.combatantId);
-                    const isDefeated = !combatant.isDefeated;
-                    combatant.update({defeated: isDefeated});
-                    const defeatedId = CONFIG.specialStatusEffects.DEFEATED;
-                    combatant.actor?.toggleStatusEffect(defeatedId, {overlay: true, active: isDefeated});
+                    combatant?.system.toggleDefeated();
                 }
             },
             {
@@ -348,7 +347,7 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
                 condition: game.user.isGM,
                 callback: element => {
                     const combatant = game.combat.combatants.get(element.dataset.combatantId);
-                    return new CombatantConfig(combatant).render(true);
+                    new CombatantConfig(combatant).render(true);
                 }
             },
             {

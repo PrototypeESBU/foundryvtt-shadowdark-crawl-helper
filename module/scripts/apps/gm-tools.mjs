@@ -21,7 +21,9 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
         Hooks.on('updateCombat', this._onUpdateCombat.bind(this));
         Hooks.on('deleteCombatant', this._onDeleteCombatant.bind(this));
         Hooks.on('updateCombatant', this._onUpdateCombatant.bind(this));
+        Hooks.on('updateActor', this._onUpdateActor.bind(this));
         Hooks.on("renderChatInput", () => {this.render()});
+        Hooks.on('updateToken', this._onUpdateToken.bind(this));
     }
 
     static DEFAULT_OPTIONS = {
@@ -132,30 +134,62 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
         this.render(true);
     }
 
-    async _onUpdateCombat(changed, options) {
+    async _onUpdateCombat(document, changed, options, userId) {
         this.render();
         if (game?.combat?.started) { 
             if ("round" in changed) {
                 await this._updateRound();
             } 
             else if ("turn" in changed) {
-                await this._updateTurn(options.direction);
+                //wait for animation to finish
+                this._wait(300);
+                this._updateTurn(options.direction);
             }
         }
     }
     
     //Combatants
-    async _onDeleteCombatant(combatant, updates){ 
-        if(combatant.id === game.combat.system.gmId){
+    async _onDeleteCombatant(document, changed, options, userId){ 
+        if(document.id === game.combat.system.gmId){
             await game.combat.update({"system.gmId": null})
         }
     };
 
-    async _onUpdateCombatant(combatant, updates) {
+    async _onUpdateCombatant(document, changed, options, userId){ 
+        if ("hidden" in changed) {
+            if (document?.token && document?.token.hidden !== changed.hidden)
+                document.token.update({hidden: changed.hidden});
+        }
+    };
+
+    async _onUpdateActor(document, changed, options, userId) {
+        if (document.type === "Player") {
+            const hpChange = foundry.utils.getProperty(changed, "system.attributes.hp.value");
+            
+            if (hpChange === 0) {
+                //set dying
+                document.setFlag("shadowdark-crawl-helper", "dying", true)
+            }
+            else if (hpChange > 0) {
+                document.unsetFlag("shadowdark-crawl-helper", "dying");
+                const combatant = game.combat?.combatants.find(c => c.actorId === document.id);
+                if (combatant) await combatant.update({"system.dyingRounds": null})
+            }
+        }
+
         // TODO check for < 50% defeated and call moral check
     }
 
     //other
+
+    async _onUpdateToken(document, changed, options, userId) {
+        if ("hidden" in changed) {
+            const combatant = game?.combat?.combatants.find(c => c.tokenId === changed._id)
+            if (combatant && combatant?.hidden !== changed.hidden) 
+                combatant.update({hidden: changed.hidden});
+        }
+    };
+
     async _onCanvasReady(canvas) {
         // detect scene changes and attempt to link scene tokens to combatants
         if (game.combat) this._connectSceneTokens();
@@ -448,10 +482,50 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     async _updateTurn(direction) {
-        //test for GM's turn
-        if ((game.combat.combatant.id === game.combat.system.gmId) && (direction > 0)) {
-            await this._gmTurn(game.combat.round);
+        if ((direction > 0)) {
+            const combatant = game.combat?.combatant;
+            const deathTimer = game.settings.get("shadowdark-crawl-helper", "death-timer");
+            //test for GM's turn
+            if (combatant.id === game.combat.system.gmId) {
+                await this._gmTurn(game.combat.round);
+            }
+            //test for dying
+            else if (combatant.system.isDying && deathTimer) {
+                const dyingRounds = combatant.system.dyingRounds
+                if (dyingRounds === null) {
+                    //roll initial death timer
+                    await combatant.system.rollDeathTimer();
+                }
+                else {
+                    //test for recovery
+                    if (await combatant.system.rollRecovery()) {
+                        await combatant.update({"system.dyingRounds": null});
+                        await combatant.actor.unsetFlag("shadowdark-crawl-helper", "dying");
+                        await combatant.actor.update({"system.attributes.hp.value": 1});
+                        await ChatMessage.create({
+                            content: `<div class="shadowdark"><h2 class="centered">${combatant.actor.name} Recovers!</h2></div>`,
+                        });
+                    }
+                    //decrement dying rounds left
+                    else if (dyingRounds > 1) {
+                        await combatant.system.updateDeathTimer();
+                    }
+                    //kill combatant
+                    else if (dyingRounds <= 1) {
+                        await combatant.update({"system.dyingRounds": null});
+                        await combatant.system.toggleDefeated();
+                        await combatant.actor.unsetFlag("shadowdark-crawl-helper", "dying");
+                        await ChatMessage.create({
+                            content: `<div class="shadowdark"><h2 class="centered">${combatant.actor.name} Dies</h2></div>`,
+                        });
+                    }
+                }
+            }
         }
+    }
+
+    async _wait(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     async _setEncounterCheck() {

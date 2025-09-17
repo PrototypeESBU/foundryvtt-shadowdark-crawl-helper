@@ -95,28 +95,47 @@
                     }
                     
                 }
+
+                .death-timer {
+                    position: absolute;
+                    right: 2px;
+                    bottom: 2px;
+                    height: 20px;
+                    justify-content: center;
+                    align-items: center;
+                    display: flex;
+                    flex-direction: row;
+                    gap: 2px;
+                    padding: 0px 2px;
+                    color: white;
+                    background: rgba(0, 0, 0, 0.5);
+                    span {
+                        font-size: 18px;
+                        font-family: "Montserrat-Medium";
+                        line-height: 20px;
+                    }
+                    i {
+                        font-size: 8px;
+                        line-height: 20px;
+                    }
+                    
+                }
                 
                 .overlay {
+                    display: flex;
+                    flex-direction: column;
+                    flex-wrap: wrap-reverse;
+                    justify-content: center;
                     position:absolute;
                     top: 2px;
                     bottom: 2px;
                     left: 2px;
                     right: 2px;
-                    background: rgb(0, 0, 0, 0.3);
+                    background: rgb(0, 0, 0, 0.6);
+                    color:rgb(230,230,230,1);
                     text-shadow: 0 0 10px black;
                     pointer-events: none;
-
-                    i {
-                        position: relative;
-                        color: white;
-                        font-size: 42px;
-                        top: calc(50% - 21px);
-
-                        &.faded {
-                            color:rgb(255,255,255,0.5)
-                        }
-                    }
-
+                    font-size: 32px;
                 }
 
             }
@@ -127,11 +146,12 @@
                 min-width: 0px;
                 position: absolute;
                 top:23px;
-                padding: 0px 2px;
                 border-radius: 0%;
-                ol {
+                .context-items {
+                    padding: 4px;
                     display: grid;
-                    grid-template-columns: repeat(4, 1fr);
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 8px;
                     li {
                         padding: 0px;
                         font-size: 14px;
