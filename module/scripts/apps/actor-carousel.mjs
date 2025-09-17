@@ -235,26 +235,6 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         if (game?.combat?.started) this.render();
     }
 
-    async toggleMasked(combatantId) {
-        const combatant = game.combat.combatants.get(combatantId);
-        combatant.update({"system.isMasked": !combatant.system.isMasked});
-    }
-
-    async toggleVisibility(combatantId) {
-        const combatant = game.combat.combatants.get(combatantId);
-        combatant?.token.update({hidden: !combatant.hidden});
-        combatant.update({hidden: !combatant.hidden});
-        
-    };
-
-    async toggleDefeated(combatantId) {
-        const combatant = game.combat.combatants.get(combatantId);
-        const isDefeated = !combatant.isDefeated;
-        await combatant.update({defeated: isDefeated});
-        const defeatedId = CONFIG.specialStatusEffects.DEFEATED;
-        await combatant.actor?.toggleStatusEffect(defeatedId, {overlay: true, active: isDefeated});
-    };
-
     async editCombatant(combatantId) {
         const combatant = game.combat.combatants.get(combatantId);
         new CombatantConfig(combatant).render(true);

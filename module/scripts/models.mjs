@@ -41,9 +41,9 @@ export class crawlCombatant extends foundry.abstract.TypeDataModel {
     async toggleDefeated() {
         const combatant = this.parent;
         const isDefeated = !combatant.isDefeated;
-        await combatant.update({defeated: isDefeated});
         const defeatedId = CONFIG.specialStatusEffects.DEFEATED;
-        await combatant.actor?.toggleStatusEffect(defeatedId, {overlay: true, active: isDefeated});
+        combatant.actor?.toggleStatusEffect(defeatedId, {overlay: true, active: isDefeated});
+        combatant.update({defeated: isDefeated});
     };
 
     async rollDeathTimer() {
