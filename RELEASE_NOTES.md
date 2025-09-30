@@ -1,5 +1,7 @@
 # v1.0.0
 
+First release
+
 ## Changes
 - Crawl Helper now only works on Foundry v13.
 - UI elements have been redesigned.
