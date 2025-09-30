@@ -22,4 +22,4 @@ Display current crawl round and transition smoothly into and out of combat.
 - **Player Turn Notifications** – Keeps players engaged with clear turn prompts.
 - **Automated Encounter Rolls** – Prompt the GM for encounter rolls or set them to trigger automatically from a table.
 - **Time Passes** - Quickly advance time forward and clear round based effects.
-- **Death Timer** - Track dying character remaining turns and prompted for rolls.
+- **Death Timer** - Track dying character's remaining turns and prompt for rolls.
