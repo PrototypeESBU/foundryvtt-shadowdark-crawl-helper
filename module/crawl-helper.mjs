@@ -36,8 +36,8 @@ Hooks.on("ready", async () => {
 
     if (game.user.isGM){
         //Check if there are non crawl or non active combats and delete
-        game.combats.combats.forEach(c => {
-            if(c.type !== "shadowdark-crawl-helper.crawl" || c.id != game.combat.id) {
+        game.combats.forEach(c => {
+            if(c.type !== "shadowdark-crawl-helper.crawl" || c.id != game.combat?.id) {
                 c.delete();
             }
         })
@@ -55,6 +55,7 @@ Hooks.on("ready", async () => {
     if(game.user.isGM) {
         game.crawlHelper.gmtools = new gmTools();
         game.crawlHelper.gmtools.render(true);
+        game.crawlHelper.gmtools._connectSceneTokens();
     }
 
     if(game.settings.get("shadowdark-crawl-helper", "carousel")) {
@@ -75,7 +76,7 @@ Hooks.on("preCreateCombatant", async (combatant, data, options, userId) =>
         //switch type to crawler
         const updateData = {type: "shadowdark-crawl-helper.crawler"};
         // TODO use a better way of detecting player types post v4.0.0 rollout
-        if (combatant.actorId && (game.actors.get(combatant.actorId).type === "Player")) {
+        if (combatant.actorId && (game.actors.get(combatant.actorId)?.type === "Player")) {
             updateData.system = {"type": "Player"};
         } else {
             const masked = game.settings.get("shadowdark-crawl-helper", "npc-default-masked") ?? false;
@@ -99,10 +100,18 @@ Hooks.on("preCreateCombat", async (combat, data, options, userId) =>
 
 Hooks.on("createCombat", async (combat, data, options, userId) => 
 {
-    //prevent more then one combat at a time
-    if (game.combats.size > 1) {
-        await game.combats.combats[0].activate();
-        combat.delete();
+    //prevent more then one crawl at a time
+    game.combats.forEach(c => {
+        if (c.id !== combat.id) c.delete();
+    })
+});
+
+Hooks.on("preUpdateCombat", async (combat, changed, options, userId) => 
+{
+    //prevent linking crawls to a scene
+    if (changed?.scene) {
+        changed.scene = null;
+        ui.notifications.error("Error: Crawls cannot be linked in this way");
     }
 });
 

@@ -56,6 +56,14 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
         uiMiddle.insertAdjacentHTML("afterbegin", `<template id="actorCarousel"></template>`);
     }
 
+    // sets the position of the app before rendering
+    _prePosition(pos = {}) {
+        const middle = document.querySelector("#ui-middle").getBoundingClientRect();
+        foundry.utils.mergeObject(pos, {
+            width: middle.width
+        });
+    }
+
     //Generates context for each UI part before rendering it
     async _preparePartContext(partId, context, options) {
         if (partId === "main" && game.combat) {
@@ -146,9 +154,10 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
             if (this.state === 2){
                 const isTurn = "turn" in changed;
                 const isRound = "round" in changed;
+                const isSystem = "system" in changed;
                 if (isTurn) this._updateTurn(options.direction);
                 if (isRound) this._updateRound();
-                if (!isTurn && !isRound) this.render();
+                if (!isTurn && !isRound && !isSystem) this.render();
             }
             else {
                 this.render(true);

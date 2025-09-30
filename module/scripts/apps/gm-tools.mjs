@@ -15,7 +15,7 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
             game.i18n.localize("CRAWLHELPER.danger.unsafe")
         ]
 
-        Hooks.on("canvasReady", this._onCanvasReady.bind(this));
+        Hooks.on("updateScene", this._onUpdateScene.bind(this));
         Hooks.on('combatStart', this._onCombatStart.bind(this));
         Hooks.on('deleteCombat', this._onDeleteCombat.bind(this));
         Hooks.on('updateCombat', this._onUpdateCombat.bind(this));
@@ -33,6 +33,9 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
         position: {
             top:0,
             left:0,
+        },
+        form: {
+            submitOnChange: false,
         },
         window: {
             frame: false,
@@ -135,7 +138,7 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     async _onUpdateCombat(document, changed, options, userId) {
-        this.render();
+        if (!("system" in changed)) this.render();
         if (game?.combat?.started) { 
             if ("round" in changed) {
                 await this._updateRound();
@@ -190,10 +193,13 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
         }
     };
 
-    async _onCanvasReady(canvas) {
-        // detect scene changes and attempt to link scene tokens to combatants
-        if (game.combat) this._connectSceneTokens();
-        this.render();
+    async _onUpdateScene(document, changed, options, userId) {
+        if(changed?.active) {
+            console.error(changed)
+            // detect scene changes and attempt to link scene tokens to combatants
+            await this._connectSceneTokens();
+            this.render();
+        }
     }
 
     // -----------------------------------------------
@@ -414,25 +420,22 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     async _connectSceneTokens() { //connects scene tokens to player placeholders in crawl
-        const partyActors = game.users
-        .filter(user => user.active && user.character)
-        .map(user => user.character);
-
-        for (const actor of partyActors) {
+        if (!game.combat) return;
+        const changes = [];
+        for (const combatant of game.combat.combatants) {
             //gets first combatant and token and matches them 
-            const combatant = game.combat.combatants.find(c => c.actorId === actor.id); 
-            const token = game.scenes.active.tokens.find(t => t.actorId === actor.id);
-            if (combatant && token) {
-                game.combat.updateEmbeddedDocuments("Combatant", [{
-                    "_id": combatant.id,
-                    tokenId: token.id,
-                    sceneId: game.scenes.active.id,
-                    actorId: actor.id,
-                    name: actor.name, 
-                    img: actor.img, 
-                }]);
+            if (combatant.actorId) { 
+                const token = game.scenes.active.tokens.find(t => t.actorId === combatant.actorId);
+                if (token) {
+                    changes.push({
+                        "_id": combatant.id,
+                        tokenId: token.id,
+                        sceneId: game.scenes.active.id,
+                    });
+                }
             }
         }
+        game.combat.updateEmbeddedDocuments("Combatant", changes)
     }
 
     async _gmTurn(round) { 
@@ -445,14 +448,6 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
                 "nextEncounter": round + this._getDangerLevel(true) + 1
             }})
         }
-
-    }
-
-    async _initializeCrawl() { 
-        // loads tracking data from an exiting combat on initialization
-        
-        // TODO run this during config init
-        if (game.combat._source.scene) game.combat.toggleSceneLink();  
 
     }
 
@@ -572,7 +567,7 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
 
     _getDangerLevel(activeScene=false) {
         const scene = activeScene? game.scenes.active : game.scenes.viewed;
-        const dangerLevel = scene.getFlag('shadowdark-crawl-helper', 'dangerLevel');
+        const dangerLevel = scene?.getFlag('shadowdark-crawl-helper', 'dangerLevel');
         if (dangerLevel >= 0 && dangerLevel <= 2 && Number.isInteger(dangerLevel)) {
             return dangerLevel;
         }
@@ -584,19 +579,19 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
 
     _getEncounterTable(activeScene=false) {
         const scene = activeScene? game.scenes.active : game.scenes.viewed;
-        return scene.getFlag('shadowdark-crawl-helper', 'encounterTable') ?? null;
+        return scene?.getFlag('shadowdark-crawl-helper', 'encounterTable') ?? null;
     }
 
     async _setDangerLevel(dangerLevel) {
         const scene = game.scenes.viewed;
         if (dangerLevel >= 0 && dangerLevel <= 2 && Number.isInteger(dangerLevel)) {
-            return await scene.setFlag('shadowdark-crawl-helper', 'dangerLevel', dangerLevel);
+            return await scene?.setFlag('shadowdark-crawl-helper', 'dangerLevel', dangerLevel);
         }
     }
 
     async _setEncounterTable(encounterTableUuid) {
         const scene = game.scenes.viewed;
-        return await scene.setFlag('shadowdark-crawl-helper', 'encounterTable', encounterTableUuid);
+        return await scene?.setFlag('shadowdark-crawl-helper', 'encounterTable', encounterTableUuid);
     }
 
 }
