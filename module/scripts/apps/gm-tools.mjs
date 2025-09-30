@@ -195,7 +195,6 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
 
     async _onUpdateScene(document, changed, options, userId) {
         if(changed?.active) {
-            console.error(changed)
             // detect scene changes and attempt to link scene tokens to combatants
             await this._connectSceneTokens();
             this.render();
