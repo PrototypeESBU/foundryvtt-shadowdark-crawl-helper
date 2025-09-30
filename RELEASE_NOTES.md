@@ -9,7 +9,7 @@
 - [#29] Carousel buttons have been repositioned. Player buttons now appear in the position of the GM buttons.
 
 # Experimental Features
-- The masked toggle will hide monster's names from players. Some chat cards make still display the NPC's name.
+- The masked toggle will hide monster names from players. Some chat cards may still display the monster's name.
 
 
 # v0.9.1
