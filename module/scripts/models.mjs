@@ -50,12 +50,13 @@ export class crawlCombatant extends foundry.abstract.TypeDataModel {
         const actor = this.parent.actor;
         const formula = "d4 +" + actor.system.abilities.con.mod;
         let roll = await new Roll(formula).evaluate();
+        const total = Math.max(roll.total, 1);
         const msg = await ChatMessage.create({
-            content: `<div class="shadowdark"><h3>${actor.name} will die in ${roll.total} rounds</h3><br>${await roll.render()}</div>`,
+            content: `<div class="shadowdark"><h3>${actor.name} will die in ${total} rounds</h3><br>${await roll.render()}</div>`,
             rolls: [roll.toJSON()]
         });
         if (game.dice3d) await game.dice3d.waitFor3DAnimationByMessageID(msg.id);
-        await this.parent.update({"system.dyingRounds": roll.total});
+        await this.parent.update({"system.dyingRounds": total});
 
         // TODO revisit this. Currently conditions are fairly broken in the shadowdark system. 
             /* 
@@ -90,7 +91,7 @@ export class crawlCombatant extends foundry.abstract.TypeDataModel {
     async rollRecovery() {
         
         const actor = this.parent.actor;
-        const user = game.users.find(u => u.character?.id === actor.id)?? game.users.activeGM;
+        const user = game.users.find(u => (u.character?.id === actor.id) && u.active) ?? game.users.activeGM;
 
         //create dialog prompt
         const fields = foundry.applications.fields;

@@ -49,4 +49,8 @@
 
 
     }
+
+    &.lights-out-tracker {
+        border-radius: var(--lights-out-border-radius-small);
+    }
 }

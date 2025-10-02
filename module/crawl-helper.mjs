@@ -18,14 +18,6 @@ Hooks.on("init", () => {
   
     // load settings
     registerSettings();
-
-    // load templates
-    if (game.modules.get("lights-out-theme-shadowdark")?.active){
-        loadTemplates({combatant:"modules/shadowdark-crawl-helper/templates/lights-out-combatant.hbs"});
-    }
-    else{
-        loadTemplates({combatant:"modules/shadowdark-crawl-helper/templates/combatant.hbs"});
-    }
     
 });
 
@@ -58,10 +50,49 @@ Hooks.on("ready", async () => {
         game.crawlHelper.gmtools._connectSceneTokens();
     }
 
-    if(game.settings.get("shadowdark-crawl-helper", "carousel")) {
-        game.crawlHelper.carousel = new actorCarousel();
+    // initialize carousel
+    const carouselSetting = game.settings.get("shadowdark-crawl-helper", "carousel");
+    const lightsOut = game.modules.get("lights-out-theme-shadowdark")?.active;
+    const useLightsOut = (carouselSetting === 2 || (carouselSetting === 0 && lightsOut));
+
+    
+    if( carouselSetting < 3) {
+        // load correct template
+        let template = {};
+        if (useLightsOut) {
+            template = {combatant:"modules/shadowdark-crawl-helper/templates/lights-out-combatant.hbs"};
+        }
+        else {
+            template = {combatant:"modules/shadowdark-crawl-helper/templates/combatant.hbs"};
+        }
+        loadTemplates(template);
+
+        // initialze carousel
+        game.crawlHelper.carousel = new actorCarousel(useLightsOut);
         if(game?.combat?.started) game.crawlHelper.carousel.render(true);
     } 
+
+    // show release notes if needed
+    if (game.user.isGM) {
+        const lastVersion = game.settings.get("shadowdark-crawl-helper", "lastVersion");
+        const currentVersion = game.modules.get("shadowdark-crawl-helper").version;
+
+        if (lastVersion !== currentVersion) {
+            const response = await fetch("modules/shadowdark-crawl-helper/release-notes.html");
+            if (!response.ok) throw new Error(`Failed to load ${path}`);
+            const html = await response.text()
+
+            new foundry.applications.api.DialogV2({
+                window: {title: "Release Notes"},
+                position: {width:600},
+                classes: ["release-notes"],
+                content: `<header>Crawl Helper</header>${html}`,
+                buttons: [{label: "Close"}],
+            }).render(true)
+
+            game.settings.set("shadowdark-crawl-helper", "lastVersion", currentVersion);
+        }
+    }
 
 });
 

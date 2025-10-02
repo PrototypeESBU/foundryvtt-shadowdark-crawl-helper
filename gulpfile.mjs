@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "node:path";
 import * as css from "./utils/css.mjs";
 import * as javascript from "./utils/javascript.mjs";
+import { marked } from "marked";
 
 /********************/
 /*      Config      */
@@ -64,3 +65,17 @@ export async function link() {
             console.info(`Linked ${path.resolve(MODULE_SOURCE_PATH)} folder to ${linkFile}.`);
     });
 }
+
+/********************/
+/*      NOTES       */
+/********************/
+export async function compileReleaseNotes() {
+    const INFILE = "RELEASE_NOTES.md";
+    const OUTFILE = "./module/release-notes.html";
+	const source = fs.readFileSync(INFILE, "utf8");
+	let html = marked.parse(source);
+
+    fs.writeFileSync(OUTFILE, html, "utf-8");
+
+    console.log(`Converted ${INFILE} → ${OUTFILE}`);
+}   

@@ -3,30 +3,15 @@
     <div class="portrait">
         <img src="{{img}}" data-actor-id="{{actorId}}" data-combatant-id="{{id}}">
         <div class="overlay {{#unless overlay}}hidden{{/unless}}">
-            {{#ifEq overlay "initiative"}}
-                {{#if isOwner}}
-                    <a 
-                        data-action="rollInitiative" 
-                        data-combatant-id="{{id}}"
-                        data-tooltip="CRAWLHELPER.carousel.roll-init"
-                    ><i class="fal fa-dice-d20"></i></a>
-                {{else}}
-                    <i class="fal fa-dice-d20 faded"></i>
-                {{/if}}
-            {{/ifEq}}
-            {{#ifEq overlay "hidden"}}
-                <i class="fas fa-eye-slash faded"></i>
-            {{/ifEq}}
-            {{#ifEq overlay "defeated"}}
-                <i class="fas fa-skull faded"></i>
-            {{/ifEq}}
-            {{#unless overlay}}
-                <a 
-                    data-action="nextTurn" 
-                    data-combatant-id="{{id}}"
-                    data-tooltip="CRAWLHELPER.carousel.end-turn"
-                ><i class="fas fa-angle-right"></i></a>
-            {{/unless}}
+            {{#if masked}}
+                <i class="fas fa-mask"></i>
+            {{/if}}
+            {{#if hidden}}
+                <i class="fas fa-eye-slash"></i>
+            {{/if}}
+            {{#if defeated}}
+                <i class="fas fa-skull"></i>
+            {{/if}}
         </div>
     </div>
 
@@ -37,7 +22,7 @@
             </div>
             <div class="character-health">
                 <div class="bar-wrapper">
-                    <div class="bar healthy {{system.type}}" style="width: {{barPercent}}%"></div>
+                    <div class="bar healthy {{system.type}}" style="width: calc({{barPercent}}% - 1px)"></div>
                     {{#if canView}}
                         <input type="text" class="current-health" data-value="{{hp.value}}" data-combatant-id="{{id}}"
                             value="{{hp.value}}" />
@@ -49,11 +34,35 @@
         </div>
     </div>
 
-    {{#if initiativeSet}}
-        <div class="initiative">
-            <div class="initiative-wrapper">
-                {{initiative}}
-            </div>
+    {{#if system.isDying}}
+        <div class="death-timer">
+            <i class="fa-solid fa-skull"></i>
+            <i class="fa-solid fa-hourglass-half"></i>
+            <span>
+                {{#if system.dyingRounds}}
+                    {{system.dyingRounds}}
+                {{else}}
+                    <i class="fa-solid fa-dice-d20" style="font-size:14px"></i>
+                {{/if}}
+            </span>
         </div>
     {{/if}}
+
+
+    <div class="initiative">
+        <div class="initiative-wrapper">
+            {{#if initiativeSet}}
+                {{initiative}}
+            {{else if isOwner}}
+                <a 
+                    data-action="rollInitiative"
+                    data-combatant-id="{{id}}"
+                    data-tooltip="CRAWLHELPER.carousel.roll-init"
+                >
+                    <i class="fal fa-dice-d20"></i>
+                </a>
+            {{/if}}
+        </div>
+    </div>
+
 </div>

@@ -9,13 +9,19 @@ export default function registerSettings() {
 
     //GM Settings (World level)
     game.settings.register("shadowdark-crawl-helper", "carousel", {
-        name: "Enabled Actor Carousel",
+        name: "CRAWLHELPER.settings.carousel.name",
         hint: "CRAWLHELPER.settings.carousel.hint",
         scope: "world",
         config: true,
-        default: true,
-        type: Boolean,
         requiresReload: true,
+        type: Number,
+        choices: {
+            0: game.i18n.localize("CRAWLHELPER.settings.carousel.option_0"),
+            1: game.i18n.localize("CRAWLHELPER.settings.carousel.option_1"),
+            2: game.i18n.localize("CRAWLHELPER.settings.carousel.option_2"),
+            3: game.i18n.localize("CRAWLHELPER.settings.carousel.option_3"),
+        },
+        default: 0
     });
 
     game.settings.register("shadowdark-crawl-helper", "add-gm", {
@@ -81,17 +87,6 @@ export default function registerSettings() {
         default: "sounds/combat/epic-turn-1hit.ogg",
         type: String,
         filePicker: true,
-    });
-    
-
-    game.settings.register("shadowdark-crawl-helper", "hide-combat-sidebar", {
-        name: "CRAWLHELPER.settings.hide-combat-sidebar.name",
-        hint: "CRAWLHELPER.settings.hide-combat-sidebar.hint",
-        scope: "world",
-        config: true,
-        default: true,
-        type: Boolean,
-        requiresReload: true,
     });
 
     game.settings.register("shadowdark-crawl-helper", "show-NPC-Health-Bars", {

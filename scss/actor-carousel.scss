@@ -122,19 +122,38 @@
                 
                 .overlay {
                     display: flex;
-                    flex-direction: column;
-                    flex-wrap: wrap-reverse;
+                    flex-wrap: wrap;
                     justify-content: center;
+                    align-content: center;
                     position:absolute;
                     top: 2px;
                     bottom: 2px;
                     left: 2px;
                     right: 2px;
                     background: rgb(0, 0, 0, 0.6);
-                    color:rgb(230,230,230,1);
-                    text-shadow: 0 0 10px black;
                     pointer-events: none;
-                    font-size: 32px;
+
+                    i {
+                        color:rgb(230,230,230,1);
+                        text-shadow: 0 0 10px black;
+                        flex: 1;
+                        margin: 4px;
+                    }
+                    
+                    /* 1 icons */
+                    &:has(i:only-child) i {
+                        font-size: 40px;
+                    }
+
+                    /* 2 icons */
+                    &:has(i:nth-child(2):last-child) i {
+                        font-size: 28px;
+                    }
+
+                    /* 3 icons */
+                    &:has(i:nth-child(3):last-child) i {
+                        font-size: 24px;
+                    }
                 }
 
             }
