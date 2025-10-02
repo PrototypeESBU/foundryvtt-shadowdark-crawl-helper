@@ -143,7 +143,7 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
             if ("round" in changed) {
                 await this._updateRound();
             } 
-            else if ("turn" in changed) {
+            if ("turn" in changed) {
                 //wait for animation to finish
                 this._wait(300);
                 this._updateTurn(options.direction);
@@ -172,11 +172,15 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
             if (hpChange === 0) {
                 //set dying
                 document.setFlag("shadowdark-crawl-helper", "dying", true)
+
+                if (game.combat?.combatant?.actorId === document.id) {
+                    await game.combat.combatant.system.rollDeathTimer();
+                }
             }
             else if (hpChange > 0) {
                 document.unsetFlag("shadowdark-crawl-helper", "dying");
                 const combatant = game.combat?.combatants.find(c => c.actorId === document.id);
-                if (combatant) await combatant.update({"system.dyingRounds": null})
+                if (combatant) await combatant.update({defeated: false, "system.dyingRounds": null})
             }
         }
 
@@ -293,7 +297,8 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
         }
 
         //Post to chat
-        const cardContent = await renderTemplate("modules/shadowdark-crawl-helper/templates/chats/timepasses-card.hbs", {
+        const cardContent = await foundry.applications.handlebars.renderTemplate(
+            "modules/shadowdark-crawl-helper/templates/chats/timepasses-card.hbs", {
             minutes: result.minutes,
             expiredEffectsList
         });
@@ -542,7 +547,8 @@ export default class gmTools extends HandlebarsApplicationMixin(ApplicationV2) {
         }
 
         //post message to chat
-        const content = await renderTemplate("modules/shadowdark-crawl-helper/templates/chats/encounter-check.hbs", 
+        const content = await foundry.applications.handlebars.renderTemplate(
+            "modules/shadowdark-crawl-helper/templates/chats/encounter-check.hbs", 
             {result, encounter, rollEncounter}
         );
 

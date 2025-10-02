@@ -1,15 +1,10 @@
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 export default class actorCarousel extends HandlebarsApplicationMixin(ApplicationV2) {
-    constructor() {
+    constructor(lightsOut = false) {
         super();
         this.combatants = [];
-        if (game.modules.get("lights-out-theme-shadowdark")?.active){
-            this.lightsOut = true;
-        } else {
-            this.lightsOut = false;
-        }
-
+        this.lightsOut = lightsOut;
         Hooks.on('deleteCombat', this._onDeleteCombat.bind(this));
         Hooks.on('updateCombat', this._onUpdateCombat.bind(this));
         Hooks.on('createCombatant', this._onCreateCombatant.bind(this));
@@ -52,12 +47,32 @@ export default class actorCarousel extends HandlebarsApplicationMixin(Applicatio
     // -----------------------------------------------
 
     async _preFirstRender(context, options) {
-        const uiMiddle = document.getElementById("ui-middle");
-        uiMiddle.insertAdjacentHTML("afterbegin", `<template id="actorCarousel"></template>`);
+        const template = document.createElement("template");
+        template.id = "actorCarousel";
+
+        // Lights Out UI style
+        if (this.lightsOut) {
+            //add CSS to disable party panel if lights out is loaded
+            const style = document.createElement("style");
+            style.textContent = "@layer modules {#party {display: none;}}";
+            document.head.appendChild(style);
+            
+            // prevent scene-controls from being clipped
+            const sceneControls = document.getElementById("scene-controls");
+            sceneControls.style.flex = "none";
+
+            //insert carousel template
+            sceneControls.insertAdjacentElement("afterend", template);
+        }
+        else {
+            const middle = document.getElementById("ui-middle");
+            middle.insertAdjacentHTML("afterbegin", template.outerHTML);
+        }
     }
 
     // sets the position of the app before rendering
     _prePosition(pos = {}) {
+        if (this.lightsOut) return;
         const middle = document.querySelector("#ui-middle").getBoundingClientRect();
         foundry.utils.mergeObject(pos, {
             width: middle.width

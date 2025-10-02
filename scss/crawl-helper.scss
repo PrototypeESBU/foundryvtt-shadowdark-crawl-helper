@@ -2,3 +2,23 @@
 @use "actor-carousel";
 @use "gm-tools";
 @use "lights-out-carousel";
+
+.release-notes {
+    header {
+        font-family: "JSL Blackletter";
+        font-size: 40px;
+        text-align: center;
+    }
+    .dialog-content {
+        height: 500px;
+        overflow: auto;
+    }
+    h1 {
+        font-family: "Old Newspaper Font";
+        font-size: 26px;
+    }
+    h2 {
+        font-family: "Montserrat-Bold";
+        font-size: 14px;
+    }
+}
