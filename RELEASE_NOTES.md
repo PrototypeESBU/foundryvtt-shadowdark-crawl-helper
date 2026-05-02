@@ -1,3 +1,6 @@
+# v1.2.0
+Correction to CSS for Shadowdark v4.0.0
+
 # v1.1.0
 
 Lights Out UI Theme v2.0-beta-1 is now supported
