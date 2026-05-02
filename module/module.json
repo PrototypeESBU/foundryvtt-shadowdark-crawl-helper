@@ -5,7 +5,7 @@
     "version": "1.2.0",
     "compatibility": {
         "minimum": "13",
-        "verified": "13"
+        "verified": "14"
     },
    "esmodules": [
         "crawl-helper-compiled.mjs"
@@ -27,7 +27,7 @@
                 "id": "shadowdark",
                 "type": "system",
                 "compatibility": {
-                    "minimum": "4.0.0",
+                    "minimum": "3.6.2",
                     "verified": "4.0.0"
                 }
             }
